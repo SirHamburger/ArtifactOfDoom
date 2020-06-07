@@ -25,31 +25,18 @@ namespace ThinkInvisible.TinkersSatchel
 
         protected override string NewLangName(string langid = null) => displayName;
         protected override string NewLangDesc(string langid = null) => "Players can be killed in one hit.";
-        private static List<string> Playername = new List<string>();
+        private static List<short> Playername = new List<short>();
         private static List<int> counter = new List<int>();
-        private Transform HUDroot = null;
-
-        private GameObject GameObjectReference;
-
+        private int currentStage=0;
 
         public void Awake()
         {
             Chat.AddMessage("Loaded MyModName!");
 
-            On.RoR2.UI.HealthBar.Awake += myFunc;
+
 
         }
-        private void myFunc(On.RoR2.UI.HealthBar.orig_Awake orig, RoR2.UI.HealthBar self)
-        {
-            orig(self); // Don't forget to call this, or the vanilla / other mods' codes will not execute!
-            HUDroot = self.transform.root; // This will return the canvas that the UI is displaying on!
-                                           // Rest of the code is to go here
-            
-                    }
-        private void OnDestroy()
-        {
-            On.RoR2.UI.HealthBar.Awake -= myFunc;
-        }
+
 
         public Danger()
         {
@@ -64,25 +51,62 @@ namespace ThinkInvisible.TinkersSatchel
         {
             On.RoR2.SceneDirector.PopulateScene += (orig, self) =>
               {
-                  orig(self);
+                    currentStage++;
+
+                    orig(self);
               };
             On.RoR2.GlobalEventManager.OnCharacterDeath += (orig, self, damageReport) =>
             {
 
-                if (!Playername.Contains(damageReport.attackerBody.name))
+
+
+
+                if(damageReport.attackerOwnerMaster!=null)
                 {
-                    Playername.Add(damageReport.attackerBody.name);
+                    if (!Playername.Contains(damageReport.attackerBody.playerControllerId))
+                {
+                    Playername.Add(damageReport.attackerOwnerMaster.GetBody().playerControllerId);
                     counter.Add(0);
                 }
-                if (counter[Playername.IndexOf(damageReport.attackerBody.name)] != 3)
+                
+                }
+                if (!Playername.Contains(damageReport.attackerBody.playerControllerId))
                 {
-                    counter[Playername.IndexOf(damageReport.attackerBody.name)]++;
+                    Playername.Add(damageReport.attackerBody.playerControllerId);
+                    counter.Add(0);
+                }
+                short currentPlayerID = -1;
+
+                if(damageReport.attackerOwnerMaster!=null)
+                {
+                    currentPlayerID = damageReport.attackerOwnerMaster.GetBody().playerControllerId;
+                    RoR2.Console.print("pet master : "+ currentPlayerID);
                 }
                 else
                 {
-
-                    damageReport.attackerBody.inventory.GiveRandomItems(1);
-                    counter[Playername.IndexOf(damageReport.attackerBody.name)] = 0;
+                    currentPlayerID = damageReport.attackerBody.playerControllerId;
+                    RoR2.Console.print("master : "+ currentPlayerID);
+                }
+                
+                int totalItems = damageReport.attackerBody.inventory.GetTotalItemCountOfTier(ItemTier.Tier1);
+                totalItems += damageReport.attackerBody.inventory.GetTotalItemCountOfTier(ItemTier.Tier2);
+                 totalItems += damageReport.attackerBody.inventory.GetTotalItemCountOfTier(ItemTier.Tier3);
+                int calculatesEnemyCountToTrigger =  totalItems-currentStage*2;
+                if(calculatesEnemyCountToTrigger < 1)
+                    calculatesEnemyCountToTrigger =1;
+                RoR2.Console.print ("stage: " + currentStage);
+                RoR2.Console.print ("calculatesEnemyCountToTrigger: " + calculatesEnemyCountToTrigger);
+                if (counter[Playername.IndexOf(currentPlayerID)] != calculatesEnemyCountToTrigger)
+                {
+                    counter[Playername.IndexOf(currentPlayerID)]++;
+                }
+                else
+                {
+                    if(damageReport.attackerOwnerMaster!=null)
+                        damageReport.attackerOwnerMaster.GetBody().inventory.GiveRandomItems(1);
+                    else
+                        damageReport.attackerBody.inventory.GiveRandomItems(1);
+                    counter[Playername.IndexOf(currentPlayerID)] = 0;
                 }
                 orig(self, damageReport);
 
@@ -102,26 +126,9 @@ namespace ThinkInvisible.TinkersSatchel
                     var rand = new System.Random();
                     int randomPosition = rand.Next(0, lstItemIndex.Count - 1);
                     ItemIndex itemToRemove = lstItemIndex[randomPosition];
-                    //try{
+                    //TinkersSatchelPlugin.GameObjectReference.AddComponent<Image>();
+                    //TinkersSatchelPlugin.GameObjectReference.GetComponent<Image>().sprite = ItemCatalog.GetItemDef(itemToRemove).pickupIconSprite;
 
-                    //RoR2.Console.print("---------------------Startet setting GameObject---------------------");
-//
-                    //GameObjectReference = new GameObject("GameObjectName");
-                    //GameObjectReference.transform.SetParent(HUDroot);
-                    //GameObjectReference.AddComponent<RectTransform>();
-                    //GameObjectReference.GetComponent<RectTransform>().anchorMin = Vector2.zero;
-                    //GameObjectReference.GetComponent<RectTransform>().anchorMax = Vector2.one;
-                    //GameObjectReference.GetComponent<RectTransform>().sizeDelta = Vector2.zero;
-                    //GameObjectReference.GetComponent<RectTransform>().anchoredPosition = Vector2.zero;  
-                    //GameObjectReference.AddComponent<Image>();
-                    //GameObjectReference.GetComponent<Image>().sprite = Resources.Load<Sprite>("textures/itemicons/texBearIcon");
-
-                    //GameObjectReference.GetComponent<Image>().sprite = ItemCatalog.GetItemDef(itemToRemove).pickupIconSprite;
-                    //}
-                    //catch(Exception e)
-                    //{
-                    //    RoR2.Console.print(e.Message);
-                    //}
                     
                     if(!ItemCatalog.lunarItemList.Contains(itemToRemove))
                         self.body.inventory.RemoveItem(itemToRemove, 1);

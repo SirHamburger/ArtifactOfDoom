@@ -3,6 +3,8 @@ using R2API;
 using R2API.Utils;
 using System.Reflection;
 using UnityEngine;
+using UnityEngine.UI;
+
 using BepInEx.Configuration;
 using Path = System.IO.Path;
 using TILER2;
@@ -17,6 +19,9 @@ namespace ThinkInvisible.TinkersSatchel {
         public const string ModVer = "1.1.2";
         public const string ModName = "TinkersSatchel";
         public const string ModGuid = "com.ThinkInvisible.TinkersSatchel";
+        private static Transform HUDroot = null;
+
+        public static GameObject GameObjectReference;
 
         private static ConfigFile cfgFile;
         
@@ -60,6 +65,33 @@ namespace ThinkInvisible.TinkersSatchel {
             foreach(ItemBoilerplate x in masterItemList) {
                 x.SetupBehavior();
             }
+
+            On.RoR2.UI.HealthBar.Awake += myFunc;
+
+        }
+        private void myFunc(On.RoR2.UI.HealthBar.orig_Awake orig, RoR2.UI.HealthBar self)
+        {
+            //HUDroot = self.transform.root; // This will return the canvas that the UI is displaying on!
+            //// Rest of the code is to go here
+            //RoR2.Console.print("----------------------------MyFunc called------------------------------");
+            //GameObjectReference = new GameObject("blablabla");
+            //GameObjectReference.transform.SetParent(HUDroot);
+            //GameObjectReference.AddComponent<RectTransform>();
+            //GameObjectReference.GetComponent<RectTransform>().anchorMin = new Vector2(0,0);
+            //GameObjectReference.GetComponent<RectTransform>().anchorMax = new Vector2((float)0.1,(float)0.1);
+            //GameObjectReference.GetComponent<RectTransform>().sizeDelta = Vector2.zero;
+            //GameObjectReference.GetComponent<RectTransform>().anchoredPosition = Vector2.zero;
+    //
+//
+            //GameObjectReference.AddComponent<Image>();
+            //GameObjectReference.GetComponent<Image>().sprite = Resources.Load<Sprite>("textures/itemicons/texBearIcon");
+            orig(self); // Don't forget to call this, or the vanilla / other mods' codes will not execute!
+
+
+        }
+        private void OnDestroy()
+        {
+            On.RoR2.UI.HealthBar.Awake -= myFunc;
         }
     }
 }
