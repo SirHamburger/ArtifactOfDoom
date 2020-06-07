@@ -29,6 +29,9 @@ namespace ThinkInvisible.TinkersSatchel {
         
         internal static BepInEx.Logging.ManualLogSource _logger;
 
+
+
+
         private void Awake() {
             _logger = Logger;
 
@@ -52,11 +55,7 @@ namespace ThinkInvisible.TinkersSatchel {
 
             Logger.LogMessage("Index dump follows (pairs of name / index):");
             foreach(ItemBoilerplate x in masterItemList) {
-                if(x is Equipment eqp)
-                    Logger.LogMessage("Equipment TKSCH"+x.itemCodeName.PadRight(longestName) + " / "+((int)eqp.regIndex).ToString());
-                else if(x is Item item)
-                    Logger.LogMessage ("     Item TKSCH"+x.itemCodeName.PadRight(longestName) + " / "+((int)item.regIndex).ToString());
-                else if(x is Artifact afct)
+                if(x is Artifact afct)
                     Logger.LogMessage(" Artifact TKSCH"+x.itemCodeName.PadRight(longestName) + " / "+((int)afct.regIndex).ToString());
                 else
                     Logger.LogMessage("    Other TKSCH"+x.itemCodeName.PadRight(longestName) + " / N/A");
@@ -67,12 +66,18 @@ namespace ThinkInvisible.TinkersSatchel {
             }
 
             On.RoR2.UI.HealthBar.Awake += myFunc;
+            //RoR2.RunReport.PlayerInfo
+            //On.RoR2.GameOverController.GenerateReportScreens += (orig,self)=>{
+            //    
+            //    PlayerStats
+            //};
 
         }
+
         private void myFunc(On.RoR2.UI.HealthBar.orig_Awake orig, RoR2.UI.HealthBar self)
         {
-            //HUDroot = self.transform.root; // This will return the canvas that the UI is displaying on!
-            //// Rest of the code is to go here
+            HUDroot = self.transform.root; // This will return the canvas that the UI is displaying on!
+            // Rest of the code is to go here
             //RoR2.Console.print("----------------------------MyFunc called------------------------------");
             //GameObjectReference = new GameObject("blablabla");
             //GameObjectReference.transform.SetParent(HUDroot);
