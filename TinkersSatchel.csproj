@@ -11,6 +11,14 @@
   <ItemGroup>
     <EmbeddedResource Include="tinkerssatchel_assets" />
   </ItemGroup>
+    <ItemGroup>
+    <None Remove="circularmask" />
+    <None Remove="diluvian" />
+    <None Remove="textures" />
+  </ItemGroup>
+    <ItemGroup>
+    <EmbeddedResource Include="textures" />
+  </ItemGroup>
 
   <ItemGroup>
     <Reference Include="Assembly-CSharp">
@@ -72,6 +80,15 @@
     <Reference Include="UnityEngine.UI">
       <HintPath>lib\UnityEngine.UI.dll</HintPath>
       <Private>false</Private>
+    </Reference>
+        <Reference Include="UnityEngine.InputModule">
+      <HintPath>libs\UnityEngine.InputModule.dll</HintPath>
+    </Reference>
+        <Reference Include="UnityEngine.UIElementsModule">
+      <HintPath>libs\UnityEngine.UIElementsModule.dll</HintPath>
+    </Reference>
+        <Reference Include="UnityEngine.UIModule">
+      <HintPath>libs\UnityEngine.UIModule.dll</HintPath>
     </Reference>
   </ItemGroup>
 
