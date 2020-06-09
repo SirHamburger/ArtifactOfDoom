@@ -45,10 +45,11 @@ namespace ThinkInvisible.TinkersSatchel
             On.RoR2.UI.ExpBar.Awake += ExpBarAwakeAddon;
 
 
-                        try{
-            SetUpMiniRPC();
+            try
+            {
+                SetUpMiniRPC();
             }
-            catch(Exception e)
+            catch (Exception e)
             {
                 Debug.Log($"[SirHamburger] Error in SetUpMiniRPC");
             }
@@ -236,20 +237,24 @@ namespace ThinkInvisible.TinkersSatchel
 
             AddGainedItemsToPlayers = miniRpc.RegisterFunc(Target.Client, (NetworkUser user, string QueueGainedItemSpriteToString) => //--------------------HierSTuffMachen!!
             {
-                Debug.Log($"[SirHamburger] AddLostItemsOfPlayers");
-
-                Debug.Log($"[SirHamburgerDebug] Adding: " + " to " + QueueGainedItemSpriteToString);
+                //Debug.LogError($"[SirHamburger Gained Items MiniRPC] Network user ID: " + user.Network_id.value);
+                //user.Network_id.value
+                //Debug.Log($"[SirHamburgerDebug] Adding: " + " to " + QueueGainedItemSpriteToString);
                 string[] QueueGainedItemSprite = QueueGainedItemSpriteToString.Split(' ');
 
                 int i = 0;
                 foreach (var element in QueueGainedItemSprite)
                 {
-                    Debug.Log($"[SirHamburgerDebug] Adding: " + element);
-                    //ModExpBarGroup.AddComponent<Image>();
-                    if (MainUIMod.listGainedImages[i].GetComponent<Image>() == null)
-                        MainUIMod.listGainedImages[i].AddComponent<Image>();
-                    MainUIMod.listGainedImages[i].GetComponent<Image>().sprite = Resources.Load<Sprite>("textures/itemicons/"+element);
-                    i++;
+                    if (element != "")
+                    {
+                        Debug.Log($"[SirHamburgerDebug] Adding: " + element);
+                        //ModExpBarGroup.AddComponent<Image>();
+                        if (MainUIMod.listGainedImages[i].GetComponent<Image>() == null)
+                            MainUIMod.listGainedImages[i].AddComponent<Image>();
+                        MainUIMod.listGainedImages[i].GetComponent<Image>().sprite = Resources.Load<Sprite>("textures/itemicons/" + element);
+                        i++;
+                    }
+
                 }
                 return "dummie";
             });
@@ -263,12 +268,16 @@ namespace ThinkInvisible.TinkersSatchel
                 int i = 0;
                 foreach (var element in QueueLostItemSprite)
                 {
-                    Debug.Log($"[SirHamburgerDebug] Adding: " + element);
-                    //ModExpBarGroup.AddComponent<Image>();
-                    if (MainUIMod.listLostImages[i].GetComponent<Image>() == null)
-                        MainUIMod.listLostImages[i].AddComponent<Image>();
-                    MainUIMod.listLostImages[i].GetComponent<Image>().sprite = Resources.Load<Sprite>("textures/itemicons/"+element);
-                    i++;
+                    if (element != "")
+                    {
+                        Debug.Log($"[SirHamburgerDebug] Adding: " + element);
+                        //ModExpBarGroup.AddComponent<Image>();
+                        if (MainUIMod.listLostImages[i].GetComponent<Image>() == null)
+                            MainUIMod.listLostImages[i].AddComponent<Image>();
+                        MainUIMod.listLostImages[i].GetComponent<Image>().sprite = Resources.Load<Sprite>("textures/itemicons/" + element);
+                        i++;
+                    }
+
                 }
                 return "dummie";
             });
