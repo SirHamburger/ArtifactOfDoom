@@ -12,6 +12,9 @@ using MiniRpcLib;
 using MiniRpcLib.Action;
 using MiniRpcLib.Func;
 
+using UnityEditor;
+
+
 
 using System;
 
@@ -251,8 +254,10 @@ namespace ThinkInvisible.TinkersSatchel
                         //ModExpBarGroup.AddComponent<Image>();
                         if (MainUIMod.listGainedImages[i].GetComponent<Image>() == null)
                             MainUIMod.listGainedImages[i].AddComponent<Image>();
-                        MainUIMod.listGainedImages[i].GetComponent<Image>().sprite = Resources.Load<Sprite>("textures/itemicons/" + element);
+                        MainUIMod.listGainedImages[i].GetComponent<Image>().sprite = ItemCatalog.GetItemDef(ItemCatalog.FindItemIndex(element)).pickupIconSprite;
+
                         i++;
+                        
                     }
 
                 }
@@ -274,7 +279,9 @@ namespace ThinkInvisible.TinkersSatchel
                         //ModExpBarGroup.AddComponent<Image>();
                         if (MainUIMod.listLostImages[i].GetComponent<Image>() == null)
                             MainUIMod.listLostImages[i].AddComponent<Image>();
-                        MainUIMod.listLostImages[i].GetComponent<Image>().sprite = Resources.Load<Sprite>("textures/itemicons/" + element);
+                        MainUIMod.listLostImages[i].GetComponent<Image>().sprite = ItemCatalog.GetItemDef(ItemCatalog.FindItemIndex(element)).pickupIconSprite;
+
+                        Debug.LogError("The Sprite couldn't be loaded");
                         i++;
                     }
 

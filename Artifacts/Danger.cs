@@ -9,6 +9,11 @@ using System.Collections.Generic;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
+using UnityEditor;
+
+
+
+
 using RoR2.Stats;
 using System.Collections;
 using static TILER2.MiscUtil;
@@ -33,7 +38,7 @@ namespace ThinkInvisible.TinkersSatchel
 {
     public class Danger : Artifact<Danger>
     {
-        public static bool debug = true;
+        public static bool debug = false;
         public override string displayName => "Artifact of Danger";
 
         protected override string NewLangName(string langid = null) => displayName;
@@ -42,7 +47,7 @@ namespace ThinkInvisible.TinkersSatchel
         private static List<int> counter = new List<int>();
         private int currentStage = 0;
 
-        private Dictionary<NetworkUser, bool> LockNetworkUser = new Dictionary<NetworkUser, bool>(); 
+        private Dictionary<NetworkUser, bool> LockNetworkUser = new Dictionary<NetworkUser, bool>();
 
         private static RoR2.Stats.StatDef statsLostItems;
         private static RoR2.Stats.StatDef statsGainItems;
@@ -50,8 +55,8 @@ namespace ThinkInvisible.TinkersSatchel
         //public static Dictionary<CharacterBody, Queue<Sprite>>  PlayerItems = new Dictionary<CharacterBody, Queue<Sprite>>();
         //private static Queue<Sprite>  QueueLostItemSprite = new Queue<Sprite>();
         //private static Queue<Sprite>  QueueGainedItemSprite = new Queue<Sprite>();
-        public static Dictionary<uint, Queue<Sprite>> QueueLostItemSprite = new Dictionary<uint, Queue<Sprite>>();
-        public static Dictionary<uint, Queue<Sprite>> QueueGainedItemSprite = new Dictionary<uint, Queue<Sprite>>();
+        public static Dictionary<uint, Queue<ItemDef>> QueueLostItemSprite = new Dictionary<uint, Queue<ItemDef>>();
+        public static Dictionary<uint, Queue<ItemDef>> QueueGainedItemSprite = new Dictionary<uint, Queue<ItemDef>>();
 
 
         public void Awake()
@@ -109,8 +114,8 @@ namespace ThinkInvisible.TinkersSatchel
                     currentStage = RoR2.Run.instance.stageClearCount + 1;
 
                     orig(self);
-                    QueueLostItemSprite = new Dictionary<uint, Queue<Sprite>>();
-                    QueueGainedItemSprite = new Dictionary<uint, Queue<Sprite>>();
+                    QueueLostItemSprite = new Dictionary<uint, Queue<ItemDef>>();
+                    QueueGainedItemSprite = new Dictionary<uint, Queue<ItemDef>>();
                     Playername = new List<CharacterBody>();
                     counter = new List<int>();
                     LockNetworkUser.Clear();
@@ -126,15 +131,15 @@ namespace ThinkInvisible.TinkersSatchel
                 {
                     return;
                 }
-                if(debug)
+                if (debug)
                     Debug.LogError("Line 129");
-                if(damageReport.attackerBody == null)
+                if (damageReport.attackerBody == null)
                     return;
-                if(damageReport.attackerBody.inventory == null)
+                if (damageReport.attackerBody.inventory == null)
                     return;
-                if(damageReport.victimBody.inventory ==null)
+                if (damageReport.victimBody.inventory == null)
                     return;
-                if(debug)
+                if (debug)
                     Debug.LogError("Line 135");
                 if (damageReport.attackerOwnerMaster != null)
                 {
@@ -143,9 +148,9 @@ namespace ThinkInvisible.TinkersSatchel
                         Playername.Add(damageReport.attackerOwnerMaster.GetBody());
                         counter.Add(0);
                     }
-                    
-                if(debug)
-                    Debug.LogError("Line 146");
+
+                    if (debug)
+                        Debug.LogError("Line 146");
 
                 }
                 if (!Playername.Contains(damageReport.attackerBody))
@@ -154,7 +159,7 @@ namespace ThinkInvisible.TinkersSatchel
                     counter.Add(0);
                 }
                 CharacterBody currentBody;
-                if(debug)
+                if (debug)
                     Debug.LogError("Line 156");
                 if (damageReport.attackerOwnerMaster != null)
                 {
@@ -166,30 +171,30 @@ namespace ThinkInvisible.TinkersSatchel
                     currentBody = damageReport.attackerBody;
                     // //Ror2.console.print("master : " + currentPlayerID);
                 }
-                
-                if(debug)
+
+                if (debug)
                     Debug.LogError("Line 168");
                 uint pos = 0;
                 int totalItems = damageReport.attackerBody.inventory.GetTotalItemCountOfTier(ItemTier.Tier1);
                 totalItems += damageReport.attackerBody.inventory.GetTotalItemCountOfTier(ItemTier.Tier2);
                 totalItems += damageReport.attackerBody.inventory.GetTotalItemCountOfTier(ItemTier.Tier3);
-                int calculatesEnemyCountToTrigger = (totalItems - currentStage * 2)*2;
+                int calculatesEnemyCountToTrigger = (totalItems - currentStage * 2) * 2;
                 if (calculatesEnemyCountToTrigger < 1)
                     calculatesEnemyCountToTrigger = 1;
-                                if(debug)
+                if (debug)
                     Debug.LogError("Line 177");
                 //Ror2.console.print("calculatesEnemyCountToTrigger: " + calculatesEnemyCountToTrigger);
                 if (counter[Playername.IndexOf(currentBody)] <= calculatesEnemyCountToTrigger)
                 {
                     counter[Playername.IndexOf(currentBody)]++;
-                    
+
 
                 }
                 else
                 {
                     if (damageReport.attackerOwnerMaster != null)
                     {
-                        
+
 
                         damageReport.attackerOwnerMaster.GetBody().inventory.GiveRandomItems(1);
 
@@ -199,27 +204,26 @@ namespace ThinkInvisible.TinkersSatchel
                             pos = damageReport.attackerOwnerMaster.GetBody().netId.Value;
                         else
                         {
-                            
-                            QueueGainedItemSprite.Add(damageReport.attackerOwnerMaster.GetBody().netId.Value, new Queue<Sprite>());
+
+                            QueueGainedItemSprite.Add(damageReport.attackerOwnerMaster.GetBody().netId.Value, new Queue<ItemDef>());
                             pos = damageReport.attackerOwnerMaster.GetBody().netId.Value;
 
                         }
-                        QueueGainedItemSprite[pos].Enqueue(ItemCatalog.GetItemDef(damageReport.attackerOwnerMaster.GetBody().inventory.itemAcquisitionOrder[damageReport.attackerOwnerMaster.GetBody().inventory.itemAcquisitionOrder.Count - 1]).pickupIconSprite);
+                        QueueGainedItemSprite[pos].Enqueue(ItemCatalog.GetItemDef(damageReport.attackerOwnerMaster.GetBody().inventory.itemAcquisitionOrder[damageReport.attackerOwnerMaster.GetBody().inventory.itemAcquisitionOrder.Count - 1]));
                     }
                     else
                     {
-                        
+
 
                         damageReport.attackerBody.inventory.GiveRandomItems(1);
                         PlayerStatsComponent.FindBodyStatSheet(damageReport.attackerBody).PushStatValue(statsGainItems, 1UL);
-
                         if (QueueGainedItemSprite.ContainsKey(damageReport.attackerBody.netId.Value))
                             pos = damageReport.attackerBody.netId.Value;
                         else
                         {
                             try
                             {
-                                QueueGainedItemSprite.Add(damageReport.attackerBody.netId.Value, new Queue<Sprite>());
+                                QueueGainedItemSprite.Add(damageReport.attackerBody.netId.Value, new Queue<ItemDef>());
                                 pos = damageReport.attackerBody.netId.Value;
                             }
                             catch (Exception e)
@@ -227,10 +231,10 @@ namespace ThinkInvisible.TinkersSatchel
                                 Debug.Log($"[SirHamburger Danger] Error while excecuting : QueueGainedItemSprite.Add(damageReport.attackerBody.netId.Value, new Queue<Sprite>()); (line 203)");
                             }
                         }
-                
 
 
-                        QueueGainedItemSprite[pos].Enqueue(ItemCatalog.GetItemDef(damageReport.attackerBody.inventory.itemAcquisitionOrder[damageReport.attackerBody.inventory.itemAcquisitionOrder.Count - 1]).pickupIconSprite);
+
+                        QueueGainedItemSprite[pos].Enqueue(ItemCatalog.GetItemDef(damageReport.attackerBody.inventory.itemAcquisitionOrder[damageReport.attackerBody.inventory.itemAcquisitionOrder.Count - 1]));
                         Debug.Log($"[SirHamburger Danger] length of Queue: " + QueueGainedItemSprite[pos].Count);
 
                     }
@@ -244,17 +248,16 @@ namespace ThinkInvisible.TinkersSatchel
                     foreach (var element in Danger.QueueGainedItemSprite[pos])
                     {
                         temp += element.name + " ";
-
                     }
 
                     NetworkUser tempNetworkUser = null;
                     foreach (var element in NetworkUser.readOnlyInstancesList)
                     {
                         Debug.Log($"[Sirhamburger] Comparing " + element.GetCurrentBody().netId + " to " + damageReport.attackerBody.networkIdentity.netId);
-                        if(damageReport.attackerOwnerMaster.GetBody()!=null)
+                        if (damageReport.attackerOwnerMaster != null)
                             if (element.GetCurrentBody().netId == damageReport.attackerOwnerMaster.GetBody().netId)
-                            tempNetworkUser = element;
-                        else
+                                tempNetworkUser = element;
+                            else
                             if (element.GetCurrentBody().netId == damageReport.attackerBody.netId)
                                 tempNetworkUser = element;
                     }
@@ -285,9 +288,9 @@ namespace ThinkInvisible.TinkersSatchel
 
                     return;
                 }
-                if(self.body.inventory==null)
+                if (self.body.inventory == null)
                     return;
-                
+
                 int totalItems = self.body.inventory.GetTotalItemCountOfTier(ItemTier.Tier1);
                 totalItems += self.body.inventory.GetTotalItemCountOfTier(ItemTier.Tier2);
                 totalItems += self.body.inventory.GetTotalItemCountOfTier(ItemTier.Tier3);
@@ -296,7 +299,7 @@ namespace ThinkInvisible.TinkersSatchel
                 //Ror2.console.print("self.body.isPlayerControlled " + self.body.isPlayerControlled);
                 //Ror2.console.print("damageinfo.inflictor.name " + self.name);
                 //Ror2.console.print("damageinfo.attacker.name " + damageinfo.attacker.name);
-                
+
                 ////Ror2.console.print("intakedamage");
                 if (self.body.isPlayerControlled && (totalItems > 0) && self.name != damageinfo.attacker.name)
                 {
@@ -309,13 +312,13 @@ namespace ThinkInvisible.TinkersSatchel
                             lstItemIndex.Add(element);
                         }
                     }
-                    
+
                     var rand = new System.Random();
                     int randomPosition = rand.Next(0, lstItemIndex.Count - 1);
                     ItemIndex itemToRemove = lstItemIndex[randomPosition];
                     //TinkersSatchelPlugin.GameObjectReference.AddComponent<Image>();
                     //TinkersSatchelPlugin.GameObjectReference.GetComponent<Image>().sprite = ItemCatalog.GetItemDef(itemToRemove).pickupIconSprite;
-                    
+
                     ////Ror2.console.print("preparing to remove");
                     if (!ItemCatalog.lunarItemList.Contains(itemToRemove) && (ItemCatalog.GetItemDef(itemToRemove).tier != ItemTier.NoTier))
                     {
@@ -336,7 +339,7 @@ namespace ThinkInvisible.TinkersSatchel
                         {
                             try
                             {
-                                QueueLostItemSprite.Add(self.body.netId.Value, new Queue<Sprite>());
+                                QueueLostItemSprite.Add(self.body.netId.Value, new Queue<ItemDef>());
                                 pos = self.body.netId.Value;
                             }
                             catch (Exception e)
@@ -352,8 +355,8 @@ namespace ThinkInvisible.TinkersSatchel
                         }
 
 
-                        
-                        QueueLostItemSprite[pos].Enqueue(ItemCatalog.GetItemDef(itemToRemove).pickupIconSprite);
+
+                        QueueLostItemSprite[pos].Enqueue(ItemCatalog.GetItemDef(itemToRemove));
                         if (QueueLostItemSprite.Count > 10)
                             QueueLostItemSprite[pos].Dequeue();
                         //int i=QueueLostItemSprite.Count -1;
@@ -377,14 +380,14 @@ namespace ThinkInvisible.TinkersSatchel
                             if (element.GetCurrentBody().netId == self.body.netId)
                                 tempNetworkUser = element;
                         }
-                        if(!LockNetworkUser.ContainsKey(tempNetworkUser))
-                            LockNetworkUser.Add(tempNetworkUser,false);
-                        if(LockNetworkUser[tempNetworkUser]==false)
+                        if (!LockNetworkUser.ContainsKey(tempNetworkUser))
+                            LockNetworkUser.Add(tempNetworkUser, false);
+                        if (LockNetworkUser[tempNetworkUser] == false)
                         {
-                            LockNetworkUser[tempNetworkUser]=true;
+                            LockNetworkUser[tempNetworkUser] = true;
                             MainUIMod.AddLostItemsOfPlayers.Invoke(temp, result =>
                             {
-                                LockNetworkUser[tempNetworkUser]=false;
+                                LockNetworkUser[tempNetworkUser] = false;
                                 Debug.Log($"[Sirhamburger] added items: {result}");
                             }, tempNetworkUser);
                         }
@@ -400,11 +403,11 @@ namespace ThinkInvisible.TinkersSatchel
                         //        Debug.Log($"[Sirhamburger] added items: {result}");
                         //    }, tempNetworkUser);
                         //}
-    
+
 
                     }
                     else
-                    {   
+                    {
 
                         //Ror2.console.print("lunar");
                     }
@@ -419,8 +422,8 @@ namespace ThinkInvisible.TinkersSatchel
         protected override void UnloadBehavior()
         {
 
-            Danger.QueueLostItemSprite = new Dictionary<uint, Queue<Sprite>>();
-            Danger.QueueGainedItemSprite = new Dictionary<uint, Queue<Sprite>>();
+            Danger.QueueLostItemSprite = new Dictionary<uint, Queue<ItemDef>>();
+            Danger.QueueGainedItemSprite = new Dictionary<uint, Queue<ItemDef>>();
             Danger.statsLostItems = null;
             Danger.statsGainItems = null;
             Danger.Playername = new List<CharacterBody>();
