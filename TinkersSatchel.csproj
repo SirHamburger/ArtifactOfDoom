@@ -90,6 +90,10 @@
         <Reference Include="UnityEngine.UIModule">
       <HintPath>libs\UnityEngine.UIModule.dll</HintPath>
     </Reference>
+        <Reference Include="MiniRpcLib">
+      <HintPath>libs\MiniRpcLib.dll</HintPath>
+    </Reference>
+
   </ItemGroup>
 
 

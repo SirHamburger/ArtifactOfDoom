@@ -18,7 +18,7 @@ namespace ThinkInvisible.TinkersSatchel {
     public class TinkersSatchelPlugin:BaseUnityPlugin {
         public const string ModVer = "1.1.2";
         public const string ModName = "TinkersSatchel";
-        public const string ModGuid = "com.ThinkInvisible.TinkersSatchel";
+        public const string ModGuid = "com.SirHamburger.TinkersSatchel";
         private static Transform HUDroot = null;
 
         public static GameObject GameObjectReference;

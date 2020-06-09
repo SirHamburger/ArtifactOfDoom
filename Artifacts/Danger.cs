@@ -43,8 +43,23 @@ namespace ThinkInvisible.TinkersSatchel
 
         private static RoR2.Stats.StatDef statsLostItems;
         private static RoR2.Stats.StatDef statsGainItems;
-        private static Queue<Sprite>  QueueLostItemSprite = new Queue<Sprite>();
-        private static Queue<Sprite>  QueueGainedItemSprite = new Queue<Sprite>();
+
+        public struct PlayerItems
+        {
+            public PlayerItems(CharacterBody body, Queue<Sprite> queue)
+            {
+                this.body = body;
+                this.queue=queue;
+            }
+            public CharacterBody body;
+            public  Queue<Sprite> queue;
+        }
+
+        //public static Dictionary<CharacterBody, Queue<Sprite>>  PlayerItems = new Dictionary<CharacterBody, Queue<Sprite>>();
+        //private static Queue<Sprite>  QueueLostItemSprite = new Queue<Sprite>();
+        //private static Queue<Sprite>  QueueGainedItemSprite = new Queue<Sprite>();
+        public static Dictionary<uint, Queue<Sprite>>  QueueLostItemSprite = new Dictionary<uint, Queue<Sprite>>();
+        public static Dictionary<uint, Queue<Sprite>>  QueueGainedItemSprite = new Dictionary<uint, Queue<Sprite>>();
 
 
         public void Awake()
@@ -59,6 +74,8 @@ namespace ThinkInvisible.TinkersSatchel
 
         public Danger()
         {
+            Debug.Log($"[SirHamburger Danger] Called Constructor");
+
             iconPathName = "@TinkersSatchel:Assets/TinkersSatchel/Textures/Icons/danger_on.png";
             iconPathNameDisabled = "@TinkersSatchel:Assets/TinkersSatchel/Textures/Icons/danger_off.png";
 
@@ -103,8 +120,8 @@ namespace ThinkInvisible.TinkersSatchel
               };
             On.RoR2.GlobalEventManager.OnCharacterDeath += (orig, self, damageReport) =>
             {
-                try
-                {
+                //try
+                //{
                     if (!this.IsActiveAndEnabled())
                     {
                         orig(self, damageReport);
@@ -140,7 +157,7 @@ namespace ThinkInvisible.TinkersSatchel
                         currentBody = damageReport.attackerBody;
                         // //Ror2.console.print("master : " + currentPlayerID);
                     }
-
+                    uint pos = 0;
                     int totalItems = damageReport.attackerBody.inventory.GetTotalItemCountOfTier(ItemTier.Tier1);
                     totalItems += damageReport.attackerBody.inventory.GetTotalItemCountOfTier(ItemTier.Tier2);
                     totalItems += damageReport.attackerBody.inventory.GetTotalItemCountOfTier(ItemTier.Tier3);
@@ -159,7 +176,24 @@ namespace ThinkInvisible.TinkersSatchel
                             damageReport.attackerOwnerMaster.GetBody().inventory.GiveRandomItems(1);
                             
                             PlayerStatsComponent.FindBodyStatSheet(damageReport.attackerOwnerMaster.GetBody()).PushStatValue(statsGainItems, 1UL);
-                            QueueGainedItemSprite.Enqueue(ItemCatalog.GetItemDef(damageReport.attackerOwnerMaster.GetBody().inventory.itemAcquisitionOrder[damageReport.attackerOwnerMaster.GetBody().inventory.itemAcquisitionOrder.Count-1]).pickupIconSprite);
+                            //for(int j= 0; j< QueueGainedItemSprite.Count; j++)
+                                if(QueueGainedItemSprite.ContainsKey(damageReport.attackerOwnerMaster.GetBody().netId.Value))
+                                    pos = damageReport.attackerOwnerMaster.GetBody().netId.Value;
+                                else
+                                {
+                                    try{
+                                    QueueGainedItemSprite.Add(damageReport.attackerOwnerMaster.GetBody().netId.Value, new Queue<Sprite>());
+                                    pos = damageReport.attackerOwnerMaster.GetBody().netId.Value;
+                                    }
+                                    catch(Exception e)
+                                    {
+                                        Debug.Log($"[SirHamburger Danger] Error while excecuting : QueueGainedItemSprite.Add(damageReport.attackerBody.netId.Value, new Queue<Sprite>()); (line 203)" );
+                                    }
+                                }
+
+                               
+                            
+                            QueueGainedItemSprite[pos].Enqueue(ItemCatalog.GetItemDef(damageReport.attackerOwnerMaster.GetBody().inventory.itemAcquisitionOrder[damageReport.attackerOwnerMaster.GetBody().inventory.itemAcquisitionOrder.Count-1]).pickupIconSprite);
                         }
 
                         else
@@ -167,7 +201,24 @@ namespace ThinkInvisible.TinkersSatchel
                             damageReport.attackerBody.inventory.GiveRandomItems(1);
                             PlayerStatsComponent.FindBodyStatSheet(damageReport.attackerBody).PushStatValue(statsGainItems, 1UL);
 
-                            QueueGainedItemSprite.Enqueue(ItemCatalog.GetItemDef(damageReport.attackerBody.inventory.itemAcquisitionOrder[damageReport.attackerBody.inventory.itemAcquisitionOrder.Count-1]).pickupIconSprite);
+                                if(QueueGainedItemSprite.ContainsKey(damageReport.attackerBody.netId.Value))
+                                    pos = damageReport.attackerBody.netId.Value;
+                                else
+                                {
+                                    try{
+                                    QueueGainedItemSprite.Add(damageReport.attackerBody.netId.Value, new Queue<Sprite>());
+                                    pos = damageReport.attackerBody.netId.Value;
+                                    }
+                                    catch(Exception e)
+                                    {
+                                        Debug.Log($"[SirHamburger Danger] Error while excecuting : QueueGainedItemSprite.Add(damageReport.attackerBody.netId.Value, new Queue<Sprite>()); (line 203)" );
+                                    }
+                                }
+
+                                
+                            QueueGainedItemSprite[pos].Enqueue(ItemCatalog.GetItemDef(damageReport.attackerBody.inventory.itemAcquisitionOrder[damageReport.attackerBody.inventory.itemAcquisitionOrder.Count-1]).pickupIconSprite);
+                            Debug.Log($"[SirHamburger Danger] length of Queue: " +QueueGainedItemSprite[pos].Count);
+                           // QueueGainedItemSprite.Enqueue(ItemCatalog.GetItemDef(damageReport.attackerBody.inventory.itemAcquisitionOrder[damageReport.attackerBody.inventory.itemAcquisitionOrder.Count-1]).pickupIconSprite);
 
                         }
                         
@@ -179,34 +230,44 @@ namespace ThinkInvisible.TinkersSatchel
                         //    j--;
                         //}
 
-                            if(QueueGainedItemSprite.Count >10)
-                                QueueGainedItemSprite.Dequeue();
+                            if(QueueGainedItemSprite[pos].Count >10)
+                                QueueGainedItemSprite[pos].Dequeue();
                             //int i=QueueGainedItemSprite.Count -1;
-                            int i= 0;
-                            foreach(var element in QueueGainedItemSprite)
+                            //int i= 0;
+                            //foreach(var element in QueueGainedItemSprite[pos])
+                            //{
+                            //    //ModExpBarGroup.AddComponent<Image>();
+                            //    if( MainUIMod.listGainedImages[i].GetComponent<Image>()== null )
+                            //        MainUIMod.listGainedImages[i].AddComponent<Image>();
+                            //    MainUIMod.listGainedImages[i].GetComponent<Image>().sprite = element;
+                            //    i++;
+                            //}
+
+                            string temp = "";
+                            foreach (var element in Danger.QueueGainedItemSprite[pos])
                             {
-                                //ModExpBarGroup.AddComponent<Image>();
-                                if( MainUIMod.listGainedImages[i].GetComponent<Image>()== null )
-                                    MainUIMod.listGainedImages[i].AddComponent<Image>();
-                                MainUIMod.listGainedImages[i].GetComponent<Image>().sprite = element;
-                                i++;
+                                temp += element.name + " ";
+                                
                             }
+                            MainUIMod.AddGainedItemsToPlayers.Invoke(temp, result =>
+                                {
+                                    Debug.Log($"[Sirhamburger] Received response ExampleFuncClientObject: {result}");
+                                });
 
                         counter[Playername.IndexOf(currentBody)] = 0;
 
                     }
-                }
-                catch (Exception e)
-                {
-                    RoR2.Console.print("Error " + e.Message);
-                }
+                //}
+                //catch (Exception e)
+                //{
+                //    RoR2.Console.print(e.Message);
+//
+                //}
                 orig(self, damageReport);
 
             };
             On.RoR2.HealthComponent.TakeDamage += (orig, self, damageinfo) =>
             {
-                try
-                {
                     if (!this.IsActiveAndEnabled())
                     {
                         orig(self, damageinfo);
@@ -243,20 +304,59 @@ namespace ThinkInvisible.TinkersSatchel
                         if (!ItemCatalog.lunarItemList.Contains(itemToRemove) && (ItemCatalog.GetItemDef(itemToRemove).tier!=ItemTier.NoTier))
                         { 
                             ////Ror2.console.print("remove item");
+                            Debug.Log($"[SirHamburger Danger] Pre remove item");
+                            
+                            Debug.Log($"[SirHamburger Danger] Plan to remove: " + ItemCatalog.GetItemDef(itemToRemove).name);
                             self.body.inventory.RemoveItem(itemToRemove, 1);
+                            Debug.Log($"[SirHamburger Danger] PlayerStatsComponent.FindBodyStatSheet");
+
                             PlayerStatsComponent.FindBodyStatSheet(self.body).PushStatValue(statsLostItems, 1UL);
-                            QueueLostItemSprite.Enqueue(ItemCatalog.GetItemDef(itemToRemove).pickupIconSprite);
-                            if(QueueLostItemSprite.Count >10)
-                                QueueLostItemSprite.Dequeue();
-                            //int i=QueueLostItemSprite.Count -1;
-                            int i= 0;
-                            foreach(var element in QueueLostItemSprite)
+                            
+                            uint pos = 50000;
+                            Debug.Log($"[SirHamburger Danger] QueueLostItemSprite.ContainsKey");
+                             if(QueueLostItemSprite.ContainsKey(self.body.netId.Value))
+                                    pos = self.body.netId.Value;
+                                else
+                                {
+                                    try{
+                                    QueueLostItemSprite.Add(self.body.netId.Value, new Queue<Sprite>());
+                                    pos = self.body.netId.Value;
+                                    }
+                                    catch(Exception e)
+                                    {
+                                        Debug.Log($"[SirHamburger Danger] Error in Line 311");
+
+                                    }
+                                }
+                            if(pos==50000)
                             {
-                                if( MainUIMod.listLostImages[i].GetComponent<Image>()== null )
-                                    MainUIMod.listLostImages[i].AddComponent<Image>();
-                                MainUIMod.listLostImages[i].GetComponent<Image>().sprite = element;
-                                i++;
+                                 Debug.Log($"[SirHamburger Danger] Didnt contain Key");
+                                 Debug.Log($"[SirHamburger Danger] netid:" + self.body.netId.Value);
                             }
+
+
+
+                            QueueLostItemSprite[pos].Enqueue(ItemCatalog.GetItemDef(itemToRemove).pickupIconSprite);
+                            if(QueueLostItemSprite.Count >10)
+                                QueueLostItemSprite[pos].Dequeue();
+                            //int i=QueueLostItemSprite.Count -1;
+                            //int i= 0;
+                            //foreach(var element in QueueLostItemSprite[pos])
+                            //{
+                            //    if( MainUIMod.listLostImages[i].GetComponent<Image>()== null )
+                            //        MainUIMod.listLostImages[i].AddComponent<Image>();
+                            //    MainUIMod.listLostImages[i].GetComponent<Image>().sprite = element;
+                            //    i++;
+                            //}
+                            string temp = "";
+                            foreach (var element in Danger.QueueLostItemSprite[pos])
+                            {
+                                temp += element.name + " ";
+                            }
+                            MainUIMod.AddLostItemsOfPlayers.Invoke(temp, result =>
+                                {
+                                    Debug.Log($"[Sirhamburger] Received response ExampleFuncClientObject: {result}");
+                                });
 
                         }
                         else
@@ -266,11 +366,7 @@ namespace ThinkInvisible.TinkersSatchel
 
 
                     }
-                }
-                catch (Exception e)
-                {
 
-                }
                 orig(self, damageinfo);
             };
         }
@@ -278,6 +374,12 @@ namespace ThinkInvisible.TinkersSatchel
         protected override void UnloadBehavior()
         {
 
+        Danger.QueueLostItemSprite = new Dictionary<uint, Queue<Sprite>>();
+        Danger.QueueGainedItemSprite = new Dictionary<uint, Queue<Sprite>>();
+        Danger.statsLostItems=null;
+        Danger.statsGainItems=null;
+ 	    Danger.Playername = new List<CharacterBody>();
+        Danger.counter = new List<int>();
 
         }
     }
