@@ -33,6 +33,7 @@ namespace ThinkInvisible.TinkersSatchel
 {
     public class Danger : Artifact<Danger>
     {
+        public static bool debug = true;
         public override string displayName => "Artifact of Danger";
 
         protected override string NewLangName(string langid = null) => displayName;
@@ -125,12 +126,16 @@ namespace ThinkInvisible.TinkersSatchel
                 {
                     return;
                 }
-
+                if(debug)
+                    Debug.LogError("Line 129");
+                if(damageReport.attackerBody == null)
+                    return;
                 if(damageReport.attackerBody.inventory == null)
                     return;
                 if(damageReport.victimBody.inventory ==null)
                     return;
-
+                if(debug)
+                    Debug.LogError("Line 135");
                 if (damageReport.attackerOwnerMaster != null)
                 {
                     if (!Playername.Contains(damageReport.attackerBody))
@@ -139,7 +144,8 @@ namespace ThinkInvisible.TinkersSatchel
                         counter.Add(0);
                     }
                     
-
+                if(debug)
+                    Debug.LogError("Line 146");
 
                 }
                 if (!Playername.Contains(damageReport.attackerBody))
@@ -148,7 +154,8 @@ namespace ThinkInvisible.TinkersSatchel
                     counter.Add(0);
                 }
                 CharacterBody currentBody;
-
+                if(debug)
+                    Debug.LogError("Line 156");
                 if (damageReport.attackerOwnerMaster != null)
                 {
                     currentBody = damageReport.attackerOwnerMaster.GetBody();
@@ -160,7 +167,8 @@ namespace ThinkInvisible.TinkersSatchel
                     // //Ror2.console.print("master : " + currentPlayerID);
                 }
                 
-
+                if(debug)
+                    Debug.LogError("Line 168");
                 uint pos = 0;
                 int totalItems = damageReport.attackerBody.inventory.GetTotalItemCountOfTier(ItemTier.Tier1);
                 totalItems += damageReport.attackerBody.inventory.GetTotalItemCountOfTier(ItemTier.Tier2);
@@ -168,6 +176,8 @@ namespace ThinkInvisible.TinkersSatchel
                 int calculatesEnemyCountToTrigger = (totalItems - currentStage * 2)*2;
                 if (calculatesEnemyCountToTrigger < 1)
                     calculatesEnemyCountToTrigger = 1;
+                                if(debug)
+                    Debug.LogError("Line 177");
                 //Ror2.console.print("calculatesEnemyCountToTrigger: " + calculatesEnemyCountToTrigger);
                 if (counter[Playername.IndexOf(currentBody)] <= calculatesEnemyCountToTrigger)
                 {
@@ -245,8 +255,8 @@ namespace ThinkInvisible.TinkersSatchel
                             if (element.GetCurrentBody().netId == damageReport.attackerOwnerMaster.GetBody().netId)
                             tempNetworkUser = element;
                         else
-                        if (element.GetCurrentBody().netId == damageReport.attackerBody.netId)
-                            tempNetworkUser = element;
+                            if (element.GetCurrentBody().netId == damageReport.attackerBody.netId)
+                                tempNetworkUser = element;
                     }
                     if (tempNetworkUser == null)
                         Debug.Log($"[Sirhamburger] TempNetworUser == null");
