@@ -123,9 +123,9 @@ namespace ThinkInvisible.TinkersSatchel
 
                 if (!this.IsActiveAndEnabled())
                 {
-                    orig(self, damageReport);
                     return;
                 }
+
                 if(damageReport.attackerBody.inventory == null)
                     return;
                 if(damageReport.victimBody.inventory ==null)
