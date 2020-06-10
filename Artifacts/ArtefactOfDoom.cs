@@ -38,7 +38,7 @@ namespace ArtefactOfDoom
 {
     public class ArtefactOfDoom : Artifact<ArtefactOfDoom>
     {
-        public static bool debug = true;
+        public static bool debug = false;
         public override string displayName => "Artefact of Doom";
 
         protected override string NewLangName(string langid = null) => displayName;
@@ -315,8 +315,24 @@ namespace ArtefactOfDoom
                             lstItemIndex.Add(element);
                         }
                     }
-
+                    double chanceToTrigger=100.0;
+                    if(totalItems<=(ArtefactOfDoomConfig.minItemsPerStage.Value*currentStage))
+                    {
+                        chanceToTrigger = 1.0-(double)(ArtefactOfDoomConfig.minItemsPerStage.Value*currentStage-totalItems)/((double)ArtefactOfDoomConfig.minItemsPerStage.Value*currentStage);
+                        chanceToTrigger*=100;
+                        // Debug.LogError("ArtefactOfDoomConfig.minItemsPerStage.Value: " + ArtefactOfDoomConfig.minItemsPerStage.Value);
+                        //  Debug.LogError("currentStage: " + currentStage);
+                        //  Debug.LogError("currentStage: " + totalItems);
+                        //  
+                        //Debug.LogError("Chance to Trigger: " + chanceToTrigger);
+                    }
+                   
                     var rand = new System.Random();
+                    if(chanceToTrigger<rand.Next(0, 100))
+                    {
+                        Debug.LogWarning("You had Luck");
+                        return;
+                    }
                     int randomPosition = rand.Next(0, lstItemIndex.Count - 1);
                     ItemIndex itemToRemove = lstItemIndex[randomPosition];
                     //TinkersSatchelPlugin.GameObjectReference.AddComponent<Image>();
@@ -325,12 +341,8 @@ namespace ArtefactOfDoom
                     ////Ror2.console.print("preparing to remove");
                     if (!ItemCatalog.lunarItemList.Contains(itemToRemove) && (ItemCatalog.GetItemDef(itemToRemove).tier != ItemTier.NoTier))
                     {
-                        ////Ror2.console.print("remove item");
-                        Debug.Log($"[SirHamburger ArtefactOfDoom] Pre remove item");
 
-                        Debug.Log($"[SirHamburger ArtefactOfDoom] Plan to remove: " + ItemCatalog.GetItemDef(itemToRemove).name);
                         self.body.inventory.RemoveItem(itemToRemove, 1);
-                        Debug.Log($"[SirHamburger ArtefactOfDoom] PlayerStatsComponent.FindBodyStatSheet");
 
                         PlayerStatsComponent.FindBodyStatSheet(self.body).PushStatValue(statsLostItems, 1UL);
 
