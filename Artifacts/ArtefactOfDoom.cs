@@ -34,12 +34,12 @@ using R2API;
 
 
 
-namespace ThinkInvisible.TinkersSatchel
+namespace ArtefactOfDoom
 {
-    public class Danger : Artifact<Danger>
+    public class ArtefactOfDoom : Artifact<ArtefactOfDoom>
     {
         public static bool debug = false;
-        public override string displayName => "Artifact of Danger";
+        public override string displayName => "Artefact of Doom";
 
         protected override string NewLangName(string langid = null) => displayName;
         protected override string NewLangDesc(string langid = null) => "You get items on enemy kills but loose items every time you take damage.";
@@ -62,16 +62,12 @@ namespace ThinkInvisible.TinkersSatchel
         public void Awake()
         {
             Chat.AddMessage("Loaded MyModName!");
-
-
-
-
         }
 
 
-        public Danger()
+        public ArtefactOfDoom()
         {
-            Debug.Log($"[SirHamburger Danger] Called Constructor");
+            Debug.Log($"[SirHamburger ArtefactOfDoom] Called Constructor");
 
             iconPathName = "@TinkersSatchel:Assets/TinkersSatchel/Textures/Icons/danger_on.png";
             iconPathNameDisabled = "@TinkersSatchel:Assets/TinkersSatchel/Textures/Icons/danger_off.png";
@@ -228,14 +224,14 @@ namespace ThinkInvisible.TinkersSatchel
                             }
                             catch (Exception e)
                             {
-                                Debug.Log($"[SirHamburger Danger] Error while excecuting : QueueGainedItemSprite.Add(damageReport.attackerBody.netId.Value, new Queue<Sprite>()); (line 203)");
+                                Debug.Log($"[SirHamburger ArtefactOfDoom] Error while excecuting : QueueGainedItemSprite.Add(damageReport.attackerBody.netId.Value, new Queue<Sprite>()); (line 203)");
                             }
                         }
 
 
 
                         QueueGainedItemSprite[pos].Enqueue(ItemCatalog.GetItemDef(damageReport.attackerBody.inventory.itemAcquisitionOrder[damageReport.attackerBody.inventory.itemAcquisitionOrder.Count - 1]));
-                        Debug.Log($"[SirHamburger Danger] length of Queue: " + QueueGainedItemSprite[pos].Count);
+                        Debug.Log($"[SirHamburger ArtefactOfDoom] length of Queue: " + QueueGainedItemSprite[pos].Count);
 
                     }
 
@@ -245,7 +241,7 @@ namespace ThinkInvisible.TinkersSatchel
                     Debug.Log("[--------SirHamburger------] Body net id: " + damageReport.attackerBody.netId.Value);
 
                     string temp = "";
-                    foreach (var element in Danger.QueueGainedItemSprite[pos])
+                    foreach (var element in ArtefactOfDoom.QueueGainedItemSprite[pos])
                     {
                         temp += element.name + " ";
                     }
@@ -264,7 +260,7 @@ namespace ThinkInvisible.TinkersSatchel
                     if (tempNetworkUser == null)
                         Debug.Log($"[Sirhamburger] TempNetworUser == null");
 
-                    MainUIMod.AddGainedItemsToPlayers.Invoke(temp, result =>
+                    ArtefactOfDoomUI.AddGainedItemsToPlayers.Invoke(temp, result =>
                         {
                             Debug.Log($"[Sirhamburger] addet items: {result}");
                         }, tempNetworkUser);
@@ -323,16 +319,16 @@ namespace ThinkInvisible.TinkersSatchel
                     if (!ItemCatalog.lunarItemList.Contains(itemToRemove) && (ItemCatalog.GetItemDef(itemToRemove).tier != ItemTier.NoTier))
                     {
                         ////Ror2.console.print("remove item");
-                        Debug.Log($"[SirHamburger Danger] Pre remove item");
+                        Debug.Log($"[SirHamburger ArtefactOfDoom] Pre remove item");
 
-                        Debug.Log($"[SirHamburger Danger] Plan to remove: " + ItemCatalog.GetItemDef(itemToRemove).name);
+                        Debug.Log($"[SirHamburger ArtefactOfDoom] Plan to remove: " + ItemCatalog.GetItemDef(itemToRemove).name);
                         self.body.inventory.RemoveItem(itemToRemove, 1);
-                        Debug.Log($"[SirHamburger Danger] PlayerStatsComponent.FindBodyStatSheet");
+                        Debug.Log($"[SirHamburger ArtefactOfDoom] PlayerStatsComponent.FindBodyStatSheet");
 
                         PlayerStatsComponent.FindBodyStatSheet(self.body).PushStatValue(statsLostItems, 1UL);
 
                         uint pos = 50000;
-                        Debug.Log($"[SirHamburger Danger] QueueLostItemSprite.ContainsKey");
+                        Debug.Log($"[SirHamburger ArtefactOfDoom] QueueLostItemSprite.ContainsKey");
                         if (QueueLostItemSprite.ContainsKey(self.body.netId.Value))
                             pos = self.body.netId.Value;
                         else
@@ -344,14 +340,14 @@ namespace ThinkInvisible.TinkersSatchel
                             }
                             catch (Exception e)
                             {
-                                Debug.Log($"[SirHamburger Danger] Error in Line 311");
+                                Debug.Log($"[SirHamburger ArtefactOfDoom] Error in Line 311");
 
                             }
                         }
                         if (pos == 50000)
                         {
-                            Debug.Log($"[SirHamburger Danger] Didnt contain Key");
-                            Debug.Log($"[SirHamburger Danger] netid:" + self.body.netId.Value);
+                            Debug.Log($"[SirHamburger ArtefactOfDoom] Didnt contain Key");
+                            Debug.Log($"[SirHamburger ArtefactOfDoom] netid:" + self.body.netId.Value);
                         }
 
 
@@ -363,14 +359,14 @@ namespace ThinkInvisible.TinkersSatchel
                         //int i= 0;
                         //foreach(var element in QueueLostItemSprite[pos])
                         //{
-                        //    if( MainUIMod.listLostImages[i].GetComponent<Image>()== null )
-                        //        MainUIMod.listLostImages[i].AddComponent<Image>();
-                        //    MainUIMod.listLostImages[i].GetComponent<Image>().sprite = element;
+                        //    if( ArtefactOfDoomUI.listLostImages[i].GetComponent<Image>()== null )
+                        //        ArtefactOfDoomUI.listLostImages[i].AddComponent<Image>();
+                        //    ArtefactOfDoomUI.listLostImages[i].GetComponent<Image>().sprite = element;
                         //    i++;
                         //}
                         Debug.Log($"[--------SirHamburger------] self body user ID: " + self.body.netId.Value);
                         string temp = "";
-                        foreach (var element in Danger.QueueLostItemSprite[pos])
+                        foreach (var element in ArtefactOfDoom.QueueLostItemSprite[pos])
                         {
                             temp += element.name + " ";
                         }
@@ -385,7 +381,7 @@ namespace ThinkInvisible.TinkersSatchel
                         if (LockNetworkUser[tempNetworkUser] == false)
                         {
                             LockNetworkUser[tempNetworkUser] = true;
-                            MainUIMod.AddLostItemsOfPlayers.Invoke(temp, result =>
+                            ArtefactOfDoomUI.AddLostItemsOfPlayers.Invoke(temp, result =>
                             {
                                 LockNetworkUser[tempNetworkUser] = false;
                                 Debug.Log($"[Sirhamburger] added items: {result}");
@@ -397,7 +393,7 @@ namespace ThinkInvisible.TinkersSatchel
                         //        System.Threading.Thread.Sleep(100);
                         //    }
                         //    LockNetworkUser[tempNetworkUser]=true;
-                        //    MainUIMod.AddLostItemsOfPlayers.Invoke(temp, result =>
+                        //    ArtefactOfDoomUI.AddLostItemsOfPlayers.Invoke(temp, result =>
                         //    {
                         //        LockNetworkUser[tempNetworkUser]=false;
                         //        Debug.Log($"[Sirhamburger] added items: {result}");
@@ -422,12 +418,12 @@ namespace ThinkInvisible.TinkersSatchel
         protected override void UnloadBehavior()
         {
 
-            Danger.QueueLostItemSprite = new Dictionary<uint, Queue<ItemDef>>();
-            Danger.QueueGainedItemSprite = new Dictionary<uint, Queue<ItemDef>>();
-            Danger.statsLostItems = null;
-            Danger.statsGainItems = null;
-            Danger.Playername = new List<CharacterBody>();
-            Danger.counter = new List<int>();
+            ArtefactOfDoom.QueueLostItemSprite = new Dictionary<uint, Queue<ItemDef>>();
+            ArtefactOfDoom.QueueGainedItemSprite = new Dictionary<uint, Queue<ItemDef>>();
+            ArtefactOfDoom.statsLostItems = null;
+            ArtefactOfDoom.statsGainItems = null;
+            ArtefactOfDoom.Playername = new List<CharacterBody>();
+            ArtefactOfDoom.counter = new List<int>();
 
         }
     }

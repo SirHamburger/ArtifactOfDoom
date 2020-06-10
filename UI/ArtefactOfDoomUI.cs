@@ -33,13 +33,13 @@ using RoR2;
 */
 #endregion
 
-namespace ThinkInvisible.TinkersSatchel
+namespace ArtefactOfDoom
 {
 
     [R2API.Utils.R2APISubmoduleDependency("ResourcesAPI")]
     [BepInPlugin("com.ohway.UIMod", "UI Modifier", "1.0")]
     [BepInDependency(MiniRpcPlugin.Dependency)]
-    public class MainUIMod : BaseUnityPlugin
+    public class ArtefactOfDoomUI : BaseUnityPlugin
     {
         public GameObject ModCanvas = null;
         void Awake()
@@ -252,9 +252,9 @@ namespace ThinkInvisible.TinkersSatchel
                     {
                         Debug.Log($"[SirHamburgerDebug] Adding: " + element);
                         //ModExpBarGroup.AddComponent<Image>();
-                        if (MainUIMod.listGainedImages[i].GetComponent<Image>() == null)
-                            MainUIMod.listGainedImages[i].AddComponent<Image>();
-                        MainUIMod.listGainedImages[i].GetComponent<Image>().sprite = ItemCatalog.GetItemDef(ItemCatalog.FindItemIndex(element)).pickupIconSprite;
+                        if (ArtefactOfDoomUI.listGainedImages[i].GetComponent<Image>() == null)
+                            ArtefactOfDoomUI.listGainedImages[i].AddComponent<Image>();
+                        ArtefactOfDoomUI.listGainedImages[i].GetComponent<Image>().sprite = ItemCatalog.GetItemDef(ItemCatalog.FindItemIndex(element)).pickupIconSprite;
 
                         i++;
                         
@@ -277,9 +277,9 @@ namespace ThinkInvisible.TinkersSatchel
                     {
                         Debug.Log($"[SirHamburgerDebug] Adding: " + element);
                         //ModExpBarGroup.AddComponent<Image>();
-                        if (MainUIMod.listLostImages[i].GetComponent<Image>() == null)
-                            MainUIMod.listLostImages[i].AddComponent<Image>();
-                        MainUIMod.listLostImages[i].GetComponent<Image>().sprite = ItemCatalog.GetItemDef(ItemCatalog.FindItemIndex(element)).pickupIconSprite;
+                        if (ArtefactOfDoomUI.listLostImages[i].GetComponent<Image>() == null)
+                            ArtefactOfDoomUI.listLostImages[i].AddComponent<Image>();
+                        ArtefactOfDoomUI.listLostImages[i].GetComponent<Image>().sprite = ItemCatalog.GetItemDef(ItemCatalog.FindItemIndex(element)).pickupIconSprite;
 
                         Debug.LogError("The Sprite couldn't be loaded");
                         i++;
