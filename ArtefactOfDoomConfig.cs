@@ -32,6 +32,8 @@ namespace ArtefactOfDoom {
         public static ConfigEntry<int> averageItemsPerStage;
         public static ConfigEntry<int> minItemsPerStage;
         public static ConfigEntry<int> maxItemsPerStage;
+        public static ConfigEntry<double> exponentailFactorToCalculateSumOfLostItems;
+
 
 
 
@@ -58,6 +60,8 @@ namespace ArtefactOfDoom {
                 "The expected minimum item count per stage. If you have less Items than that you'll have a decreased chance that you loose items")); 
             maxItemsPerStage = cfgFile.Bind(new ConfigDefinition("Global.VanillaTweaks", "maxItemsPerStage"), 7, new ConfigDescription(
                 "The expected maximum item count per stage. If you have more Items than that you'll have a chance to loose more than one item per hit")); 
+            exponentailFactorToCalculateSumOfLostItems = cfgFile.Bind(new ConfigDefinition("Global.VanillaTweaks", "exponentailFactorToCalculateSumOfLostItems"), 1.5, new ConfigDescription(
+                "The exponent to Calculate how many items you'll loose if you're over maxItemsPerStage")); 
             
             int longestName = 0;
             foreach(ItemBoilerplate x in masterItemList) {

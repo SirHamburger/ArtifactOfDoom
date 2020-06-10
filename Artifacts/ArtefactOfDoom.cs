@@ -307,46 +307,52 @@ namespace ArtefactOfDoom
                 if (self.body.isPlayerControlled && (totalItems > 0) && self.name != damageinfo.attacker.name)
                 {
                     //Ror2.console.print("inif");
-                    List<ItemIndex> lstItemIndex = new List<ItemIndex>();
+                    Dictionary<ItemIndex,int> lstItemIndex = new Dictionary<ItemIndex,int>();
+                    List<ItemIndex> index = new List<ItemIndex>();
                     foreach (var element in ItemCatalog.allItems)
                     {
                         if (self.body.inventory.GetItemCount(element) > 0)
                         {
-                            lstItemIndex.Add(element);
+                            lstItemIndex.Add(element,self.body.inventory.GetItemCount(element));
+                            index.Add(element);
                         }
                     }
-                    double chanceToTrigger=100.0;
-                    if(totalItems<=(ArtefactOfDoomConfig.minItemsPerStage.Value*currentStage))
+                    double chanceToTrigger = 100.0;
+                    if (totalItems <= (ArtefactOfDoomConfig.minItemsPerStage.Value * currentStage))
                     {
-                        chanceToTrigger = 1.0-(double)(ArtefactOfDoomConfig.minItemsPerStage.Value*currentStage-totalItems)/((double)ArtefactOfDoomConfig.minItemsPerStage.Value*currentStage);
-                        chanceToTrigger*=100;
+                        chanceToTrigger = 1.0 - (double)(ArtefactOfDoomConfig.minItemsPerStage.Value * currentStage - totalItems) / ((double)ArtefactOfDoomConfig.minItemsPerStage.Value * currentStage);
+                        chanceToTrigger *= 100;
                         // Debug.LogError("ArtefactOfDoomConfig.minItemsPerStage.Value: " + ArtefactOfDoomConfig.minItemsPerStage.Value);
                         //  Debug.LogError("currentStage: " + currentStage);
                         //  Debug.LogError("currentStage: " + totalItems);
                         //  
                         //Debug.LogError("Chance to Trigger: " + chanceToTrigger);
                     }
-                   
+
                     var rand = new System.Random();
-                    if(chanceToTrigger<rand.Next(0, 100))
+                    for (int i = 0; i < self.body.inventory.GetItemCount(ItemIndex.Clover); i++)
+                        if (chanceToTrigger < rand.Next(0, 99))
+                        {
+                            Debug.LogWarning("You had Luck");
+                            return;
+                        }
+                    chanceToTrigger = 100.0;
+                    if (totalItems > (ArtefactOfDoomConfig.maxItemsPerStage.Value * currentStage))
                     {
-                        Debug.LogWarning("You had Luck");
-                        return;
+                        chanceToTrigger = Math.Pow((1 + (double)(totalItems - ArtefactOfDoomConfig.maxItemsPerStage.Value * currentStage) / ((double)ArtefactOfDoomConfig.maxItemsPerStage.Value * currentStage)), ArtefactOfDoomConfig.exponentailFactorToCalculateSumOfLostItems.Value);
+                        chanceToTrigger *= 100;
+                        // Debug.LogError("ArtefactOfDoomConfig.minItemsPerStage.Value: " + ArtefactOfDoomConfig.minItemsPerStage.Value);
+                        //  Debug.LogError("currentStage: " + currentStage);
+                        //  Debug.LogError("currentStage: " + totalItems);
+                        //  
+                        //Debug.LogError("Chance to Trigger: " + chanceToTrigger);
                     }
-                    int randomPosition = rand.Next(0, lstItemIndex.Count - 1);
-                    ItemIndex itemToRemove = lstItemIndex[randomPosition];
-                    //TinkersSatchelPlugin.GameObjectReference.AddComponent<Image>();
-                    //TinkersSatchelPlugin.GameObjectReference.GetComponent<Image>().sprite = ItemCatalog.GetItemDef(itemToRemove).pickupIconSprite;
+                    int lostItems = 0;
 
-                    ////Ror2.console.print("preparing to remove");
-                    if (!ItemCatalog.lunarItemList.Contains(itemToRemove) && (ItemCatalog.GetItemDef(itemToRemove).tier != ItemTier.NoTier))
+                    uint pos = 50000;
+
+                    while (chanceToTrigger > 0)
                     {
-
-                        self.body.inventory.RemoveItem(itemToRemove, 1);
-
-                        PlayerStatsComponent.FindBodyStatSheet(self.body).PushStatValue(statsLostItems, 1UL);
-
-                        uint pos = 50000;
                         Debug.Log($"[SirHamburger ArtefactOfDoom] QueueLostItemSprite.ContainsKey");
                         if (QueueLostItemSprite.ContainsKey(self.body.netId.Value))
                             pos = self.body.netId.Value;
@@ -368,65 +374,94 @@ namespace ArtefactOfDoom
                             Debug.Log($"[SirHamburger ArtefactOfDoom] Didnt contain Key");
                             Debug.Log($"[SirHamburger ArtefactOfDoom] netid:" + self.body.netId.Value);
                         }
-
-
-
-                        QueueLostItemSprite[pos].Enqueue(ItemCatalog.GetItemDef(itemToRemove));
-                        if (QueueLostItemSprite[pos].Count > 10)
-                            QueueLostItemSprite[pos].Dequeue();
-                        //int i=QueueLostItemSprite.Count -1;
-                        //int i= 0;
-                        //foreach(var element in QueueLostItemSprite[pos])
-                        //{
-                        //    if( ArtefactOfDoomUI.listLostImages[i].GetComponent<Image>()== null )
-                        //        ArtefactOfDoomUI.listLostImages[i].AddComponent<Image>();
-                        //    ArtefactOfDoomUI.listLostImages[i].GetComponent<Image>().sprite = element;
-                        //    i++;
-                        //}
-                        Debug.Log($"[--------SirHamburger------] self body user ID: " + self.body.netId.Value);
-                        string temp = "";
-                        foreach (var element in ArtefactOfDoom.QueueLostItemSprite[pos])
+                        if (chanceToTrigger < rand.Next(0, 99))
                         {
-                            temp += element.name + " ";
+                            break;
                         }
-                        NetworkUser tempNetworkUser = null;
-                        foreach (var element in NetworkUser.readOnlyInstancesList)
+                        lostItems++;
+                        int randomPosition = rand.Next(0, lstItemIndex.Count - 1);
+                        ItemIndex itemToRemove= index[randomPosition];
+
+                        while((lstItemIndex[itemToRemove] == 0))
                         {
-                            if (element.GetCurrentBody().netId == self.body.netId)
-                                tempNetworkUser = element;
+                            randomPosition = rand.Next(0, lstItemIndex.Count - 1);
+                            itemToRemove= index[randomPosition];
                         }
-                        if (!LockNetworkUser.ContainsKey(tempNetworkUser))
-                            LockNetworkUser.Add(tempNetworkUser, false);
-                        if (LockNetworkUser[tempNetworkUser] == false)
+                        lstItemIndex[itemToRemove]--;
+                        //TinkersSatchelPlugin.GameObjectReference.AddComponent<Image>();
+                        //TinkersSatchelPlugin.GameObjectReference.GetComponent<Image>().sprite = ItemCatalog.GetItemDef(itemToRemove).pickupIconSprite;
+
+                        ////Ror2.console.print("preparing to remove");
+                        if (!ItemCatalog.lunarItemList.Contains(itemToRemove) && (ItemCatalog.GetItemDef(itemToRemove).tier != ItemTier.NoTier))
                         {
-                            LockNetworkUser[tempNetworkUser] = true;
-                            ArtefactOfDoomUI.AddLostItemsOfPlayers.Invoke(temp, result =>
-                            {
-                                LockNetworkUser[tempNetworkUser] = false;
-                                Debug.Log($"[Sirhamburger] added items: {result}");
-                            }, tempNetworkUser);
-                        }
-                        //else{
-                        //    while(LockNetworkUser[tempNetworkUser])
-                        //    {
-                        //        System.Threading.Thread.Sleep(100);
-                        //    }
-                        //    LockNetworkUser[tempNetworkUser]=true;
-                        //    ArtefactOfDoomUI.AddLostItemsOfPlayers.Invoke(temp, result =>
-                        //    {
-                        //        LockNetworkUser[tempNetworkUser]=false;
-                        //        Debug.Log($"[Sirhamburger] added items: {result}");
-                        //    }, tempNetworkUser);
-                        //}
+
+                            self.body.inventory.RemoveItem(itemToRemove, 1);
+
+                            PlayerStatsComponent.FindBodyStatSheet(self.body).PushStatValue(statsLostItems, 1UL);
 
 
+
+
+
+                            QueueLostItemSprite[pos].Enqueue(ItemCatalog.GetItemDef(itemToRemove));
+                            if (QueueLostItemSprite[pos].Count > 10)
+                                QueueLostItemSprite[pos].Dequeue();
+                            //int i=QueueLostItemSprite.Count -1;
+                            //int i= 0;
+                            //foreach(var element in QueueLostItemSprite[pos])
+                            //{
+                            //    if( ArtefactOfDoomUI.listLostImages[i].GetComponent<Image>()== null )
+                            //        ArtefactOfDoomUI.listLostImages[i].AddComponent<Image>();
+                            //    ArtefactOfDoomUI.listLostImages[i].GetComponent<Image>().sprite = element;
+                            //    i++;
+                            //}
+
+                            //else{
+                            //    while(LockNetworkUser[tempNetworkUser])
+                            //    {
+                            //        System.Threading.Thread.Sleep(100);
+                            //    }
+                            //    LockNetworkUser[tempNetworkUser]=true;
+                            //    ArtefactOfDoomUI.AddLostItemsOfPlayers.Invoke(temp, result =>
+                            //    {
+                            //        LockNetworkUser[tempNetworkUser]=false;
+                            //        Debug.Log($"[Sirhamburger] added items: {result}");
+                            //    }, tempNetworkUser);
+                            //}
+
+
+                        }
+                        else
+                        {
+
+                            //Ror2.console.print("lunar");
+                        }
+                        chanceToTrigger -= 100;
                     }
-                    else
+                    Debug.Log($"[--------SirHamburger------] self body user ID: " + self.body.netId.Value);
+                    string temp = "";
+                    foreach (var element in ArtefactOfDoom.QueueLostItemSprite[pos])
                     {
-
-                        //Ror2.console.print("lunar");
+                        temp += element.name + " ";
                     }
-
+                    NetworkUser tempNetworkUser = null;
+                    foreach (var element in NetworkUser.readOnlyInstancesList)
+                    {
+                        if (element.GetCurrentBody().netId == self.body.netId)
+                            tempNetworkUser = element;
+                    }
+                    if (!LockNetworkUser.ContainsKey(tempNetworkUser))
+                        LockNetworkUser.Add(tempNetworkUser, false);
+                    if (LockNetworkUser[tempNetworkUser] == false)
+                    {
+                        LockNetworkUser[tempNetworkUser] = true;
+                        ArtefactOfDoomUI.AddLostItemsOfPlayers.Invoke(temp, result =>
+                        {
+                            LockNetworkUser[tempNetworkUser] = false;
+                            Debug.Log($"[Sirhamburger] added items: {result}");
+                        }, tempNetworkUser);
+                    }
+                    Debug.LogWarning("You lost " + lostItems + "Items");
 
                 }
 
