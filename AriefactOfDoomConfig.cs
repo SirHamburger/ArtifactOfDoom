@@ -10,15 +10,15 @@ using Path = System.IO.Path;
 using TILER2;
 using static TILER2.MiscUtil;
 
-namespace ArtefactOfDoom {
+namespace ArtifactOfDoom {
     [BepInPlugin(ModGuid, ModName, ModVer)]
     [BepInDependency(R2API.R2API.PluginGUID, R2API.R2API.PluginVersion)]
     [BepInDependency(TILER2Plugin.ModGuid, "1.3.0")]
     [R2APISubmoduleDependency(nameof(ItemAPI), nameof(LanguageAPI), nameof(ResourcesAPI), nameof(PlayerAPI), nameof(PrefabAPI))]
-    public class ArtefactOfDoomConfig:BaseUnityPlugin {
+    public class ArtifactOfDoomConfig:BaseUnityPlugin {
         public const string ModVer = "0.8.0";
-        public const string ModName = "ArtefactOfDoom";
-        public const string ModGuid = "com.SirHamburger.ArtefactOfDoom";
+        public const string ModName = "ArtifactOfDoom";
+        public const string ModGuid = "com.SirHamburger.ArtifactOfDoom";
         private static Transform HUDroot = null;
 
         public static GameObject GameObjectReference;
@@ -42,14 +42,14 @@ namespace ArtefactOfDoom {
         private void Awake() {
             _logger = Logger;
 
-            using(var stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("ArtefactOfDoom.tinkerssatchel_assets")) {
+            using(var stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("ArtifactOfDoom.tinkerssatchel_assets")) {
                 var bundle = AssetBundle.LoadFromStream(stream);
                 var provider = new AssetBundleResourcesProvider("@TinkersSatchel", bundle);
                 ResourcesAPI.AddProvider(provider);
             }
             cfgFile = new ConfigFile(Path.Combine(Paths.ConfigPath, ModGuid + ".cfg"), true);
 
-            masterItemList = ItemBoilerplate.InitAll("ArtefactOfDoom");
+            masterItemList = ItemBoilerplate.InitAll("ArtifactOfDoom");
             foreach(ItemBoilerplate x in masterItemList) {
                 x.SetupConfig(cfgFile);
             }
@@ -81,7 +81,7 @@ namespace ArtefactOfDoom {
                 x.SetupBehavior();
             }
             //On.RoR2.UI.HUD.Awake +=myFunc
-            ArtefactOfDoomUI test = new ArtefactOfDoomUI();
+            ArtifactOfDoomUI test = new ArtifactOfDoomUI();
         }
 
         private void OnDestroy()

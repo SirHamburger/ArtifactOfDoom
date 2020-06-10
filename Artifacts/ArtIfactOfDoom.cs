@@ -34,12 +34,12 @@ using R2API;
 
 
 
-namespace ArtefactOfDoom
+namespace ArtifactOfDoom
 {
-    public class ArtefactOfDoom : Artifact<ArtefactOfDoom>
+    public class ArtifactOfDoom : Artifact<ArtifactOfDoom>
     {
         public static bool debug = false;
-        public override string displayName => "Artefact of Doom";
+        public override string displayName => "Artifact of Doom";
 
         protected override string NewLangName(string langid = null) => displayName;
         protected override string NewLangDesc(string langid = null) => "You get items on enemy kills but loose items every time you take damage.";
@@ -65,7 +65,7 @@ namespace ArtefactOfDoom
         }
 
 
-        public ArtefactOfDoom()
+        public ArtifactOfDoom()
         {
 
             iconPathName = "@TinkersSatchel:Assets/TinkersSatchel/Textures/Icons/danger_on.png";
@@ -166,7 +166,7 @@ namespace ArtefactOfDoom
                 int totalItems = damageReport.attackerBody.inventory.GetTotalItemCountOfTier(ItemTier.Tier1);
                 totalItems += damageReport.attackerBody.inventory.GetTotalItemCountOfTier(ItemTier.Tier2);
                 totalItems += damageReport.attackerBody.inventory.GetTotalItemCountOfTier(ItemTier.Tier3);
-                int calculatesEnemyCountToTrigger = (totalItems - currentStage * ArtefactOfDoomConfig.averageItemsPerStage.Value) * 2;
+                int calculatesEnemyCountToTrigger = (totalItems - currentStage * ArtifactOfDoomConfig.averageItemsPerStage.Value) * 2;
 
                 if (calculatesEnemyCountToTrigger < 1)
                     calculatesEnemyCountToTrigger = 1;
@@ -219,7 +219,7 @@ namespace ArtefactOfDoom
                             }
                             catch (Exception e)
                             {
-                                Debug.Log($"[SirHamburger ArtefactOfDoom] Error while excecuting : QueueGainedItemSprite.Add(damageReport.attackerBody.netId.Value, new Queue<Sprite>()); (line 203)");
+                                Debug.Log($"[SirHamburger ArtifactOfDoom] Error while excecuting : QueueGainedItemSprite.Add(damageReport.attackerBody.netId.Value, new Queue<Sprite>()); (line 203)");
                             }
                         }
 
@@ -234,7 +234,7 @@ namespace ArtefactOfDoom
 
 
                     string temp = "";
-                    foreach (var element in ArtefactOfDoom.QueueGainedItemSprite[pos])
+                    foreach (var element in ArtifactOfDoom.QueueGainedItemSprite[pos])
                     {
                         temp += element.name + " ";
                     }
@@ -243,14 +243,26 @@ namespace ArtefactOfDoom
                     foreach (var element in NetworkUser.readOnlyInstancesList)
                     {
                         if (damageReport.attackerOwnerMaster != null)
+                        {
                             if (element.GetCurrentBody().netId == damageReport.attackerOwnerMaster.GetBody().netId)
+                            {
                                 tempNetworkUser = element;
-                            else
+                            }
+
+                        }
+                        else
+                        {
                             if (element.GetCurrentBody().netId == damageReport.attackerBody.netId)
+                            {
                                 tempNetworkUser = element;
+                            }
+                        }
                     }
 
-                    ArtefactOfDoomUI.AddGainedItemsToPlayers.Invoke(temp, result =>
+                    if (tempNetworkUser == null)
+                        Debug.LogError("--------------------------------tempNetworkUser==null---------------------------");
+
+                    ArtifactOfDoomUI.AddGainedItemsToPlayers.Invoke(temp, result =>
                         {
                         }, tempNetworkUser);
 
@@ -268,6 +280,8 @@ namespace ArtefactOfDoom
 
                     return;
                 }
+                if(self.body ==null)
+                    return;
                 if (self.body.inventory == null)
                     return;
 
@@ -277,20 +291,20 @@ namespace ArtefactOfDoom
 
                 if (self.body.isPlayerControlled && (totalItems > 0) && self.name != damageinfo.attacker.name)
                 {
-                    Dictionary<ItemIndex,int> lstItemIndex = new Dictionary<ItemIndex,int>();
+                    Dictionary<ItemIndex, int> lstItemIndex = new Dictionary<ItemIndex, int>();
                     List<ItemIndex> index = new List<ItemIndex>();
                     foreach (var element in ItemCatalog.allItems)
                     {
                         if (self.body.inventory.GetItemCount(element) > 0)
                         {
-                            lstItemIndex.Add(element,self.body.inventory.GetItemCount(element));
+                            lstItemIndex.Add(element, self.body.inventory.GetItemCount(element));
                             index.Add(element);
                         }
                     }
                     double chanceToTrigger = 100.0;
-                    if (totalItems <= (ArtefactOfDoomConfig.minItemsPerStage.Value * currentStage))
+                    if (totalItems <= (ArtifactOfDoomConfig.minItemsPerStage.Value * currentStage))
                     {
-                        chanceToTrigger = 1.0 - (double)(ArtefactOfDoomConfig.minItemsPerStage.Value * currentStage - totalItems) / ((double)ArtefactOfDoomConfig.minItemsPerStage.Value * currentStage);
+                        chanceToTrigger = 1.0 - (double)(ArtifactOfDoomConfig.minItemsPerStage.Value * currentStage - totalItems) / ((double)ArtifactOfDoomConfig.minItemsPerStage.Value * currentStage);
                         chanceToTrigger *= 100;
                     }
 
@@ -301,9 +315,9 @@ namespace ArtefactOfDoom
                             return;
                         }
                     chanceToTrigger = 100.0;
-                    if (totalItems > (ArtefactOfDoomConfig.maxItemsPerStage.Value * currentStage))
+                    if (totalItems > (ArtifactOfDoomConfig.maxItemsPerStage.Value * currentStage))
                     {
-                        chanceToTrigger = Math.Pow((1 + (double)(totalItems - ArtefactOfDoomConfig.maxItemsPerStage.Value * currentStage) / ((double)ArtefactOfDoomConfig.maxItemsPerStage.Value * currentStage)), ArtefactOfDoomConfig.exponentailFactorToCalculateSumOfLostItems.Value);
+                        chanceToTrigger = Math.Pow((1 + (double)(totalItems - ArtifactOfDoomConfig.maxItemsPerStage.Value * currentStage) / ((double)ArtifactOfDoomConfig.maxItemsPerStage.Value * currentStage)), ArtifactOfDoomConfig.exponentailFactorToCalculateSumOfLostItems.Value);
                         chanceToTrigger *= 100;
 
                     }
@@ -324,7 +338,7 @@ namespace ArtefactOfDoom
                             }
                             catch (Exception e)
                             {
-                                Debug.Log($"[SirHamburger ArtefactOfDoom] Error in Line 311");
+                                Debug.Log($"[SirHamburger ArtifactOfDoom] Error in Line 311");
 
                             }
                         }
@@ -334,12 +348,12 @@ namespace ArtefactOfDoom
                         }
                         lostItems++;
                         int randomPosition = rand.Next(0, lstItemIndex.Count - 1);
-                        ItemIndex itemToRemove= index[randomPosition];
+                        ItemIndex itemToRemove = index[randomPosition];
 
-                        while((lstItemIndex[itemToRemove] == 0))
+                        while ((lstItemIndex[itemToRemove] == 0))
                         {
                             randomPosition = rand.Next(0, lstItemIndex.Count - 1);
-                            itemToRemove= index[randomPosition];
+                            itemToRemove = index[randomPosition];
                         }
                         lstItemIndex[itemToRemove]--;
 
@@ -367,7 +381,7 @@ namespace ArtefactOfDoom
                         chanceToTrigger -= 100;
                     }
                     string temp = "";
-                    foreach (var element in ArtefactOfDoom.QueueLostItemSprite[pos])
+                    foreach (var element in ArtifactOfDoom.QueueLostItemSprite[pos])
                     {
                         temp += element.name + " ";
                     }
@@ -377,12 +391,14 @@ namespace ArtefactOfDoom
                         if (element.GetCurrentBody().netId == self.body.netId)
                             tempNetworkUser = element;
                     }
+                    if (tempNetworkUser == null)
+                        Debug.LogError("--------------------------------tempNetworkUser(lostitems)==null---------------------------");
                     if (!LockNetworkUser.ContainsKey(tempNetworkUser))
                         LockNetworkUser.Add(tempNetworkUser, false);
                     if (LockNetworkUser[tempNetworkUser] == false)
                     {
                         LockNetworkUser[tempNetworkUser] = true;
-                        ArtefactOfDoomUI.AddLostItemsOfPlayers.Invoke(temp, result =>
+                        ArtifactOfDoomUI.AddLostItemsOfPlayers.Invoke(temp, result =>
                         {
                             LockNetworkUser[tempNetworkUser] = false;
                         }, tempNetworkUser);
@@ -412,12 +428,12 @@ namespace ArtefactOfDoom
         protected override void UnloadBehavior()
         {
 
-            ArtefactOfDoom.QueueLostItemSprite = new Dictionary<uint, Queue<ItemDef>>();
-            ArtefactOfDoom.QueueGainedItemSprite = new Dictionary<uint, Queue<ItemDef>>();
-            ArtefactOfDoom.statsLostItems = null;
-            ArtefactOfDoom.statsGainItems = null;
-            ArtefactOfDoom.Playername = new List<CharacterBody>();
-            ArtefactOfDoom.counter = new List<int>();
+            ArtifactOfDoom.QueueLostItemSprite = new Dictionary<uint, Queue<ItemDef>>();
+            ArtifactOfDoom.QueueGainedItemSprite = new Dictionary<uint, Queue<ItemDef>>();
+            ArtifactOfDoom.statsLostItems = null;
+            ArtifactOfDoom.statsGainItems = null;
+            ArtifactOfDoom.Playername = new List<CharacterBody>();
+            ArtifactOfDoom.counter = new List<int>();
 
         }
     }

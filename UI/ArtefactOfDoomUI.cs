@@ -33,13 +33,13 @@ using RoR2;
 */
 #endregion
 
-namespace ArtefactOfDoom
+namespace ArtifactOfDoom
 {
 
     [R2API.Utils.R2APISubmoduleDependency("ResourcesAPI")]
     [BepInPlugin("com.ohway.UIMod", "UI Modifier", "1.0")]
     [BepInDependency(MiniRpcPlugin.Dependency)]
-    public class ArtefactOfDoomUI : BaseUnityPlugin
+    public class ArtifactOfDoomUI : BaseUnityPlugin
     {
         public GameObject ModCanvas = null;
         void Awake()
@@ -183,8 +183,8 @@ namespace ArtefactOfDoom
         public static IRpcFunc<string, string> AddLostItemsOfPlayers { get; set; }
 
         public const string ModVer = "0.8.0";
-        public const string ModName = "ArtefactOfDoom";
-        public const string ModGuid = "com.SirHamburger.ArtefactOfDoom";
+        public const string ModName = "ArtifactOfDoom";
+        public const string ModGuid = "com.SirHamburger.ArtifactOfDoom";
 
         private void SetUpMiniRPC()
         {
@@ -214,9 +214,9 @@ namespace ArtefactOfDoom
                     if (element != "")
                     {
 
-                        if (ArtefactOfDoomUI.listGainedImages[i].GetComponent<Image>() == null)
-                            ArtefactOfDoomUI.listGainedImages[i].AddComponent<Image>();
-                        ArtefactOfDoomUI.listGainedImages[i].GetComponent<Image>().sprite = ItemCatalog.GetItemDef(ItemCatalog.FindItemIndex(element)).pickupIconSprite;
+                        if (ArtifactOfDoomUI.listGainedImages[i].GetComponent<Image>() == null)
+                            ArtifactOfDoomUI.listGainedImages[i].AddComponent<Image>();
+                        ArtifactOfDoomUI.listGainedImages[i].GetComponent<Image>().sprite = ItemCatalog.GetItemDef(ItemCatalog.FindItemIndex(element)).pickupIconSprite;
 
                         i++;
                         
@@ -236,9 +236,9 @@ namespace ArtefactOfDoom
                     if (element != "")
                     {
 
-                        if (ArtefactOfDoomUI.listLostImages[i].GetComponent<Image>() == null)
-                            ArtefactOfDoomUI.listLostImages[i].AddComponent<Image>();
-                        ArtefactOfDoomUI.listLostImages[i].GetComponent<Image>().sprite = ItemCatalog.GetItemDef(ItemCatalog.FindItemIndex(element)).pickupIconSprite;
+                        if (ArtifactOfDoomUI.listLostImages[i].GetComponent<Image>() == null)
+                            ArtifactOfDoomUI.listLostImages[i].AddComponent<Image>();
+                        ArtifactOfDoomUI.listLostImages[i].GetComponent<Image>().sprite = ItemCatalog.GetItemDef(ItemCatalog.FindItemIndex(element)).pickupIconSprite;
 
                         i++;
                     }
