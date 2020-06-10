@@ -44,7 +44,6 @@ namespace ArtefactOfDoom
         public GameObject ModCanvas = null;
         void Awake()
         {
-            //RoR2.Console.print("-------------------------yea i'm here----------------------------------------------");
             On.RoR2.UI.ExpBar.Awake += ExpBarAwakeAddon;
 
 
@@ -112,7 +111,6 @@ namespace ArtefactOfDoom
             {
                 try
                 {
-                    RoR2.Console.print("----------------MainEXPBarStat-------------------------------------");
                     SetUpModCanvas();
                     listGainedImages.Clear();
                     listLostImages.Clear();
@@ -164,7 +162,6 @@ namespace ArtefactOfDoom
                     Debug.Log($"[SirHamburger Error] while Adding UI elements");
                 }
             }
-           //Debug.Log($"[SirHamburger Error]leave ----------------MainEXPBarStat-------------------------------------");
 
 
         }
@@ -208,9 +205,7 @@ namespace ArtefactOfDoom
 
             AddGainedItemsToPlayers = miniRpc.RegisterFunc(Target.Client, (NetworkUser user, string QueueGainedItemSpriteToString) => //--------------------HierSTuffMachen!!
             {
-                //Debug.LogError($"[SirHamburger Gained Items MiniRPC] Network user ID: " + user.Network_id.value);
-                //user.Network_id.value
-                //Debug.Log($"[SirHamburgerDebug] Adding: " + " to " + QueueGainedItemSpriteToString);
+
                 string[] QueueGainedItemSprite = QueueGainedItemSpriteToString.Split(' ');
 
                 int i = 0;
@@ -218,8 +213,7 @@ namespace ArtefactOfDoom
                 {
                     if (element != "")
                     {
-                        //Debug.Log($"[SirHamburgerDebug] Adding: " + element);
-                        //ModExpBarGroup.AddComponent<Image>();
+
                         if (ArtefactOfDoomUI.listGainedImages[i].GetComponent<Image>() == null)
                             ArtefactOfDoomUI.listGainedImages[i].AddComponent<Image>();
                         ArtefactOfDoomUI.listGainedImages[i].GetComponent<Image>().sprite = ItemCatalog.GetItemDef(ItemCatalog.FindItemIndex(element)).pickupIconSprite;
@@ -233,9 +227,7 @@ namespace ArtefactOfDoom
             });
             AddLostItemsOfPlayers = miniRpc.RegisterFunc(Target.Client, (NetworkUser user, string QueueLostItemSpriteToString) => //--------------------HierSTuffMachen!!
             {
-                //Debug.Log($"[SirHamburger] AddLostItemsOfPlayers");
 
-                //Debug.Log($"[SirHamburgerDebug] Adding: " + " to " + QueueLostItemSpriteToString);
                 string[] QueueLostItemSprite = QueueLostItemSpriteToString.Split(' ');
 
                 int i = 0;
@@ -243,13 +235,11 @@ namespace ArtefactOfDoom
                 {
                     if (element != "")
                     {
-                        //Debug.Log($"[SirHamburgerDebug] Adding: " + element);
-                        //ModExpBarGroup.AddComponent<Image>();
+
                         if (ArtefactOfDoomUI.listLostImages[i].GetComponent<Image>() == null)
                             ArtefactOfDoomUI.listLostImages[i].AddComponent<Image>();
                         ArtefactOfDoomUI.listLostImages[i].GetComponent<Image>().sprite = ItemCatalog.GetItemDef(ItemCatalog.FindItemIndex(element)).pickupIconSprite;
 
-                        //Debug.LogError("The Sprite couldn't be loaded");
                         i++;
                     }
 
