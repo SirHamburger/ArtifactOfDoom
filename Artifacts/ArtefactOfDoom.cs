@@ -38,7 +38,7 @@ namespace ArtefactOfDoom
 {
     public class ArtefactOfDoom : Artifact<ArtefactOfDoom>
     {
-        public static bool debug = false;
+        public static bool debug = true;
         public override string displayName => "Artefact of Doom";
 
         protected override string NewLangName(string langid = null) => displayName;
@@ -175,8 +175,11 @@ namespace ArtefactOfDoom
                 totalItems += damageReport.attackerBody.inventory.GetTotalItemCountOfTier(ItemTier.Tier2);
                 totalItems += damageReport.attackerBody.inventory.GetTotalItemCountOfTier(ItemTier.Tier3);
                 int calculatesEnemyCountToTrigger = (totalItems - currentStage * ArtefactOfDoomConfig.averageItemsPerStage.Value) * 2;
+
                 if (calculatesEnemyCountToTrigger < 1)
                     calculatesEnemyCountToTrigger = 1;
+                if (debug)
+                    calculatesEnemyCountToTrigger = 0;
                 if (debug)
                     Debug.LogError("Line 177");
                 //Ror2.console.print("calculatesEnemyCountToTrigger: " + calculatesEnemyCountToTrigger);
@@ -192,7 +195,9 @@ namespace ArtefactOfDoom
                     {
 
 
-                        damageReport.attackerOwnerMaster.GetBody().inventory.GiveRandomItems(1);
+                        //damageReport.attackerOwnerMaster.GetBody().inventory.GiveRandomItems(1);
+                        ItemIndex addedItem = GiveAndReturnRandomItem(damageReport.attackerOwnerMaster.GetBody().inventory);
+
 
                         PlayerStatsComponent.FindBodyStatSheet(damageReport.attackerOwnerMaster.GetBody()).PushStatValue(statsGainItems, 1UL);
                         //for(int j= 0; j< QueueGainedItemSprite.Count; j++)
@@ -205,13 +210,15 @@ namespace ArtefactOfDoom
                             pos = damageReport.attackerOwnerMaster.GetBody().netId.Value;
 
                         }
-                        QueueGainedItemSprite[pos].Enqueue(ItemCatalog.GetItemDef(damageReport.attackerOwnerMaster.GetBody().inventory.itemAcquisitionOrder[damageReport.attackerOwnerMaster.GetBody().inventory.itemAcquisitionOrder.Count - 1]));
+                        QueueGainedItemSprite[pos].Enqueue(ItemCatalog.GetItemDef(addedItem));
+                        //QueueGainedItemSprite[pos].Enqueue(ItemCatalog.GetItemDef(damageReport.attackerOwnerMaster.GetBody().inventory.itemAcquisitionOrder[damageReport.attackerOwnerMaster.GetBody().inventory.itemAcquisitionOrder.Count - 1]));
                     }
                     else
                     {
 
 
-                        damageReport.attackerBody.inventory.GiveRandomItems(1);
+                        //damageReport.attackerBody.inventory.GiveRandomItems(1);
+                        ItemIndex addedItem = GiveAndReturnRandomItem(damageReport.attackerBody.inventory);
                         PlayerStatsComponent.FindBodyStatSheet(damageReport.attackerBody).PushStatValue(statsGainItems, 1UL);
                         if (QueueGainedItemSprite.ContainsKey(damageReport.attackerBody.netId.Value))
                             pos = damageReport.attackerBody.netId.Value;
@@ -229,8 +236,8 @@ namespace ArtefactOfDoom
                         }
 
 
-
-                        QueueGainedItemSprite[pos].Enqueue(ItemCatalog.GetItemDef(damageReport.attackerBody.inventory.itemAcquisitionOrder[damageReport.attackerBody.inventory.itemAcquisitionOrder.Count - 1]));
+                        QueueGainedItemSprite[pos].Enqueue(ItemCatalog.GetItemDef(addedItem));
+                        //QueueGainedItemSprite[pos].Enqueue(ItemCatalog.GetItemDef(damageReport.attackerBody.inventory.itemAcquisitionOrder[damageReport.attackerBody.inventory.itemAcquisitionOrder.Count - 1]));
                         Debug.Log($"[SirHamburger ArtefactOfDoom] length of Queue: " + QueueGainedItemSprite[pos].Count);
 
                     }
@@ -353,7 +360,7 @@ namespace ArtefactOfDoom
 
 
                         QueueLostItemSprite[pos].Enqueue(ItemCatalog.GetItemDef(itemToRemove));
-                        if (QueueLostItemSprite.Count > 10)
+                        if (QueueLostItemSprite[pos].Count > 10)
                             QueueLostItemSprite[pos].Dequeue();
                         //int i=QueueLostItemSprite.Count -1;
                         //int i= 0;
@@ -413,6 +420,20 @@ namespace ArtefactOfDoom
 
 
             };
+        }
+        public ItemIndex GiveAndReturnRandomItem(Inventory inventory)
+        {
+
+            WeightedSelection<List<PickupIndex>> weightedSelection = new WeightedSelection<List<PickupIndex>>(8);
+            weightedSelection.AddChoice(Run.instance.availableTier1DropList, 80f);
+            weightedSelection.AddChoice(Run.instance.availableTier2DropList, 19f);
+            weightedSelection.AddChoice(Run.instance.availableTier3DropList, 1f);
+
+            List<PickupIndex> list = weightedSelection.Evaluate(UnityEngine.Random.value);
+            ItemIndex givenItem = list[UnityEngine.Random.Range(0, list.Count)].itemIndex;
+            inventory.GiveItem(givenItem, 1);
+            return givenItem;
+
         }
 
         protected override void UnloadBehavior()

@@ -61,38 +61,6 @@ namespace ArtefactOfDoom
                 orig(self, itemindex1, ItemIndex2);
 
             };
-            //On.RoR2.Inventory.GiveItem += (orig, self, itemindex1, itemindex2) =>
-            //{
-            //    if (self == null)
-            //        Debug.Log($"[SirHamburger] WTF: Self==null");
-            //    var characterBody = self.gameObject.GetComponent<CharacterBody>();
-            //    if (characterBody == null)
-            //    {
-            //        Debug.Log($"[SirHamburger GiveItem] GetComponent Doesnt work");
-            //        characterBody = self.gameObject.GetComponentInParent<CharacterBody>();
-            //        if (characterBody == null)
-            //        {
-            //            Debug.Log($"[SirHamburgerGiveItem]GetComponentInParent Doesnt work");
-            //            characterBody = self.gameObject.GetComponentInChildren<CharacterBody>();
-            //            if (characterBody == null)
-            //                Debug.Log($"[SirHamburger GiveItem]  GetComponentInChildren Doesnt work");
-            //            else
-            //                Debug.Log($"[SirHamburger GiveItem] GetComponentInChildren works");
-            //        }
-            //        else
-            //            Debug.Log($"[SirHamburger GiveItem] GetComponentInParent works");
-            //    }
-            //    orig(self, itemindex1, itemindex2);
-            //    //AddGainedItemsToPlayers.Invoke(Danger.QueueGainedItemSprite[self.GetComponentInParent<CharacterBody>()].ToArray(), result =>
-            //    //{
-            //    //   Debug.Log($"[Sirhamburger] Received response ExampleFuncClientObject: {result}");
-            //    //});
-            //};
-            //On.RoR2.CharacterBody.OnInventoryChanged += (orig, self) =>
-            //{
-            //    self.inventory.
-            //};
-            //On.RoR2.LocalUserManager.
         }
 
         private void SetUpModCanvas()

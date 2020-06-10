@@ -30,6 +30,8 @@ namespace ArtefactOfDoom {
         internal static BepInEx.Logging.ManualLogSource _logger;
 
         public static ConfigEntry<int> averageItemsPerStage;
+        public static ConfigEntry<int> minItemsPerStage;
+        public static ConfigEntry<int> maxItemsPerStage;
 
 
 
@@ -38,33 +40,37 @@ namespace ArtefactOfDoom {
         private void Awake() {
             _logger = Logger;
 
-            using(var stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("TinkersSatchel.tinkerssatchel_assets")) {
+            using(var stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("ArtefactOfDoom.tinkerssatchel_assets")) {
                 var bundle = AssetBundle.LoadFromStream(stream);
                 var provider = new AssetBundleResourcesProvider("@TinkersSatchel", bundle);
                 ResourcesAPI.AddProvider(provider);
             }
             cfgFile = new ConfigFile(Path.Combine(Paths.ConfigPath, ModGuid + ".cfg"), true);
 
-            masterItemList = ItemBoilerplate.InitAll("TinkersSatchel");
+            masterItemList = ItemBoilerplate.InitAll("ArtefactOfDoom");
             foreach(ItemBoilerplate x in masterItemList) {
                 x.SetupConfig(cfgFile);
             }
 
             averageItemsPerStage = cfgFile.Bind(new ConfigDefinition("Global.VanillaTweaks", "averageItemsPerStage"), 3, new ConfigDescription(
                 "Base chance in percent that enemys steal items from you ((totalItems - currentStage * averageItemsPerStage) * 2; \nIf that value is lower you'll need faster more enemies to get an item")); 
+            minItemsPerStage = cfgFile.Bind(new ConfigDefinition("Global.VanillaTweaks", "minItemsPerStage"), 2, new ConfigDescription(
+                "The expected minimum item count per stage. If you have less Items than that you'll have a decreased chance that you loose items")); 
+            maxItemsPerStage = cfgFile.Bind(new ConfigDefinition("Global.VanillaTweaks", "maxItemsPerStage"), 7, new ConfigDescription(
+                "The expected maximum item count per stage. If you have more Items than that you'll have a chance to loose more than one item per hit")); 
             
             int longestName = 0;
             foreach(ItemBoilerplate x in masterItemList) {
-                x.SetupAttributes("TINKSATCH", "TKSCH");
+                x.SetupAttributes("ARTDOOM", "ADOOM");
                 if(x.itemCodeName.Length > longestName) longestName = x.itemCodeName.Length;
             }
 
             Logger.LogMessage("Index dump follows (pairs of name / index):");
             foreach(ItemBoilerplate x in masterItemList) {
                 if(x is Artifact afct)
-                    Logger.LogMessage(" Artifact TKSCH"+x.itemCodeName.PadRight(longestName) + " / "+((int)afct.regIndex).ToString());
+                    Logger.LogMessage(" Artifact ADOOM"+x.itemCodeName.PadRight(longestName) + " / "+((int)afct.regIndex).ToString());
                 else
-                    Logger.LogMessage("    Other TKSCH"+x.itemCodeName.PadRight(longestName) + " / N/A");
+                    Logger.LogMessage("    Other ADOOM"+x.itemCodeName.PadRight(longestName) + " / N/A");
             }
 
             foreach(ItemBoilerplate x in masterItemList) {
