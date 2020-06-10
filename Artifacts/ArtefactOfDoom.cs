@@ -174,7 +174,7 @@ namespace ArtefactOfDoom
                 int totalItems = damageReport.attackerBody.inventory.GetTotalItemCountOfTier(ItemTier.Tier1);
                 totalItems += damageReport.attackerBody.inventory.GetTotalItemCountOfTier(ItemTier.Tier2);
                 totalItems += damageReport.attackerBody.inventory.GetTotalItemCountOfTier(ItemTier.Tier3);
-                int calculatesEnemyCountToTrigger = (totalItems - currentStage * 2) * 2;
+                int calculatesEnemyCountToTrigger = (totalItems - currentStage * ArtefactOfDoomConfig.averageItemsPerStage.Value) * 2;
                 if (calculatesEnemyCountToTrigger < 1)
                     calculatesEnemyCountToTrigger = 1;
                 if (debug)
