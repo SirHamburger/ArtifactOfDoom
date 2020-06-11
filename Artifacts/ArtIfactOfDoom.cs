@@ -126,13 +126,17 @@ namespace ArtifactOfDoom
                 {
                     return;
                 }
-
+                if (RoR2.Run.instance.isGameOverServer)
+                    return;
+                if (damageReport.victimBody.isPlayerControlled)
+                    return;
                 if (damageReport.attackerBody == null)
                     return;
                 if (damageReport.attackerBody.inventory == null)
                     return;
                 if (damageReport.victimBody.inventory == null)
                     return;
+
 
                 if (damageReport.attackerOwnerMaster != null)
                 {
@@ -274,23 +278,31 @@ namespace ArtifactOfDoom
             };
             On.RoR2.HealthComponent.TakeDamage += (orig, self, damageinfo) =>
             {
+                //For adding possibility to dont loose items for some time: characterBody.AddTimedBuff(BuffIndex.Immune, duration);
                 orig(self, damageinfo);
                 if (!this.IsActiveAndEnabled())
                 {
 
                     return;
-                }
-                if(self.body ==null)
-                    return;
+                }if(debug) Debug.LogWarning("Line 287");
+                if (self.body == null)
+                    {if(debug)Debug.LogWarning("self.body == null)"); return;}
                 if (self.body.inventory == null)
-                    return;
-
+                    {if(debug)Debug.LogWarning("self.body.inventory == null)"); return;}
+                if (RoR2.Run.instance.isGameOverServer)
+                    {if(debug)Debug.LogWarning("RoR2.Run.instance.isGameOverServer)"); return;}
+                if(damageinfo == null)
+                    {if(debug)Debug.LogWarning("damageinfo == null)"); return;}
+                if(damageinfo.attacker==null)
+                    {if(debug)Debug.LogWarning("damageinfo.attacker.name==null)"); return;}
+                if (debug) Debug.LogWarning("Line 294");
                 int totalItems = self.body.inventory.GetTotalItemCountOfTier(ItemTier.Tier1);
                 totalItems += self.body.inventory.GetTotalItemCountOfTier(ItemTier.Tier2);
                 totalItems += self.body.inventory.GetTotalItemCountOfTier(ItemTier.Tier3);
-
+                if (debug) Debug.LogWarning("Line 298");
                 if (self.body.isPlayerControlled && (totalItems > 0) && self.name != damageinfo.attacker.name)
                 {
+                    if (debug) Debug.LogWarning("Line 301");
                     Dictionary<ItemIndex, int> lstItemIndex = new Dictionary<ItemIndex, int>();
                     List<ItemIndex> index = new List<ItemIndex>();
                     foreach (var element in ItemCatalog.allItems)
@@ -301,12 +313,15 @@ namespace ArtifactOfDoom
                             index.Add(element);
                         }
                     }
+                    if (debug) Debug.LogWarning("Line 312");
+
                     double chanceToTrigger = 100.0;
                     if (totalItems <= (ArtifactOfDoomConfig.minItemsPerStage.Value * currentStage))
                     {
                         chanceToTrigger = 1.0 - (double)(ArtifactOfDoomConfig.minItemsPerStage.Value * currentStage - totalItems) / ((double)ArtifactOfDoomConfig.minItemsPerStage.Value * currentStage);
                         chanceToTrigger *= 100;
                     }
+                    if (debug) Debug.LogWarning("Line 320");
 
                     var rand = new System.Random();
                     for (int i = 0; i < self.body.inventory.GetItemCount(ItemIndex.Clover); i++)
@@ -315,15 +330,20 @@ namespace ArtifactOfDoom
                             return;
                         }
                     chanceToTrigger = 100.0;
+                    if (debug) Debug.LogWarning("Line 329");
+
                     if (totalItems > (ArtifactOfDoomConfig.maxItemsPerStage.Value * currentStage))
                     {
                         chanceToTrigger = Math.Pow((1 + (double)(totalItems - ArtifactOfDoomConfig.maxItemsPerStage.Value * currentStage) / ((double)ArtifactOfDoomConfig.maxItemsPerStage.Value * currentStage)), ArtifactOfDoomConfig.exponentailFactorToCalculateSumOfLostItems.Value);
                         chanceToTrigger *= 100;
 
                     }
+                    if (debug) Debug.LogWarning("Line 337");
+
                     int lostItems = 0;
 
                     uint pos = 50000;
+                    if (debug) Debug.LogWarning("Line 342");
 
                     while (chanceToTrigger > 0)
                     {
