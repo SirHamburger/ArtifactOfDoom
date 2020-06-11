@@ -405,7 +405,7 @@ namespace ArtifactOfDoom
                             LockNetworkUser[tempNetworkUser] = false;
                         }, tempNetworkUser);
                     }
-                    Debug.LogWarning("You lost " + lostItems + "Items");
+                    //Debug.LogWarning("You lost " + lostItems + "Items");
 
                 }
 

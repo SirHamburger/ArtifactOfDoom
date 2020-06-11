@@ -38,8 +38,9 @@ For example you've 50 items, are on stage 5 and have the default values so you c
 So you'll have a 100% chance to loose one item and 70% chance to loose another.
 
 ## UI
-On the left side there are the symbols of the gained items. ***These are only the items which you obtained by the mod.*** On the right side there are all lost items. The UI is reseted every stage.
+On the left side there are the symbols of the gained items. ***These are only the items which you obtained by the mod.*** On the right side there are all lost items. The UI is resets every stage.
 
 ## I've an issue:
 Please add an issue to my github repository:
 https://github.com/SirHamburger/ArtifactOfDoom
+You can also reach me in Discord (Sir Hamburger#8447)
