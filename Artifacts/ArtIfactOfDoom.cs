@@ -45,7 +45,7 @@ namespace ArtifactOfDoom
         protected override string NewLangDesc(string langid = null) => "You get items on enemy kills but loose items every time you take damage.";
         private static List<CharacterBody> Playername = new List<CharacterBody>();
         private static List<int> counter = new List<int>();
-        private int currentStage = 0;
+        private int currentStage = 0; //testComment
 
         private Dictionary<NetworkUser, bool> LockNetworkUser = new Dictionary<NetworkUser, bool>();
 
