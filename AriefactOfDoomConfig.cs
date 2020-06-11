@@ -15,7 +15,7 @@ namespace ArtifactOfDoom {
     [BepInDependency(TILER2Plugin.ModGuid, "1.3.0")]
     [R2APISubmoduleDependency(nameof(ItemAPI), nameof(LanguageAPI), nameof(ResourcesAPI), nameof(PlayerAPI), nameof(PrefabAPI))]
     public class ArtifactOfDoomConfig:BaseUnityPlugin {
-        public const string ModVer = "0.8.0";
+        public const string ModVer = "0.8.1";
         public const string ModName = "ArtifactOfDoom";
         public const string ModGuid = "com.SirHamburger.ArtifactOfDoom";
         private static Transform HUDroot = null;

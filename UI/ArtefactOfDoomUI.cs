@@ -177,7 +177,7 @@ namespace ArtifactOfDoom
         public static IRpcFunc<string, string> AddGainedItemsToPlayers { get; set; }
         public static IRpcFunc<string, string> AddLostItemsOfPlayers { get; set; }
 
-        public const string ModVer = "0.8.0";
+        public const string ModVer = "0.8.1";
         public const string ModName = "ArtifactOfDoom";
         public const string ModGuid = "com.SirHamburger.ArtifactOfDoom";
 
