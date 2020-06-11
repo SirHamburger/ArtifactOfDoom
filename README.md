@@ -42,4 +42,4 @@ On the left side there are the symbols of the gained items. ***These are only th
 
 ## I've an issue:
 Please add an issue to my github repository:
-https://github.com/SirHamburger/ItemStealArtifact
+https://github.com/SirHamburger/ArtifactOfDoom

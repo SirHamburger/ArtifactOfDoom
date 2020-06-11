@@ -1,34 +1,16 @@
-﻿using Mono.Cecil.Cil;
-using MonoMod.Cil;
+﻿
 using RoR2;
 using System;
 using TILER2;
 using UnityEngine;
-using System;
 using System.Collections.Generic;
-using UnityEngine.SceneManagement;
-using UnityEngine.UI;
 
-using UnityEditor;
 
 
 
 
 using RoR2.Stats;
-using System.Collections;
-using static TILER2.MiscUtil;
 
-using static TILER2.StatHooks;
-
-
-
-using BepInEx;
-using BepInEx.Configuration;
-using R2API.Utils;
-using System.IO;
-
-using UnityEngine.Networking;
-using R2API;
 
 
 
@@ -45,7 +27,7 @@ namespace ArtifactOfDoom
         protected override string NewLangDesc(string langid = null) => "You get items on enemy kills but loose items every time you take damage.";
         private static List<CharacterBody> Playername = new List<CharacterBody>();
         private static List<int> counter = new List<int>();
-        private int currentStage = 0; //testComment
+        private int currentStage = 0;
 
         private Dictionary<NetworkUser, bool> LockNetworkUser = new Dictionary<NetworkUser, bool>();
 

@@ -3,7 +3,6 @@ using R2API;
 using R2API.Utils;
 using System.Reflection;
 using UnityEngine;
-using UnityEngine.UI;
 
 using BepInEx.Configuration;
 using Path = System.IO.Path;
