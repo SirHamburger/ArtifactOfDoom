@@ -30,6 +30,7 @@ namespace ArtifactOfDoom
         private int currentStage = 0;
 
         private Dictionary<NetworkUser, bool> LockNetworkUser = new Dictionary<NetworkUser, bool>();
+        private Dictionary<NetworkUser, bool> LockItemGainNetworkUser = new Dictionary<NetworkUser, bool>();
 
         private static RoR2.Stats.StatDef statsLostItems;
         private static RoR2.Stats.StatDef statsGainItems;
@@ -179,48 +180,60 @@ namespace ArtifactOfDoom
 
 
                         //damageReport.attackerOwnerMaster.GetBody().inventory.GiveRandomItems(1);
-                        ItemIndex addedItem = GiveAndReturnRandomItem(damageReport.attackerOwnerMaster.GetBody().inventory);
-
-
-                        PlayerStatsComponent.FindBodyStatSheet(damageReport.attackerOwnerMaster.GetBody()).PushStatValue(statsGainItems, 1UL);
-                        //for(int j= 0; j< QueueGainedItemSprite.Count; j++)
-                        if (QueueGainedItemSprite.ContainsKey(damageReport.attackerOwnerMaster.GetBody().netId.Value))
-                            pos = damageReport.attackerOwnerMaster.GetBody().netId.Value;
-                        else
+                        double chanceToTrigger = getCharacterSpezificBuffLengthMultiplier(damageReport.attackerOwnerMaster.GetBody());
+                        chanceToTrigger *= 100;
+                        var rand = new System.Random();
+                        while (chanceToTrigger > rand.Next(0, 99))
                         {
+                            ItemIndex addedItem = GiveAndReturnRandomItem(damageReport.attackerOwnerMaster.GetBody().inventory);
 
-                            QueueGainedItemSprite.Add(damageReport.attackerOwnerMaster.GetBody().netId.Value, new Queue<ItemDef>());
-                            pos = damageReport.attackerOwnerMaster.GetBody().netId.Value;
 
+                            PlayerStatsComponent.FindBodyStatSheet(damageReport.attackerOwnerMaster.GetBody()).PushStatValue(statsGainItems, 1UL);
+                            //for(int j= 0; j< QueueGainedItemSprite.Count; j++)
+                            if (QueueGainedItemSprite.ContainsKey(damageReport.attackerOwnerMaster.GetBody().netId.Value))
+                                pos = damageReport.attackerOwnerMaster.GetBody().netId.Value;
+                            else
+                            {
+
+                                QueueGainedItemSprite.Add(damageReport.attackerOwnerMaster.GetBody().netId.Value, new Queue<ItemDef>());
+                                pos = damageReport.attackerOwnerMaster.GetBody().netId.Value;
+
+                            }
+                            QueueGainedItemSprite[pos].Enqueue(ItemCatalog.GetItemDef(addedItem));
+                            //QueueGainedItemSprite[pos].Enqueue(ItemCatalog.GetItemDef(damageReport.attackerOwnerMaster.GetBody().inventory.itemAcquisitionOrder[damageReport.attackerOwnerMaster.GetBody().inventory.itemAcquisitionOrder.Count - 1]));
+                            chanceToTrigger -= 100;
                         }
-                        QueueGainedItemSprite[pos].Enqueue(ItemCatalog.GetItemDef(addedItem));
-                        //QueueGainedItemSprite[pos].Enqueue(ItemCatalog.GetItemDef(damageReport.attackerOwnerMaster.GetBody().inventory.itemAcquisitionOrder[damageReport.attackerOwnerMaster.GetBody().inventory.itemAcquisitionOrder.Count - 1]));
                     }
                     else
                     {
-
-
-                        //damageReport.attackerBody.inventory.GiveRandomItems(1);
-                        ItemIndex addedItem = GiveAndReturnRandomItem(damageReport.attackerBody.inventory);
-                        PlayerStatsComponent.FindBodyStatSheet(damageReport.attackerBody).PushStatValue(statsGainItems, 1UL);
-                        if (QueueGainedItemSprite.ContainsKey(damageReport.attackerBody.netId.Value))
-                            pos = damageReport.attackerBody.netId.Value;
-                        else
+                        double chanceToTrigger = getCharacterSpezificItemCount(damageReport.attackerBody);
+                        chanceToTrigger *= 100;
+                        var rand = new System.Random();
+                        while (chanceToTrigger > rand.Next(0, 99))
                         {
-                            try
-                            {
-                                QueueGainedItemSprite.Add(damageReport.attackerBody.netId.Value, new Queue<ItemDef>());
+                            //damageReport.attackerBody.inventory.GiveRandomItems(1);
+                            ItemIndex addedItem = GiveAndReturnRandomItem(damageReport.attackerBody.inventory);
+                            PlayerStatsComponent.FindBodyStatSheet(damageReport.attackerBody).PushStatValue(statsGainItems, 1UL);
+                            if (QueueGainedItemSprite.ContainsKey(damageReport.attackerBody.netId.Value))
                                 pos = damageReport.attackerBody.netId.Value;
-                            }
-                            catch (Exception e)
+                            else
                             {
-                                Debug.Log($"[SirHamburger ArtifactOfDoom] Error while excecuting : QueueGainedItemSprite.Add(damageReport.attackerBody.netId.Value, new Queue<Sprite>()); (line 203)");
+                                try
+                                {
+                                    QueueGainedItemSprite.Add(damageReport.attackerBody.netId.Value, new Queue<ItemDef>());
+                                    pos = damageReport.attackerBody.netId.Value;
+                                }
+                                catch (Exception e)
+                                {
+                                    Debug.Log($"[SirHamburger ArtifactOfDoom] Error while excecuting : QueueGainedItemSprite.Add(damageReport.attackerBody.netId.Value, new Queue<Sprite>()); (line 203)");
+                                }
                             }
+
+
+                            QueueGainedItemSprite[pos].Enqueue(ItemCatalog.GetItemDef(addedItem));
+                            //QueueGainedItemSprite[pos].Enqueue(ItemCatalog.GetItemDef(damageReport.attackerBody.inventory.itemAcquisitionOrder[damageReport.attackerBody.inventory.itemAcquisitionOrder.Count - 1]));
+                            chanceToTrigger -= 100;
                         }
-
-
-                        QueueGainedItemSprite[pos].Enqueue(ItemCatalog.GetItemDef(addedItem));
-                        //QueueGainedItemSprite[pos].Enqueue(ItemCatalog.GetItemDef(damageReport.attackerBody.inventory.itemAcquisitionOrder[damageReport.attackerBody.inventory.itemAcquisitionOrder.Count - 1]));
 
                     }
 
@@ -254,12 +267,22 @@ namespace ArtifactOfDoom
                         }
                     }
 
+                    if(!LockItemGainNetworkUser.ContainsKey(tempNetworkUser))
+                        LockItemGainNetworkUser.Add(tempNetworkUser,false);
+
+                    
+                    if(!LockItemGainNetworkUser[tempNetworkUser])
+                    {
+                        LockItemGainNetworkUser[tempNetworkUser]=true;
                     if (tempNetworkUser == null)
                         Debug.LogError("--------------------------------tempNetworkUser==null---------------------------");
 
                     ArtifactOfDoomUI.AddGainedItemsToPlayers.Invoke(temp, result =>
                         {
+                            LockItemGainNetworkUser[tempNetworkUser]=false;
                         }, tempNetworkUser);
+                    }
+
 
                     counter[Playername.IndexOf(currentBody)] = 0;
 
@@ -276,6 +299,7 @@ namespace ArtifactOfDoom
 
                     return;
                 }
+
                 if (debug) Debug.LogWarning("Line 287");
                 if (self.body == null)
                 { if (debug) Debug.LogWarning("self.body == null)"); return; }
@@ -299,6 +323,7 @@ namespace ArtifactOfDoom
                 if (debug) Debug.LogWarning("Line 298");
                 if (self.body.isPlayerControlled && (totalItems > 0) && self.name != damageinfo.attacker.name)
                 {
+
                     if (debug) Debug.LogWarning("Line 301");
                     Dictionary<ItemIndex, int> lstItemIndex = new Dictionary<ItemIndex, int>();
                     List<ItemIndex> index = new List<ItemIndex>();
@@ -388,7 +413,9 @@ namespace ArtifactOfDoom
                             QueueLostItemSprite[pos].Enqueue(ItemCatalog.GetItemDef(itemToRemove));
                             if (QueueLostItemSprite[pos].Count > 10)
                                 QueueLostItemSprite[pos].Dequeue();
-                            self.body.AddTimedBuff(ArtifactOfDoomConfig.buffIndexDidLooseItem, (float)(timeForBuff));
+
+                            double buffLengthMultiplier = getCharacterSpezificBuffLengthMultiplier(self.body);
+                            self.body.AddTimedBuff(ArtifactOfDoomConfig.buffIndexDidLooseItem, (float)(timeForBuff * (float)buffLengthMultiplier));
 
 
                         }
@@ -427,6 +454,126 @@ namespace ArtifactOfDoom
 
 
             };
+        }
+
+        private double getCharacterSpezificItemCount(CharacterBody body)
+        {
+            if (body.name.Contains("Commando"))
+            {
+                if (debug) { Debug.LogWarning("Character BodyName = " + body.name + " returning: Commando"); }
+                return ArtifactOfDoomConfig.commandoBonusItems.Value;
+            }
+            if (body.name.Contains("Huntress"))
+            {
+                if (debug) { Debug.LogWarning("Character BodyName = " + body.name + " returning: Huntress"); }
+
+                return ArtifactOfDoomConfig.HuntressBonusItems.Value;
+            }
+            if (body.name.Contains("Toolbot"))
+            {
+                if (debug) { Debug.LogWarning("Character BodyName = " + body.name + " returning: MUL"); }
+
+                return ArtifactOfDoomConfig.MULTBonusItems.Value;
+            }
+            if (body.name.Contains("Engi"))
+            {
+                if (debug) { Debug.LogWarning("Character BodyName = " + body.name + " returning: Engineer"); }
+
+                return ArtifactOfDoomConfig.EngineerBonusItems.Value;
+            }
+            if (body.name.Contains("Mage"))
+            {
+                if (debug) { Debug.LogWarning("Character BodyName = " + body.name + " returning: Artificer"); }
+
+                return ArtifactOfDoomConfig.ArtificerBonusItems.Value;
+            }
+            if (body.name.Contains("Merc"))
+            {
+                if (debug) { Debug.LogWarning("Character BodyName = " + body.name + " returning: Mercenary"); }
+
+                return ArtifactOfDoomConfig.MercenaryBonusItems.Value;
+            }
+
+            if (body.name.Contains("Treebot"))
+            {
+                if (debug) { Debug.LogWarning("Character BodyName = " + body.name + " returning: Rex"); }
+
+                return ArtifactOfDoomConfig.RexBonusItems.Value;
+            }
+            if (body.name.Contains("Loader"))
+            {
+                if (debug) { Debug.LogWarning("Character BodyName = " + body.name + " returning: Loader"); }
+
+                return ArtifactOfDoomConfig.LoaderBonusItems.Value;
+            }
+            if (body.name.Contains("Croco"))
+            {
+                if (debug) { Debug.LogWarning("Character BodyName = " + body.name + " returning: Acrid"); }
+
+                return ArtifactOfDoomConfig.AcridBonusItems.Value;
+            }
+            Debug.LogWarning("Character BodyName = " + body.name + " Didnt find valid Body. \n Please report this to SirHamburger");
+            return 1.0;
+        }
+        private double getCharacterSpezificBuffLengthMultiplier(CharacterBody body)
+        {
+
+            if (body.name.Contains("Commando"))
+            {
+                if (debug) { Debug.LogWarning("Character BodyName = " + body.name + " returning: Commando"); }
+                return ArtifactOfDoomConfig.commandoMultiplyerForTimedBuff.Value;
+            }
+            if (body.name.Contains("Huntress"))
+            {
+                if (debug) { Debug.LogWarning("Character BodyName = " + body.name + " returning: Huntress"); }
+
+                return ArtifactOfDoomConfig.HuntressMultiplyerForTimedBuff.Value;
+            }
+            if (body.name.Contains("Toolbot"))
+            {
+                if (debug) { Debug.LogWarning("Character BodyName = " + body.name + " returning: MUL"); }
+
+                return ArtifactOfDoomConfig.MULTMultiplyerForTimedBuff.Value;
+            }
+            if (body.name.Contains("Engi"))
+            {
+                if (debug) { Debug.LogWarning("Character BodyName = " + body.name + " returning: Engineer"); }
+
+                return ArtifactOfDoomConfig.EngineerMultiplyerForTimedBuff.Value;
+            }
+            if (body.name.Contains("Mage"))
+            {
+                if (debug) { Debug.LogWarning("Character BodyName = " + body.name + " returning: Artificer"); }
+
+                return ArtifactOfDoomConfig.ArtificerMultiplyerForTimedBuff.Value;
+            }
+            if (body.name.Contains("Merc"))
+            {
+                if (debug) { Debug.LogWarning("Character BodyName = " + body.name + " returning: Mercenary"); }
+
+                return ArtifactOfDoomConfig.MercenaryMultiplyerForTimedBuff.Value;
+            }
+
+            if (body.name.Contains("Treebot"))
+            {
+                if (debug) { Debug.LogWarning("Character BodyName = " + body.name + " returning: Rex"); }
+
+                return ArtifactOfDoomConfig.RexMultiplyerForTimedBuff.Value;
+            }
+            if (body.name.Contains("Loader"))
+            {
+                if (debug) { Debug.LogWarning("Character BodyName = " + body.name + " returning: Loader"); }
+
+                return ArtifactOfDoomConfig.LoaderMultiplyerForTimedBuff.Value;
+            }
+            if (body.name.Contains("Croco"))
+            {
+                if (debug) { Debug.LogWarning("Character BodyName = " + body.name + " returning: Acrid"); }
+
+                return ArtifactOfDoomConfig.AcridMultiplyerForTimedBuff.Value;
+            }
+            Debug.LogWarning("Character BodyName = " + body.name + " Didnt find valid Body. \n Please report this to SirHamburger");
+            return 1.0;
         }
         public ItemIndex GiveAndReturnRandomItem(Inventory inventory)
         {
