@@ -53,7 +53,7 @@ You can also reach me in Discord (Sir Hamburger#8447)
 
 ## Patchnotes
 ### Version 0.9.0
-Added Charcter spezific settings and a timed buff which prevents you from loosing items
+Added Character specific settings and a timed buff which prevents you from loosing items
 
 ### Version 0.8.1 
 Updated dependency in manifest.json (inserted Tiler2)
