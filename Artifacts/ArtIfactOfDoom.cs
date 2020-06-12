@@ -40,6 +40,8 @@ namespace ArtifactOfDoom
         public static Dictionary<uint, Queue<ItemDef>> QueueLostItemSprite = new Dictionary<uint, Queue<ItemDef>>();
         public static Dictionary<uint, Queue<ItemDef>> QueueGainedItemSprite = new Dictionary<uint, Queue<ItemDef>>();
 
+        private static double timeForBuff = 0.0;
+
 
         public void Awake()
         {
@@ -88,9 +90,16 @@ namespace ArtifactOfDoom
                 };
             On.RoR2.SceneDirector.PopulateScene += (orig, self) =>
                 {
+
                     currentStage = RoR2.Run.instance.stageClearCount + 1;
 
                     orig(self);
+                    if (Run.instance.selectedDifficulty == DifficultyIndex.Easy)
+                        timeForBuff = ArtifactOfDoomConfig.timeAfterHitToNotLooseItemDrizzly.Value;
+                    if (Run.instance.selectedDifficulty == DifficultyIndex.Normal)
+                        timeForBuff = ArtifactOfDoomConfig.timeAfterHitToNotLooseItemRainstorm.Value;
+                    if (Run.instance.selectedDifficulty == DifficultyIndex.Hard)
+                        timeForBuff = ArtifactOfDoomConfig.timeAfterHitToNotLooseItemMonsoon.Value;
                     QueueLostItemSprite = new Dictionary<uint, Queue<ItemDef>>();
                     QueueGainedItemSprite = new Dictionary<uint, Queue<ItemDef>>();
                     Playername = new List<CharacterBody>();
@@ -266,17 +275,23 @@ namespace ArtifactOfDoom
                 {
 
                     return;
-                }if(debug) Debug.LogWarning("Line 287");
+                }
+                if (debug) Debug.LogWarning("Line 287");
                 if (self.body == null)
-                    {if(debug)Debug.LogWarning("self.body == null)"); return;}
+                { if (debug) Debug.LogWarning("self.body == null)"); return; }
                 if (self.body.inventory == null)
-                    {if(debug)Debug.LogWarning("self.body.inventory == null)"); return;}
+                { if (debug) Debug.LogWarning("self.body.inventory == null)"); return; }
                 if (RoR2.Run.instance.isGameOverServer)
-                    {if(debug)Debug.LogWarning("RoR2.Run.instance.isGameOverServer)"); return;}
-                if(damageinfo == null)
-                    {if(debug)Debug.LogWarning("damageinfo == null)"); return;}
-                if(damageinfo.attacker==null)
-                    {if(debug)Debug.LogWarning("damageinfo.attacker.name==null)"); return;}
+                { if (debug) Debug.LogWarning("RoR2.Run.instance.isGameOverServer)"); return; }
+                if (damageinfo == null)
+                { if (debug) Debug.LogWarning("damageinfo == null)"); return; }
+                if (damageinfo.attacker == null)
+                { if (debug) Debug.LogWarning("damageinfo.attacker.name==null)"); return; }
+                if (self.body.HasBuff(ArtifactOfDoomConfig.buffIndexDidLooseItem))
+                {
+                    Debug.LogWarning("you did loose an item not long ago so you don't loose one now");
+                    return;
+                }
                 if (debug) Debug.LogWarning("Line 294");
                 int totalItems = self.body.inventory.GetTotalItemCountOfTier(ItemTier.Tier1);
                 totalItems += self.body.inventory.GetTotalItemCountOfTier(ItemTier.Tier2);
@@ -373,6 +388,7 @@ namespace ArtifactOfDoom
                             QueueLostItemSprite[pos].Enqueue(ItemCatalog.GetItemDef(itemToRemove));
                             if (QueueLostItemSprite[pos].Count > 10)
                                 QueueLostItemSprite[pos].Dequeue();
+                            self.body.AddTimedBuff(ArtifactOfDoomConfig.buffIndexDidLooseItem, (float)(timeForBuff));
 
 
                         }

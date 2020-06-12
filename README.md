@@ -37,6 +37,8 @@ For example you've 50 items, are on stage 5 and have the default values so you c
 (1 + (50 - 7 * 5) / (7 * 5))^1.5=1.7
 So you'll have a 100% chance to loose one item and 70% chance to loose another.
 
+After you lost an item you'll get a short buff that prevents you from loosing another one. The length of that buff depends on the difficulty and can also be configured. With the config entitys "timeAfterHitToNotLoose".
+
 ## UI
 On the left side there are the symbols of the gained items. ***These are only the items which you obtained by the mod.*** On the right side there are all lost items. The UI is resets every stage.
 
@@ -44,3 +46,11 @@ On the left side there are the symbols of the gained items. ***These are only th
 Please add an issue to my github repository:
 https://github.com/SirHamburger/ArtifactOfDoom
 You can also reach me in Discord (Sir Hamburger#8447)
+
+## Patchnotes
+
+### Version 0.8.1 
+Updated dependency in manifest.json (inserted Tiler2)
+
+### Version 0.8.0
+Initial upload

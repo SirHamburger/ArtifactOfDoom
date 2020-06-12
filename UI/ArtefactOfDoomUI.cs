@@ -56,7 +56,6 @@ namespace ArtifactOfDoom
 
             };
         }
-
         private void SetUpModCanvas()
         {
             if (ModCanvas == null)

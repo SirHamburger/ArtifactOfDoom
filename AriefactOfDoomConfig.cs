@@ -1,6 +1,8 @@
 ﻿using BepInEx;
 using R2API;
 using R2API.Utils;
+using RoR2;
+
 using System.Reflection;
 using UnityEngine;
 
@@ -32,7 +34,14 @@ namespace ArtifactOfDoom {
         public static ConfigEntry<int> minItemsPerStage;
         public static ConfigEntry<int> maxItemsPerStage;
         public static ConfigEntry<double> exponentailFactorToCalculateSumOfLostItems;
+        public static ConfigEntry<double> timeAfterHitToNotLooseItemMonsoon;
+        public static ConfigEntry<double> timeAfterHitToNotLooseItemDrizzly;
+        public static ConfigEntry<double> timeAfterHitToNotLooseItemRainstorm;
 
+
+
+
+        public static BuffIndex buffIndexDidLooseItem;
 
 
 
@@ -61,6 +70,13 @@ namespace ArtifactOfDoom {
                 "The expected maximum item count per stage. If you have more Items than that you'll have a chance to loose more than one item per hit")); 
             exponentailFactorToCalculateSumOfLostItems = cfgFile.Bind(new ConfigDefinition("Global.VanillaTweaks", "exponentailFactorToCalculateSumOfLostItems"), 1.5, new ConfigDescription(
                 "The exponent to Calculate how many items you'll loose if you're over maxItemsPerStage")); 
+
+            timeAfterHitToNotLooseItemDrizzly = cfgFile.Bind(new ConfigDefinition("Global.VanillaTweaks", "timeAfterHitToNotLooseItemDrizzly"), 0.8, new ConfigDescription(
+                "The exponent to Calculate how many items you'll loose if you're over maxItemsPerStage")); 
+            timeAfterHitToNotLooseItemRainstorm = cfgFile.Bind(new ConfigDefinition("Global.VanillaTweaks", "timeAfterHitToNotLooseItemRainstorm"), 0.2, new ConfigDescription(
+                "The exponent to Calculate how many items you'll loose if you're over maxItemsPerStage")); 
+            timeAfterHitToNotLooseItemMonsoon = cfgFile.Bind(new ConfigDefinition("Global.VanillaTweaks", "timeAfterHitToNotLooseItemMonsoon"), 0.05, new ConfigDescription(
+                "The exponent to Calculate how many items you'll loose if you're over maxItemsPerStage"));
             
             int longestName = 0;
             foreach(ItemBoilerplate x in masterItemList) {
@@ -76,6 +92,8 @@ namespace ArtifactOfDoom {
                     Logger.LogMessage("    Other ADOOM"+x.itemCodeName.PadRight(longestName) + " / N/A");
             }
 
+            var didLooseItem = new R2API.CustomBuff("didLooseItem","",Color.black,false,false);
+            buffIndexDidLooseItem = BuffAPI.Add(didLooseItem);
             foreach(ItemBoilerplate x in masterItemList) {
                 x.SetupBehavior();
             }
