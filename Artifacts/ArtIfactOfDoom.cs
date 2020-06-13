@@ -20,7 +20,7 @@ namespace ArtifactOfDoom
 {
     public class ArtifactOfDoom : Artifact<ArtifactOfDoom>
     {
-        public static bool debug = false;
+        public static bool debug = true;
         public override string displayName => "Artifact of Doom";
 
         protected override string NewLangName(string langid = null) => displayName;
@@ -252,35 +252,43 @@ namespace ArtifactOfDoom
                     {
                         if (damageReport.attackerOwnerMaster != null)
                         {
-                            if (element.GetCurrentBody().netId == damageReport.attackerOwnerMaster.GetBody().netId)
+                            if (element.GetCurrentBody() != null)
                             {
-                                tempNetworkUser = element;
+                                if (element.GetCurrentBody().netId == damageReport.attackerOwnerMaster.GetBody().netId)
+                                {
+                                    tempNetworkUser = element;
+                                }
                             }
+
 
                         }
                         else
                         {
-                            if (element.GetCurrentBody().netId == damageReport.attackerBody.netId)
+                            if (element.GetCurrentBody() != null)
                             {
-                                tempNetworkUser = element;
+                                if (element.GetCurrentBody().netId == damageReport.attackerBody.netId)
+                                {
+                                    tempNetworkUser = element;
+                                }
                             }
+
                         }
                     }
 
-                    if(!LockItemGainNetworkUser.ContainsKey(tempNetworkUser))
-                        LockItemGainNetworkUser.Add(tempNetworkUser,false);
+                    if (!LockItemGainNetworkUser.ContainsKey(tempNetworkUser))
+                        LockItemGainNetworkUser.Add(tempNetworkUser, false);
 
-                    
-                    if(!LockItemGainNetworkUser[tempNetworkUser])
+
+                    if (!LockItemGainNetworkUser[tempNetworkUser])
                     {
-                        LockItemGainNetworkUser[tempNetworkUser]=true;
-                    if (tempNetworkUser == null)
-                        Debug.LogError("--------------------------------tempNetworkUser==null---------------------------");
+                        LockItemGainNetworkUser[tempNetworkUser] = true;
+                        if (tempNetworkUser == null)
+                            Debug.LogError("--------------------------------tempNetworkUser==null---------------------------");
 
-                    ArtifactOfDoomUI.AddGainedItemsToPlayers.Invoke(temp, result =>
-                        {
-                            LockItemGainNetworkUser[tempNetworkUser]=false;
-                        }, tempNetworkUser);
+                        ArtifactOfDoomUI.AddGainedItemsToPlayers.Invoke(temp, result =>
+                            {
+                                LockItemGainNetworkUser[tempNetworkUser] = false;
+                            }, tempNetworkUser);
                     }
 
 
@@ -391,21 +399,24 @@ namespace ArtifactOfDoom
                         lostItems++;
                         int randomPosition = rand.Next(0, lstItemIndex.Count - 1);
                         ItemIndex itemToRemove = index[randomPosition];
-
+                        if (debug) Debug.LogWarning("Line 394");
                         while ((lstItemIndex[itemToRemove] == 0))
                         {
                             randomPosition = rand.Next(0, lstItemIndex.Count - 1);
                             itemToRemove = index[randomPosition];
                         }
                         lstItemIndex[itemToRemove]--;
+                        if (debug) Debug.LogWarning("Line 401");
 
                         if (!ItemCatalog.lunarItemList.Contains(itemToRemove) && (ItemCatalog.GetItemDef(itemToRemove).tier != ItemTier.NoTier))
                         {
+                            if (debug) Debug.LogWarning("Line 405");
 
                             self.body.inventory.RemoveItem(itemToRemove, 1);
 
                             PlayerStatsComponent.FindBodyStatSheet(self.body).PushStatValue(statsLostItems, 1UL);
 
+                            if (debug) Debug.LogWarning("Line 411");
 
 
 
@@ -425,6 +436,8 @@ namespace ArtifactOfDoom
                         }
                         chanceToTrigger -= 100;
                     }
+                    if (debug) Debug.LogWarning("Line 431");
+
                     string temp = "";
                     foreach (var element in ArtifactOfDoom.QueueLostItemSprite[pos])
                     {
@@ -433,9 +446,15 @@ namespace ArtifactOfDoom
                     NetworkUser tempNetworkUser = null;
                     foreach (var element in NetworkUser.readOnlyInstancesList)
                     {
-                        if (element.GetCurrentBody().netId == self.body.netId)
-                            tempNetworkUser = element;
+                        if (element.GetCurrentBody() != null)
+                        {
+                            if (element.GetCurrentBody().netId == self.body.netId)
+                                tempNetworkUser = element;
+                        }
+
                     }
+                    if (debug) Debug.LogWarning("Line 444");
+
                     if (tempNetworkUser == null)
                         Debug.LogError("--------------------------------tempNetworkUser(lostitems)==null---------------------------");
                     if (!LockNetworkUser.ContainsKey(tempNetworkUser))
