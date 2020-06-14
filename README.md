@@ -53,7 +53,7 @@ You can also reach me in Discord (Sir Hamburger#8447)
 
 ## Patchnotes
 ### Version 0.9.1
-* Fixed bug in multiplayer when one ally dies you still see your gain/lost items
+* Fixed bug in multiplayer when one ally dies you don't see your gain/lost items
 * Added exponential function to items gained
 * Added root function to items lost
 * Fixed calculation bugs for loosing items (so you will loose less items if your below the minItemCount)
