@@ -20,7 +20,7 @@ namespace ArtifactOfDoom
 {
     public class ArtifactOfDoom : Artifact<ArtifactOfDoom>
     {
-        public static bool debug = true;
+        public static bool debug = false;
         public override string displayName => "Artifact of Doom";
 
         protected override string NewLangName(string langid = null) => displayName;
@@ -162,8 +162,13 @@ namespace ArtifactOfDoom
                 int totalItems = damageReport.attackerBody.inventory.GetTotalItemCountOfTier(ItemTier.Tier1);
                 totalItems += damageReport.attackerBody.inventory.GetTotalItemCountOfTier(ItemTier.Tier2);
                 totalItems += damageReport.attackerBody.inventory.GetTotalItemCountOfTier(ItemTier.Tier3);
-                int calculatesEnemyCountToTrigger = (totalItems - currentStage * ArtifactOfDoomConfig.averageItemsPerStage.Value) * 2;
-
+                double calculatedValue = ((double)totalItems - (double)currentStage * (double)ArtifactOfDoomConfig.averageItemsPerStage.Value);
+                 int calculatesEnemyCountToTrigger=0;
+                if(calculatedValue>=0)
+                    calculatesEnemyCountToTrigger = (int)Math.Pow(calculatedValue, ArtifactOfDoomConfig.exponentTriggerItems.Value);
+                else
+                    calculatesEnemyCountToTrigger =1;
+                
                 if (calculatesEnemyCountToTrigger < 1)
                     calculatesEnemyCountToTrigger = 1;
 
@@ -348,23 +353,31 @@ namespace ArtifactOfDoom
                     double chanceToTrigger = 100.0;
                     if (totalItems <= (ArtifactOfDoomConfig.minItemsPerStage.Value * currentStage))
                     {
-                        chanceToTrigger = 1.0 - (double)(ArtifactOfDoomConfig.minItemsPerStage.Value * currentStage - totalItems) / ((double)ArtifactOfDoomConfig.minItemsPerStage.Value * currentStage);
+                        //chanceToTrigger = 1.0 - (double)(ArtifactOfDoomConfig.minItemsPerStage.Value * currentStage - totalItems) / ((double)ArtifactOfDoomConfig.minItemsPerStage.Value * currentStage);
+                        chanceToTrigger = (double)Math.Sqrt((double)totalItems/((double)currentStage*(double)ArtifactOfDoomConfig.minItemsPerStage.Value));
                         chanceToTrigger *= 100;
                     }
+                    //Debug.LogError("ChanceToTriggerLoose_Item"+ chanceToTrigger);
                     if (debug) Debug.LogWarning("Line 320");
 
                     var rand = new System.Random();
-                    for (int i = 0; i < self.body.inventory.GetItemCount(ItemIndex.Clover); i++)
-                        if (chanceToTrigger < rand.Next(0, 99))
+                    for (int i = 0; i < self.body.inventory.GetItemCount(ItemIndex.Clover)+1; i++)
+
+                    {                    
+                        int randomValue = rand.Next(1, 100);
+                       
+                        if (chanceToTrigger < (double)randomValue)
                         {
+ //Debug.LogError("chance to trigger "+ chanceToTrigger + " < Random" +  randomValue );
                             return;
                         }
+                    }
                     chanceToTrigger = 100.0;
                     if (debug) Debug.LogWarning("Line 329");
 
                     if (totalItems > (ArtifactOfDoomConfig.maxItemsPerStage.Value * currentStage))
                     {
-                        chanceToTrigger = Math.Pow((1 + (double)(totalItems - ArtifactOfDoomConfig.maxItemsPerStage.Value * currentStage) / ((double)ArtifactOfDoomConfig.maxItemsPerStage.Value * currentStage)), ArtifactOfDoomConfig.exponentailFactorToCalculateSumOfLostItems.Value);
+                        chanceToTrigger = Math.Pow((double)(totalItems) / ((double)ArtifactOfDoomConfig.maxItemsPerStage.Value * currentStage), ArtifactOfDoomConfig.exponentailFactorToCalculateSumOfLostItems.Value);
                         chanceToTrigger *= 100;
 
                     }

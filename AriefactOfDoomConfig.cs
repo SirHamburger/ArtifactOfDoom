@@ -19,7 +19,7 @@ namespace ArtifactOfDoom
     [R2APISubmoduleDependency(nameof(ItemAPI), nameof(LanguageAPI), nameof(ResourcesAPI), nameof(PlayerAPI), nameof(PrefabAPI))]
     public class ArtifactOfDoomConfig : BaseUnityPlugin
     {
-        public const string ModVer = "0.9.0";
+        public const string ModVer = "0.9.1";
         public const string ModName = "ArtifactOfDoom";
         public const string ModGuid = "com.SirHamburger.ArtifactOfDoom";
         private static Transform HUDroot = null;
@@ -57,6 +57,7 @@ namespace ArtifactOfDoom
         public static ConfigEntry<double> LoaderMultiplyerForTimedBuff;
         public static ConfigEntry<double> AcridBonusItems;
         public static ConfigEntry<double> AcridMultiplyerForTimedBuff;
+        public static ConfigEntry<double> exponentTriggerItems;
 
 
 
@@ -87,6 +88,9 @@ namespace ArtifactOfDoom
 
             averageItemsPerStage = cfgFile.Bind(new ConfigDefinition("Global.VanillaTweaks", "averageItemsPerStage"), 3, new ConfigDescription(
                 "Base chance in percent that enemys steal items from you ((totalItems - currentStage * averageItemsPerStage) * 2; \nIf that value is lower you'll need faster more enemies to get an item"));
+            exponentTriggerItems = cfgFile.Bind(new ConfigDefinition("Global.VanillaTweaks", "exponentTriggerItems"), 2.0, new ConfigDescription(
+                "The exponent for calculation when you'll get an item. If it's 1 you have a linear increase. Default is 2"));
+            
             minItemsPerStage = cfgFile.Bind(new ConfigDefinition("Global.VanillaTweaks", "minItemsPerStage"), 2, new ConfigDescription(
                 "The expected minimum item count per stage. If you have less Items than that you'll have a decreased chance that you loose items"));
             maxItemsPerStage = cfgFile.Bind(new ConfigDefinition("Global.VanillaTweaks", "maxItemsPerStage"), 7, new ConfigDescription(

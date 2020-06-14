@@ -18,23 +18,23 @@ https://github.com/wildbook/R2Mods/tree/develop/MiniRpcLib
 This mod gives you items after killing some enemies. But you'll loose items if you get hit.
 
 The calculation for the required kills is:
-```(totalItems - currentStage * averageItemsPerStage) * 2```
-`totalItems` is the current item count of each character. `CurrentStage` is the number of stages completed and `averageItemsPerStage` can be changed in the config file.
-For example you've 20 items and are on stage 5. The configured averageItems are 3 (default). That means you've to kill (20-5*3)*2=10 enemies to get one item.
+```(totalItems - currentStage * averageItemsPerStage) ^ exponentTriggerItems```
+`totalItems` is the current item count of each character. `CurrentStage` is the number of stages completed and `exponentTriggerItems` and `averageItemsPerStage` can be changed in the config file.
+For example you've 20 items and are on stage 5. The configured averageItems are 3 (default). That means you've to kill (20-5*3)^2=10 enemies to get one item.
 
 Everytime you get hit you'll loose an item. The only exception is if you've less items then the configured minItemsPerStage.
 If that is the case you have a chance that you will not use an item.  
 The calculation for this is:
-```1.0 - (minItemsPerStage * currentStage - totalItems) / (minItemsPerStage. * currentStage)```
+```squareroot(totalItems/(minItemsPerStage*CurrentStage));```
 minItemsPerStage can be configured in the setting. For example you've 6 items and are on stage 5. The configured minItemsPerStage are 2 (default).
 So you've the calculation:
-1.0-((2*5-6)/(2*5))=3/5 that means you've a change of 60% to not loose an item.
+6/(2*5)=3/5 that means you've a change of 60% to not loose an item.
 
 On the other hand the possibility increases if you've more items than you should have to loose more than one item. The formular to calculate that is:
-```(1 + (totalItems - maxItemsPerStage * currentStage) / (maxItemsPerStage * currentStage))^exponentailFactorToCalculateSumOfLostItems```
+```(totalItems) / (maxItemsPerStage * currentStage)^exponentailFactorToCalculateSumOfLostItems```
 maxItemsPerStage and exponentailFactorToCalculateSumOfLostItems are configurable and have a default value of 7 and 1.5.
 For example you've 50 items, are on stage 5 and have the default values so you calculate:
-(1 + (50 - 7 * 5) / (7 * 5))^1.5=1.7
+(50 / 7 * 5)^1.5=1.7
 So you'll have a 100% chance to loose one item and 70% chance to loose another.
 
 After you lost an item you'll get a short buff that prevents you from loosing another one. The length of that buff depends on the difficulty and can also be configured with the config entitys "timeAfterHitToNotLoose".
@@ -52,6 +52,12 @@ https://github.com/SirHamburger/ArtifactOfDoom
 You can also reach me in Discord (Sir Hamburger#8447)
 
 ## Patchnotes
+### Version 0.9.1
+* Fixed bug in multiplayer when one ally dies you still see your gain/lost items
+* Added exponential function to items gained
+* Added root function to items lost
+* Fixed calculation bugs for loosing items (so you will loose less items if your below the minItemCount)
+
 ### Version 0.9.0
 Added Character specific settings and a timed buff which prevents you from loosing items
 
