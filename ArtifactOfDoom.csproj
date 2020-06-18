@@ -5,20 +5,13 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <None Remove="tinkerssatchel_assets" />
+    <None Remove="artifactofdoom" />
   </ItemGroup>
 
   <ItemGroup>
-    <EmbeddedResource Include="tinkerssatchel_assets" />
+    <EmbeddedResource Include="artifactofdoom" />
   </ItemGroup>
-    <ItemGroup>
-    <None Remove="circularmask" />
-    <None Remove="diluvian" />
-    <None Remove="textures" />
-  </ItemGroup>
-    <ItemGroup>
-    <EmbeddedResource Include="textures" />
-  </ItemGroup>
+
 
   <ItemGroup>
     <Reference Include="Assembly-CSharp">

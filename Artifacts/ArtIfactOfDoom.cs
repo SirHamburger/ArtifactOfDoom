@@ -53,8 +53,8 @@ namespace ArtifactOfDoom
         public ArtifactOfDoom()
         {
 
-            iconPathName = "@TinkersSatchel:Assets/TinkersSatchel/Textures/Icons/danger_on.png";
-            iconPathNameDisabled = "@TinkersSatchel:Assets/TinkersSatchel/Textures/Icons/danger_off.png";
+            iconPathName = "@ArtifactOfDoom:Assets/Import/artifactofdoom_icon/ArtifactOfDoomActivated.png";
+            iconPathNameDisabled = "@ArtifactOfDoom:Assets/Import/artifactofdoom_icon/ArtifactOfDoomDeactivated.png";
 
 
 

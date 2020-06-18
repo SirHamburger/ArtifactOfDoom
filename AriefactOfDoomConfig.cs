@@ -5,7 +5,8 @@ using RoR2;
 
 using System.Reflection;
 using UnityEngine;
-
+using UnityEditor;
+using System;
 using BepInEx.Configuration;
 using Path = System.IO.Path;
 using TILER2;
@@ -19,7 +20,7 @@ namespace ArtifactOfDoom
     [R2APISubmoduleDependency(nameof(ItemAPI), nameof(LanguageAPI), nameof(ResourcesAPI), nameof(PlayerAPI), nameof(PrefabAPI))]
     public class ArtifactOfDoomConfig : BaseUnityPlugin
     {
-        public const string ModVer = "0.9.1";
+        public const string ModVer = "0.9.3";
         public const string ModName = "ArtifactOfDoom";
         public const string ModGuid = "com.SirHamburger.ArtifactOfDoom";
         private static Transform HUDroot = null;
@@ -71,13 +72,17 @@ namespace ArtifactOfDoom
         private void Awake()
         {
             _logger = Logger;
-
-            using (var stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("ArtifactOfDoom.tinkerssatchel_assets"))
+            using (var stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("ArtifactOfDoom.artifactofdoom"))
             {
                 var bundle = AssetBundle.LoadFromStream(stream);
-                var provider = new AssetBundleResourcesProvider("@TinkersSatchel", bundle);
+                var provider = new AssetBundleResourcesProvider("@ArtifactOfDoom", bundle);
                 ResourcesAPI.AddProvider(provider);
             }
+
+
+
+
+        
             cfgFile = new ConfigFile(Path.Combine(Paths.ConfigPath, ModGuid + ".cfg"), true);
 
             masterItemList = ItemBoilerplate.InitAll("ArtifactOfDoom");
