@@ -52,6 +52,9 @@ https://github.com/SirHamburger/ArtifactOfDoom
 You can also reach me in Discord (Sir Hamburger#8447)
 
 ## Patchnotes
+### Version 0.9.4
+Tougher Times now working (hopefully).
+
 ### Version 0.9.3
 Added own icon as fix for compability with TinkersSatchel
 It looks bad (very bad) but at least it works

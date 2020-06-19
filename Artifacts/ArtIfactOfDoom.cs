@@ -305,11 +305,18 @@ namespace ArtifactOfDoom
             };
             On.RoR2.HealthComponent.TakeDamage += (orig, self, damageinfo) =>
             {
+                
                 //For adding possibility to dont loose items for some time: characterBody.AddTimedBuff(BuffIndex.Immune, duration);
                 orig(self, damageinfo);
+                
                 if (!this.IsActiveAndEnabled())
                 {
 
+                    return;
+                }
+                if(damageinfo.rejected)
+                {
+                    //Debug.Log("Teddie?");
                     return;
                 }
 

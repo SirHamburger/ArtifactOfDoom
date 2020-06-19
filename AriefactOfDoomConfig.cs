@@ -20,7 +20,7 @@ namespace ArtifactOfDoom
     [R2APISubmoduleDependency(nameof(ItemAPI), nameof(LanguageAPI), nameof(ResourcesAPI), nameof(PlayerAPI), nameof(PrefabAPI))]
     public class ArtifactOfDoomConfig : BaseUnityPlugin
     {
-        public const string ModVer = "0.9.3";
+        public const string ModVer = "0.9.4";
         public const string ModName = "ArtifactOfDoom";
         public const string ModGuid = "com.SirHamburger.ArtifactOfDoom";
         private static Transform HUDroot = null;
