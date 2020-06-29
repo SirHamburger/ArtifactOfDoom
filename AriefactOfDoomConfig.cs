@@ -36,7 +36,13 @@ namespace ArtifactOfDoom
         public static ConfigEntry<int> averageItemsPerStage;
         public static ConfigEntry<int> minItemsPerStage;
         public static ConfigEntry<int> maxItemsPerStage;
+        public static ConfigEntry<double> exponentailFactorIfYouAreUnderAverageItemsPerStage;
         public static ConfigEntry<double> exponentailFactorToCalculateSumOfLostItems;
+        public static ConfigEntry<bool> artifactOfSwarmNerf;
+
+        public static ConfigEntry<bool> useArtifactOfSacreficeCalculation;
+        public static ConfigEntry<double> multiplayerForArtifactOfSacrificeDropRate;
+
         public static ConfigEntry<double> timeAfterHitToNotLooseItemMonsoon;
         public static ConfigEntry<double> timeAfterHitToNotLooseItemDrizzly;
         public static ConfigEntry<double> timeAfterHitToNotLooseItemRainstorm;
@@ -92,7 +98,7 @@ namespace ArtifactOfDoom
             }
 
             averageItemsPerStage = cfgFile.Bind(new ConfigDefinition("Global.VanillaTweaks", "averageItemsPerStage"), 3, new ConfigDescription(
-                "Base chance in percent that enemys steal items from you ((totalItems - currentStage * averageItemsPerStage) * 2; \nIf that value is lower you'll need faster more enemies to get an item"));
+                "Base chance in percent that enemys steal items from you ((totalItems - currentStage * averageItemsPerStage) ^ exponentTriggerItems; \nIf that value is lower you'll need faster more enemies to get an item"));
             exponentTriggerItems = cfgFile.Bind(new ConfigDefinition("Global.VanillaTweaks", "exponentTriggerItems"), 2.0, new ConfigDescription(
                 "The exponent for calculation when you'll get an item. If it's 1 you have a linear increase. Default is 2"));
             
@@ -103,12 +109,22 @@ namespace ArtifactOfDoom
             exponentailFactorToCalculateSumOfLostItems = cfgFile.Bind(new ConfigDefinition("Global.VanillaTweaks", "exponentailFactorToCalculateSumOfLostItems"), 1.5, new ConfigDescription(
                 "The exponent to Calculate how many items you'll loose if you're over maxItemsPerStage"));
 
+            artifactOfSwarmNerf = cfgFile.Bind(new ConfigDefinition("Global.VanillaTweaks", "artifactOfSwarmNerf"), false, new ConfigDescription(
+                "Enable the nerf for Artifact of swarm where you've to kill double as many enemies"));
+
+            useArtifactOfSacreficeCalculation= cfgFile.Bind(new ConfigDefinition("Global.VanillaTweaks", "useArtifactOfSacreficeCalculation"), false, new ConfigDescription(
+                "Chance the item gain to a specific drop rate of enemys"));
+            multiplayerForArtifactOfSacrificeDropRate= cfgFile.Bind(new ConfigDefinition("Global.VanillaTweaks", "multiplayerForArtifactOfSacrificeDropRate"), 2.0, new ConfigDescription(
+                "Multiplayer for the drop rate (base Chance is 5)"));
+
+            exponentailFactorIfYouAreUnderAverageItemsPerStage = cfgFile.Bind(new ConfigDefinition("Global.VanillaTweaks", "exponentailFactorIfYouAreUnderAverageItemsPerStage"), 0.0, new ConfigDescription(
+                "The exponent to Calculate how many kills you'll need if you're under averageItemsPerStage. The formular is totalitems^exponentailFactorIfYouAreUnderAverageItemsPerStage. Default is 0 so you'll need always two kills."));
             timeAfterHitToNotLooseItemDrizzly = cfgFile.Bind(new ConfigDefinition("Global.VanillaTweaks", "timeAfterHitToNotLooseItemDrizzly"), 0.8, new ConfigDescription(
-                "The exponent to Calculate how many items you'll loose if you're over maxItemsPerStage"));
+                "The time in seconds where you will not loose items after you lost one on drizzly"));
             timeAfterHitToNotLooseItemRainstorm = cfgFile.Bind(new ConfigDefinition("Global.VanillaTweaks", "timeAfterHitToNotLooseItemRainstorm"), 0.2, new ConfigDescription(
-                "The exponent to Calculate how many items you'll loose if you're over maxItemsPerStage"));
+                "The time in seconds where you will not loose items after you lost one on rainstorm"));
             timeAfterHitToNotLooseItemMonsoon = cfgFile.Bind(new ConfigDefinition("Global.VanillaTweaks", "timeAfterHitToNotLooseItemMonsoon"), 0.05, new ConfigDescription(
-                "The exponent to Calculate how many items you'll loose if you're over maxItemsPerStage"));
+                "The time in seconds where you will not loose items after you lost one on monsoon"));
 
             commandoBonusItems = cfgFile.Bind(new ConfigDefinition("Global.VanillaTweaks", "CommandoBonusItems"), 1.0, new ConfigDescription(
                 "The count of items which you get if you kill enough enemies"));
