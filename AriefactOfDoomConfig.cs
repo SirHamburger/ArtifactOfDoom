@@ -187,7 +187,7 @@ namespace ArtifactOfDoom
                 x.SetupBehavior();
             }
             //On.RoR2.UI.HUD.Awake +=myFunc
-            ArtifactOfDoomUI test = new ArtifactOfDoomUI();
+           // ArtifactOfDoomUI test = new ArtifactOfDoomUI();
         }
 
         private void OnDestroy()

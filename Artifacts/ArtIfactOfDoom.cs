@@ -43,6 +43,8 @@ namespace ArtifactOfDoom
 
         private static double timeForBuff = 0.0;
 
+        public static bool artifactIsActive=false;
+
 
         public void Awake()
         {
@@ -93,6 +95,7 @@ namespace ArtifactOfDoom
                 {
 
                     currentStage = RoR2.Run.instance.stageClearCount + 1;
+                    artifactIsActive =this.IsActiveAndEnabled();
 
                     orig(self);
                     if (Run.instance.selectedDifficulty == DifficultyIndex.Easy)
@@ -156,14 +159,18 @@ namespace ArtifactOfDoom
                 {
                     currentBody = damageReport.attackerBody;
                 }
+                if(!currentBody.isPlayerControlled)
+                {
+                    return;
+                }
                 //if(RunArtifactManager.instance.IsArtifactEnabled(ArtifactCatalog.GetArtifactDef(ArtifactCatalog.FindArtifactIndex("Artifact of Glass"))))
 
                 //RunArtifactManager.instance. RoR2Content.Artifacts.sacrificeArtifactDef
 
                 uint pos = 0;
-                int totalItems = damageReport.attackerBody.inventory.GetTotalItemCountOfTier(ItemTier.Tier1);
-                totalItems += damageReport.attackerBody.inventory.GetTotalItemCountOfTier(ItemTier.Tier2);
-                totalItems += damageReport.attackerBody.inventory.GetTotalItemCountOfTier(ItemTier.Tier3);
+                int totalItems = currentBody.inventory.GetTotalItemCountOfTier(ItemTier.Tier1);
+                totalItems += currentBody.inventory.GetTotalItemCountOfTier(ItemTier.Tier2);
+                totalItems += currentBody.inventory.GetTotalItemCountOfTier(ItemTier.Tier3);
                 double calculatedValue = ((double)totalItems - (double)currentStage * (double)ArtifactOfDoomConfig.averageItemsPerStage.Value);
                 int calculatesEnemyCountToTrigger = 0;
                 if (calculatedValue >= 0)
@@ -177,17 +184,50 @@ namespace ArtifactOfDoom
 
                 if (RunArtifactManager.instance.IsArtifactEnabled(RoR2Content.Artifacts.swarmsArtifactDef) && ArtifactOfDoomConfig.artifactOfSwarmNerf.Value)
                     calculatesEnemyCountToTrigger *= 2;
-                
+
                 bool enemyTrigger = getEnemyDropRate(damageReport);
                 if (counter[Playername.IndexOf(currentBody)] <= calculatesEnemyCountToTrigger && !ArtifactOfDoomConfig.useArtifactOfSacreficeCalculation.Value)
                 {
                     counter[Playername.IndexOf(currentBody)]++;
 
+                    NetworkUser tempNetworkUser = null;
+                    foreach (var element in NetworkUser.readOnlyInstancesList)
+                    {
+                        if (damageReport.attackerOwnerMaster != null)
+                        {
+                            if (element.GetCurrentBody() != null)
+                            {
+                                if (element.GetCurrentBody().netId == damageReport.attackerOwnerMaster.GetBody().netId)
+                                {
+                                    tempNetworkUser = element;
+                                }
+                            }
+
+
+                        }
+                        else
+                        {
+                            if (element.GetCurrentBody() != null)
+                            {
+                                if (element.GetCurrentBody().netId == damageReport.attackerBody.netId)
+                                {
+                                    tempNetworkUser = element;
+                                }
+                            }
+
+                        }
+                    }
+
+                    string temp = counter[Playername.IndexOf(currentBody)] + "," + calculatesEnemyCountToTrigger;
+                    Debug.LogWarning("currentBody für rpc: " + currentBody.name);
+                    ArtifactOfDoomUI.UpdateProgressBar.Invoke(temp, result =>
+                           {
+                           }, tempNetworkUser);
 
                 }
                 else
                 {
-                    if(ArtifactOfDoomConfig.useArtifactOfSacreficeCalculation.Value&&!enemyTrigger)
+                    if (ArtifactOfDoomConfig.useArtifactOfSacreficeCalculation.Value && !enemyTrigger)
                         return;
                     if (damageReport.attackerOwnerMaster != null)
                     {
@@ -291,6 +331,7 @@ namespace ArtifactOfDoom
 
                     if (!LockItemGainNetworkUser.ContainsKey(tempNetworkUser))
                         LockItemGainNetworkUser.Add(tempNetworkUser, false);
+                    counter[Playername.IndexOf(currentBody)] ++;
 
 
                     if (!LockItemGainNetworkUser[tempNetworkUser])
@@ -303,7 +344,12 @@ namespace ArtifactOfDoom
                             {
                                 LockItemGainNetworkUser[tempNetworkUser] = false;
                             }, tempNetworkUser);
+                        string tempString = counter[Playername.IndexOf(currentBody)] + "," + calculatesEnemyCountToTrigger;
+                        ArtifactOfDoomUI.UpdateProgressBar.Invoke(tempString, result =>
+                               {
+                               }, tempNetworkUser);
                     }
+
 
 
                     counter[Playername.IndexOf(currentBody)] = 0;
@@ -495,6 +541,26 @@ namespace ArtifactOfDoom
                         {
                             LockNetworkUser[tempNetworkUser] = false;
                         }, tempNetworkUser);
+
+
+
+                        double calculatedValue = ((double)totalItems - (double)currentStage * (double)ArtifactOfDoomConfig.averageItemsPerStage.Value);
+                        int calculatesEnemyCountToTrigger = 0;
+                        if (calculatedValue >= 0)
+                            calculatesEnemyCountToTrigger = (int)Math.Pow(calculatedValue, ArtifactOfDoomConfig.exponentTriggerItems.Value);
+                        else
+                            calculatesEnemyCountToTrigger = (int)Math.Pow(totalItems, ArtifactOfDoomConfig.exponentailFactorIfYouAreUnderAverageItemsPerStage.Value);
+                        //calculatesEnemyCountToTrigger =1;
+
+                        if (calculatesEnemyCountToTrigger < 1)
+                            calculatesEnemyCountToTrigger = 1;
+
+                        if (RunArtifactManager.instance.IsArtifactEnabled(RoR2Content.Artifacts.swarmsArtifactDef) && ArtifactOfDoomConfig.artifactOfSwarmNerf.Value)
+                            calculatesEnemyCountToTrigger *= 2;
+                         string tempString = counter[Playername.IndexOf(self.body)] + "," + calculatesEnemyCountToTrigger;
+                        ArtifactOfDoomUI.UpdateProgressBar.Invoke(tempString, result =>
+                               {
+                               }, tempNetworkUser);
                     }
                     //Debug.LogWarning("You lost " + lostItems + "Items");
 
@@ -652,26 +718,26 @@ namespace ArtifactOfDoom
 
         private bool getEnemyDropRate(DamageReport damageReport)
         {
-            if(!ArtifactOfDoomConfig.useArtifactOfSacreficeCalculation.Value)
-            return false;
-			if (!damageReport.victimMaster)
-			{
-				return false;
-			}
-			if (damageReport.attackerTeamIndex == damageReport.victimTeamIndex && damageReport.victimMaster.minionOwnership.ownerMaster)
-			{
-				return false;
-			}
-			float expAdjustedDropChancePercent = Util.GetExpAdjustedDropChancePercent(5f*(float)ArtifactOfDoomConfig.multiplayerForArtifactOfSacrificeDropRate.Value, damageReport.victim.gameObject);
-			//Debug.LogFormat("Drop chance from {0}: {1}", new object[]
-			//{
-			//	damageReport.victimBody,
-			//	expAdjustedDropChancePercent
-			//});
-			if (Util.CheckRoll(expAdjustedDropChancePercent, 0f, null))
-			{
+            if (!ArtifactOfDoomConfig.useArtifactOfSacreficeCalculation.Value)
+                return false;
+            if (!damageReport.victimMaster)
+            {
+                return false;
+            }
+            if (damageReport.attackerTeamIndex == damageReport.victimTeamIndex && damageReport.victimMaster.minionOwnership.ownerMaster)
+            {
+                return false;
+            }
+            float expAdjustedDropChancePercent = Util.GetExpAdjustedDropChancePercent(5f * (float)ArtifactOfDoomConfig.multiplayerForArtifactOfSacrificeDropRate.Value, damageReport.victim.gameObject);
+            //Debug.LogFormat("Drop chance from {0}: {1}", new object[]
+            //{
+            //	damageReport.victimBody,
+            //	expAdjustedDropChancePercent
+            //});
+            if (Util.CheckRoll(expAdjustedDropChancePercent, 0f, null))
+            {
                 return true;
-			}
+            }
             return false;
         }
 

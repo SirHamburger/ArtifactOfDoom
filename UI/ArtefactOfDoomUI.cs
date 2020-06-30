@@ -81,10 +81,15 @@ namespace ArtifactOfDoom
         public GameObject ModExpBarGroup = null;
         public static List<GameObject> listGainedImages = new List<GameObject>();
         public static List<GameObject> listLostImages = new List<GameObject>();
+        public static GameObject itemGainBar;
+        public static GameObject itemGainFrame;
+
         #endregion
         public void ExpBarAwakeAddon(On.RoR2.UI.ExpBar.orig_Awake orig, RoR2.UI.ExpBar self)
         {
             orig(self);
+            if (!ArtifactOfDoom.artifactIsActive)
+                return;
             var currentRect = self.gameObject.GetComponentsInChildren<RectTransform>();
             if (currentRect != null && VanillaExpBarRoot == null)
             {
@@ -129,6 +134,7 @@ namespace ArtifactOfDoom
                         ModExpBarGroup.AddComponent<NetworkIdentity>().serverOnly = false;
                         listGainedImages.Add(ModExpBarGroup);
 
+
                         ModExpBarGroup = new GameObject("LostItems" + i);
 
                         ModExpBarGroup.transform.SetParent(ModCanvas.transform);
@@ -148,6 +154,37 @@ namespace ArtifactOfDoom
                         //                    ModExpBarGroup.AddComponent<Text
                     }
 
+                    if (!ArtifactOfDoomConfig.useArtifactOfSacreficeCalculation.Value)
+                    {
+                        ModExpBarGroup = new GameObject("ItemGainBar");
+                        ModExpBarGroup.transform.SetParent(ModCanvas.transform);
+                        ModExpBarGroup.AddComponent<RectTransform>();
+                        ModExpBarGroup.GetComponent<RectTransform>().anchorMin = new Vector2(0.35f, 0.10f);
+                        ModExpBarGroup.GetComponent<RectTransform>().anchorMax = new Vector2(0.35f, 0.11f);
+                        ModExpBarGroup.GetComponent<RectTransform>().sizeDelta = Vector2.zero;
+                        ModExpBarGroup.GetComponent<RectTransform>().anchoredPosition = Vector2.zero;
+                        ModExpBarGroup.AddComponent<NetworkIdentity>().serverOnly = false;
+                        itemGainBar = ModExpBarGroup;
+                        itemGainBar.AddComponent<Image>();
+                        itemGainBar.GetComponent<Image>().color = new Color(255, 255, 255,0.3f);
+
+
+
+                        ModExpBarGroup = new GameObject("ItemGainFrame");
+                        ModExpBarGroup.transform.SetParent(ModCanvas.transform);
+                        ModExpBarGroup.AddComponent<RectTransform>();
+                        ModExpBarGroup.GetComponent<RectTransform>().anchorMin = new Vector2(0.35f, 0.10f);
+                        ModExpBarGroup.GetComponent<RectTransform>().anchorMax = new Vector2(0.65f, 0.11f);
+                        ModExpBarGroup.GetComponent<RectTransform>().sizeDelta = Vector2.zero;
+                        ModExpBarGroup.GetComponent<RectTransform>().anchoredPosition = Vector2.zero;
+                        ModExpBarGroup.AddComponent<NetworkIdentity>().serverOnly = false;
+                        itemGainFrame = ModExpBarGroup;
+                        itemGainFrame.AddComponent<Image>();
+                        itemGainFrame.GetComponent<Image>().color = new Color(255, 0, 0, 0.1f);
+
+
+                    }
+
 
 
                 }
@@ -159,22 +196,26 @@ namespace ArtifactOfDoom
 
 
         }
+        public static void updateItemProgressBar(int enemiesKilled, int enemiesNeeded)
+        {
+            //Debug.LogWarning("enemiesNeeded für updateItemProgressBar: " + enemiesNeeded);
+            //Debug.LogWarning("enemiesKilled für updateItemProgressBar: " + enemiesKilled);
+            double progress = (double)enemiesKilled / ((double)enemiesNeeded);
+            itemGainBar.GetComponent<RectTransform>().anchorMin = new Vector2(0.35f, 0.10f);
+            itemGainBar.GetComponent<RectTransform>().anchorMax = new Vector2(0.35f + (float)(progress * 0.3), 0.11f);
+            //Debug.LogWarning("progress für updateItemProgressBar: " + progress);
+            //itemGainFrame.GetComponent<RectTransform>().anchorMin = new Vector2(0.35f+(float)(progress*0.3),  0.10f);
+            //Debug.LogWarning("0.35f+(float)(progress*0.3) für updateItemProgressBar: " + (0.35f+(float)(progress*0.3)));
+            //itemGainFrame.GetComponent<RectTransform>().anchorMax = new Vector2(0.65f, 0.11f);
 
-        // Define two actions sending/receiving a single string
-        public IRpcAction<string> ExampleCommandHost { get; set; }
-        public IRpcAction<string> ExampleCommandClient { get; set; }
 
-        // Define two actions that manages reading/writing messages themselves
-        public IRpcAction<Action<NetworkWriter>> ExampleCommandHostCustom { get; set; }
-        public IRpcAction<Action<NetworkWriter>> ExampleCommandClientCustom { get; set; }
+        }
 
-        // Define two functions of type `string Function(bool);`
-        public IRpcFunc<bool, string> ExampleFuncClient { get; set; }
-        public IRpcFunc<bool, string> ExampleFuncHost { get; set; }
 
-        // Define two functions of type `ExampleObject Function(ExampleObject);`
+
         public static IRpcFunc<string, string> AddGainedItemsToPlayers { get; set; }
         public static IRpcFunc<string, string> AddLostItemsOfPlayers { get; set; }
+        public static IRpcFunc<string, string> UpdateProgressBar { get; set; }
 
         public const string ModVer = "0.9.4";
         public const string ModName = "ArtifactOfDoom";
@@ -192,9 +233,6 @@ namespace ArtifactOfDoom
             // I opted for the ModGuid instead of an arbitrary number or GUID to encourage mods not to set the same ID
             var miniRpc = MiniRpc.CreateInstance(ModGuid);
 
-            // Define two commands, both transmitting a single string
-            ExampleCommandHost = miniRpc.RegisterAction(Target.Server, (NetworkUser user, string x) => Debug.Log($"[Host] {user?.userName} sent us: {x}"));
-            ExampleCommandClient = miniRpc.RegisterAction(Target.Client, (NetworkUser user, string x) => Debug.Log($"[Client] Host sent us: {x}"));
 
 
             AddGainedItemsToPlayers = miniRpc.RegisterFunc(Target.Client, (NetworkUser user, string QueueGainedItemSpriteToString) => //--------------------HierSTuffMachen!!
@@ -213,7 +251,7 @@ namespace ArtifactOfDoom
                         ArtifactOfDoomUI.listGainedImages[i].GetComponent<Image>().sprite = ItemCatalog.GetItemDef(ItemCatalog.FindItemIndex(element)).pickupIconSprite;
 
                         i++;
-                        
+
                     }
 
                 }
@@ -238,6 +276,16 @@ namespace ArtifactOfDoom
                     }
 
                 }
+                return "dummie";
+            });
+            UpdateProgressBar = miniRpc.RegisterFunc(Target.Client, (NetworkUser user, string killedNeededEnemies) => //--------------------HierSTuffMachen!!
+            {
+                Debug.LogWarning("string killedNeededEnemies für rpc: " + killedNeededEnemies);
+                string[] stringkilledNeededEnemies = killedNeededEnemies.Split(',');
+
+                int enemiesKilled = Convert.ToInt32(stringkilledNeededEnemies[0]);
+                int enemiesNeeded = Convert.ToInt32(stringkilledNeededEnemies[1]) + 2;
+                updateItemProgressBar(enemiesKilled, enemiesNeeded);
                 return "dummie";
             });
 
