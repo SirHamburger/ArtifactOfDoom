@@ -43,7 +43,7 @@ namespace ArtifactOfDoom
 
         private static double timeForBuff = 0.0;
 
-        public static bool artifactIsActive=false;
+        public static bool artifactIsActive = false;
 
 
         public void Awake()
@@ -95,7 +95,7 @@ namespace ArtifactOfDoom
                 {
 
                     currentStage = RoR2.Run.instance.stageClearCount + 1;
-                    artifactIsActive =this.IsActiveAndEnabled();
+                    artifactIsActive = this.IsActiveAndEnabled();
 
                     orig(self);
                     if (Run.instance.selectedDifficulty == DifficultyIndex.Easy)
@@ -111,6 +111,38 @@ namespace ArtifactOfDoom
                     LockNetworkUser.Clear();
 
                 };
+            On.RoR2.CharacterBody.OnInventoryChanged += (orig, self) =>
+            {
+                orig(self);
+                try{
+                if (!this.IsActiveAndEnabled())
+                    return;
+                if(!self.isPlayerControlled)
+                    return;
+                NetworkUser tempNetworkUser = getNetworkUserOfCharacterBody(self);
+                int calculatesEnemyCountToTrigger = calculateEnemyCountToTrigger(self);
+                if (!Playername.Contains(self))
+                {
+                    Playername.Add(self);
+                    counter.Add(0);
+                }
+                if(tempNetworkUser==null)
+                {
+                    Debug.LogError("Network user == null");
+                    return;
+                }
+
+                string tempString = counter[Playername.IndexOf(self)] + "," + calculatesEnemyCountToTrigger;
+                ArtifactOfDoomUI.UpdateProgressBar.Invoke(tempString, result =>
+                {
+                }, tempNetworkUser);
+                }
+                catch(Exception e)
+                {
+                    Debug.LogError("Error while inventory changed");
+                }
+
+            };
             On.RoR2.GlobalEventManager.OnCharacterDeath += (orig, self, damageReport) =>
             {
                 //try
@@ -132,7 +164,6 @@ namespace ArtifactOfDoom
                 if (damageReport.victimBody.inventory == null)
                     return;
 
-
                 if (damageReport.attackerOwnerMaster != null)
                 {
                     if (!Playername.Contains(damageReport.attackerBody))
@@ -140,17 +171,14 @@ namespace ArtifactOfDoom
                         Playername.Add(damageReport.attackerOwnerMaster.GetBody());
                         counter.Add(0);
                     }
-
-
-
                 }
                 if (!Playername.Contains(damageReport.attackerBody))
                 {
                     Playername.Add(damageReport.attackerBody);
                     counter.Add(0);
                 }
-                CharacterBody currentBody;
 
+                CharacterBody currentBody;
                 if (damageReport.attackerOwnerMaster != null)
                 {
                     currentBody = damageReport.attackerOwnerMaster.GetBody();
@@ -159,70 +187,25 @@ namespace ArtifactOfDoom
                 {
                     currentBody = damageReport.attackerBody;
                 }
-                if(!currentBody.isPlayerControlled)
+                if (!currentBody.isPlayerControlled)
                 {
                     return;
                 }
-                //if(RunArtifactManager.instance.IsArtifactEnabled(ArtifactCatalog.GetArtifactDef(ArtifactCatalog.FindArtifactIndex("Artifact of Glass"))))
-
-                //RunArtifactManager.instance. RoR2Content.Artifacts.sacrificeArtifactDef
 
                 uint pos = 0;
-                int totalItems = currentBody.inventory.GetTotalItemCountOfTier(ItemTier.Tier1);
-                totalItems += currentBody.inventory.GetTotalItemCountOfTier(ItemTier.Tier2);
-                totalItems += currentBody.inventory.GetTotalItemCountOfTier(ItemTier.Tier3);
-                double calculatedValue = ((double)totalItems - (double)currentStage * (double)ArtifactOfDoomConfig.averageItemsPerStage.Value);
-                int calculatesEnemyCountToTrigger = 0;
-                if (calculatedValue >= 0)
-                    calculatesEnemyCountToTrigger = (int)Math.Pow(calculatedValue, ArtifactOfDoomConfig.exponentTriggerItems.Value);
-                else
-                    calculatesEnemyCountToTrigger = (int)Math.Pow(totalItems, ArtifactOfDoomConfig.exponentailFactorIfYouAreUnderAverageItemsPerStage.Value);
-                //calculatesEnemyCountToTrigger =1;
 
-                if (calculatesEnemyCountToTrigger < 1)
-                    calculatesEnemyCountToTrigger = 1;
-
-                if (RunArtifactManager.instance.IsArtifactEnabled(RoR2Content.Artifacts.swarmsArtifactDef) && ArtifactOfDoomConfig.artifactOfSwarmNerf.Value)
-                    calculatesEnemyCountToTrigger *= 2;
-
+                int calculatesEnemyCountToTrigger = calculateEnemyCountToTrigger(currentBody);
                 bool enemyTrigger = getEnemyDropRate(damageReport);
                 if (counter[Playername.IndexOf(currentBody)] <= calculatesEnemyCountToTrigger && !ArtifactOfDoomConfig.useArtifactOfSacreficeCalculation.Value)
                 {
                     counter[Playername.IndexOf(currentBody)]++;
 
-                    NetworkUser tempNetworkUser = null;
-                    foreach (var element in NetworkUser.readOnlyInstancesList)
-                    {
-                        if (damageReport.attackerOwnerMaster != null)
-                        {
-                            if (element.GetCurrentBody() != null)
+                     NetworkUser tempNetworkUser = getNetworkUserOfDamageReport(damageReport, true);
+                     string temp = counter[Playername.IndexOf(currentBody)] + "," + calculatesEnemyCountToTrigger;
+                     Debug.LogWarning("currentBody für rpc: " + currentBody.name);
+                     ArtifactOfDoomUI.UpdateProgressBar.Invoke(temp, result =>
                             {
-                                if (element.GetCurrentBody().netId == damageReport.attackerOwnerMaster.GetBody().netId)
-                                {
-                                    tempNetworkUser = element;
-                                }
-                            }
-
-
-                        }
-                        else
-                        {
-                            if (element.GetCurrentBody() != null)
-                            {
-                                if (element.GetCurrentBody().netId == damageReport.attackerBody.netId)
-                                {
-                                    tempNetworkUser = element;
-                                }
-                            }
-
-                        }
-                    }
-
-                    string temp = counter[Playername.IndexOf(currentBody)] + "," + calculatesEnemyCountToTrigger;
-                    Debug.LogWarning("currentBody für rpc: " + currentBody.name);
-                    ArtifactOfDoomUI.UpdateProgressBar.Invoke(temp, result =>
-                           {
-                           }, tempNetworkUser);
+                            }, tempNetworkUser);
 
                 }
                 else
@@ -231,9 +214,6 @@ namespace ArtifactOfDoom
                         return;
                     if (damageReport.attackerOwnerMaster != null)
                     {
-
-
-                        //damageReport.attackerOwnerMaster.GetBody().inventory.GiveRandomItems(1);
                         double chanceToTrigger = getCharacterSpezificBuffLengthMultiplier(damageReport.attackerOwnerMaster.GetBody());
                         chanceToTrigger *= 100;
                         var rand = new System.Random();
@@ -243,18 +223,14 @@ namespace ArtifactOfDoom
 
 
                             PlayerStatsComponent.FindBodyStatSheet(damageReport.attackerOwnerMaster.GetBody()).PushStatValue(statsGainItems, 1UL);
-                            //for(int j= 0; j< QueueGainedItemSprite.Count; j++)
                             if (QueueGainedItemSprite.ContainsKey(damageReport.attackerOwnerMaster.GetBody().netId.Value))
                                 pos = damageReport.attackerOwnerMaster.GetBody().netId.Value;
                             else
                             {
-
                                 QueueGainedItemSprite.Add(damageReport.attackerOwnerMaster.GetBody().netId.Value, new Queue<ItemDef>());
                                 pos = damageReport.attackerOwnerMaster.GetBody().netId.Value;
-
                             }
                             QueueGainedItemSprite[pos].Enqueue(ItemCatalog.GetItemDef(addedItem));
-                            //QueueGainedItemSprite[pos].Enqueue(ItemCatalog.GetItemDef(damageReport.attackerOwnerMaster.GetBody().inventory.itemAcquisitionOrder[damageReport.attackerOwnerMaster.GetBody().inventory.itemAcquisitionOrder.Count - 1]));
                             chanceToTrigger -= 100;
                         }
                     }
@@ -265,7 +241,6 @@ namespace ArtifactOfDoom
                         var rand = new System.Random();
                         while (chanceToTrigger > rand.Next(0, 99))
                         {
-                            //damageReport.attackerBody.inventory.GiveRandomItems(1);
                             ItemIndex addedItem = GiveAndReturnRandomItem(damageReport.attackerBody.inventory);
                             PlayerStatsComponent.FindBodyStatSheet(damageReport.attackerBody).PushStatValue(statsGainItems, 1UL);
                             if (QueueGainedItemSprite.ContainsKey(damageReport.attackerBody.netId.Value))
@@ -282,10 +257,7 @@ namespace ArtifactOfDoom
                                     Debug.Log($"[SirHamburger ArtifactOfDoom] Error while excecuting : QueueGainedItemSprite.Add(damageReport.attackerBody.netId.Value, new Queue<Sprite>()); (line 203)");
                                 }
                             }
-
-
                             QueueGainedItemSprite[pos].Enqueue(ItemCatalog.GetItemDef(addedItem));
-                            //QueueGainedItemSprite[pos].Enqueue(ItemCatalog.GetItemDef(damageReport.attackerBody.inventory.itemAcquisitionOrder[damageReport.attackerBody.inventory.itemAcquisitionOrder.Count - 1]));
                             chanceToTrigger -= 100;
                         }
 
@@ -301,37 +273,11 @@ namespace ArtifactOfDoom
                         temp += element.name + " ";
                     }
 
-                    NetworkUser tempNetworkUser = null;
-                    foreach (var element in NetworkUser.readOnlyInstancesList)
-                    {
-                        if (damageReport.attackerOwnerMaster != null)
-                        {
-                            if (element.GetCurrentBody() != null)
-                            {
-                                if (element.GetCurrentBody().netId == damageReport.attackerOwnerMaster.GetBody().netId)
-                                {
-                                    tempNetworkUser = element;
-                                }
-                            }
-
-
-                        }
-                        else
-                        {
-                            if (element.GetCurrentBody() != null)
-                            {
-                                if (element.GetCurrentBody().netId == damageReport.attackerBody.netId)
-                                {
-                                    tempNetworkUser = element;
-                                }
-                            }
-
-                        }
-                    }
+                    NetworkUser tempNetworkUser = getNetworkUserOfDamageReport(damageReport, true);
 
                     if (!LockItemGainNetworkUser.ContainsKey(tempNetworkUser))
                         LockItemGainNetworkUser.Add(tempNetworkUser, false);
-                    counter[Playername.IndexOf(currentBody)] ++;
+                    counter[Playername.IndexOf(currentBody)]++;
 
 
                     if (!LockItemGainNetworkUser[tempNetworkUser])
@@ -344,10 +290,10 @@ namespace ArtifactOfDoom
                             {
                                 LockItemGainNetworkUser[tempNetworkUser] = false;
                             }, tempNetworkUser);
-                        string tempString = counter[Playername.IndexOf(currentBody)] + "," + calculatesEnemyCountToTrigger;
-                        ArtifactOfDoomUI.UpdateProgressBar.Invoke(tempString, result =>
-                               {
-                               }, tempNetworkUser);
+                         string tempString = counter[Playername.IndexOf(currentBody)] + "," + calculatesEnemyCountToTrigger;
+                         ArtifactOfDoomUI.UpdateProgressBar.Invoke(tempString, result =>
+                                {
+                                }, tempNetworkUser);
                     }
 
 
@@ -392,9 +338,7 @@ namespace ArtifactOfDoom
                     return;
                 }
                 if (debug) Debug.LogWarning("Line 294");
-                int totalItems = self.body.inventory.GetTotalItemCountOfTier(ItemTier.Tier1);
-                totalItems += self.body.inventory.GetTotalItemCountOfTier(ItemTier.Tier2);
-                totalItems += self.body.inventory.GetTotalItemCountOfTier(ItemTier.Tier3);
+                int totalItems = getTotalItemCountOfPlayer(self.body);
                 if (debug) Debug.LogWarning("Line 298");
                 if (self.body.isPlayerControlled && (totalItems > 0) && self.name != damageinfo.attacker.name)
                 {
@@ -430,7 +374,6 @@ namespace ArtifactOfDoom
 
                         if (chanceToTrigger < (double)randomValue)
                         {
-                            //Debug.LogError("chance to trigger "+ chanceToTrigger + " < Random" +  randomValue );
                             return;
                         }
                     }
@@ -493,9 +436,6 @@ namespace ArtifactOfDoom
 
                             if (debug) Debug.LogWarning("Line 411");
 
-
-
-
                             QueueLostItemSprite[pos].Enqueue(ItemCatalog.GetItemDef(itemToRemove));
                             if (QueueLostItemSprite[pos].Count > 10)
                                 QueueLostItemSprite[pos].Dequeue();
@@ -518,16 +458,7 @@ namespace ArtifactOfDoom
                     {
                         temp += element.name + " ";
                     }
-                    NetworkUser tempNetworkUser = null;
-                    foreach (var element in NetworkUser.readOnlyInstancesList)
-                    {
-                        if (element.GetCurrentBody() != null)
-                        {
-                            if (element.GetCurrentBody().netId == self.body.netId)
-                                tempNetworkUser = element;
-                        }
-
-                    }
+                    NetworkUser tempNetworkUser = getNetworkUserOfCharacterBody(self.body);
                     if (debug) Debug.LogWarning("Line 444");
 
                     if (tempNetworkUser == null)
@@ -541,33 +472,84 @@ namespace ArtifactOfDoom
                         {
                             LockNetworkUser[tempNetworkUser] = false;
                         }, tempNetworkUser);
-
-
-
-                        double calculatedValue = ((double)totalItems - (double)currentStage * (double)ArtifactOfDoomConfig.averageItemsPerStage.Value);
-                        int calculatesEnemyCountToTrigger = 0;
-                        if (calculatedValue >= 0)
-                            calculatesEnemyCountToTrigger = (int)Math.Pow(calculatedValue, ArtifactOfDoomConfig.exponentTriggerItems.Value);
-                        else
-                            calculatesEnemyCountToTrigger = (int)Math.Pow(totalItems, ArtifactOfDoomConfig.exponentailFactorIfYouAreUnderAverageItemsPerStage.Value);
-                        //calculatesEnemyCountToTrigger =1;
-
-                        if (calculatesEnemyCountToTrigger < 1)
-                            calculatesEnemyCountToTrigger = 1;
-
-                        if (RunArtifactManager.instance.IsArtifactEnabled(RoR2Content.Artifacts.swarmsArtifactDef) && ArtifactOfDoomConfig.artifactOfSwarmNerf.Value)
-                            calculatesEnemyCountToTrigger *= 2;
+                         int calculatesEnemyCountToTrigger = calculateEnemyCountToTrigger(self.body);
                          string tempString = counter[Playername.IndexOf(self.body)] + "," + calculatesEnemyCountToTrigger;
-                        ArtifactOfDoomUI.UpdateProgressBar.Invoke(tempString, result =>
-                               {
-                               }, tempNetworkUser);
+                         ArtifactOfDoomUI.UpdateProgressBar.Invoke(tempString, result =>
+                                {
+                                }, tempNetworkUser);
                     }
-                    //Debug.LogWarning("You lost " + lostItems + "Items");
-
                 }
 
 
             };
+        }
+        private NetworkUser getNetworkUserOfDamageReport(DamageReport report, bool withMaster)
+        {
+            NetworkUser tempNetworkUser = null;
+            foreach (var element in NetworkUser.readOnlyInstancesList)
+            {
+                if (report.attackerOwnerMaster != null && withMaster)
+                {
+                    if (element.GetCurrentBody() != null)
+                    {
+                        if (element.GetCurrentBody().netId == report.attackerOwnerMaster.GetBody().netId)
+                        {
+                            tempNetworkUser = element;
+                        }
+                    }
+
+
+                }
+                else
+                {
+                    if (element.GetCurrentBody() != null)
+                    {
+                        if (element.GetCurrentBody().netId == report.attackerBody.netId)
+                        {
+                            tempNetworkUser = element;
+                        }
+                    }
+
+                }
+            }
+            return tempNetworkUser;
+        }
+        private NetworkUser getNetworkUserOfCharacterBody(CharacterBody body)
+        {
+            NetworkUser tempNetworkUser = null;
+            foreach (var element in NetworkUser.readOnlyInstancesList)
+            {
+                if (element.GetCurrentBody() != null)
+                {
+                    if (element.GetCurrentBody().netId == body.netId)
+                        tempNetworkUser = element;
+                }
+            }
+            return tempNetworkUser;
+        }
+        private int getTotalItemCountOfPlayer(CharacterBody body)
+        {
+            return body.inventory.GetTotalItemCountOfTier(ItemTier.Tier1) +
+            body.inventory.GetTotalItemCountOfTier(ItemTier.Tier2) +
+            body.inventory.GetTotalItemCountOfTier(ItemTier.Tier3);
+        }
+        private int calculateEnemyCountToTrigger(CharacterBody body)
+        {
+            double totalItems = getTotalItemCountOfPlayer(body);
+            double calculatedValue = ((double)totalItems - (double)currentStage * (double)ArtifactOfDoomConfig.averageItemsPerStage.Value);
+            int calculatesEnemyCountToTrigger = 0;
+            if (calculatedValue >= 0)
+                calculatesEnemyCountToTrigger = (int)Math.Pow(calculatedValue, ArtifactOfDoomConfig.exponentTriggerItems.Value);
+            else
+                calculatesEnemyCountToTrigger = (int)Math.Pow(totalItems, ArtifactOfDoomConfig.exponentailFactorIfYouAreUnderAverageItemsPerStage.Value);
+            //calculatesEnemyCountToTrigger =1;
+
+            if (calculatesEnemyCountToTrigger < 1)
+                calculatesEnemyCountToTrigger = 1;
+
+            if (RunArtifactManager.instance.IsArtifactEnabled(RoR2Content.Artifacts.swarmsArtifactDef) && ArtifactOfDoomConfig.artifactOfSwarmNerf.Value)
+                calculatesEnemyCountToTrigger *= 2;
+            return calculatesEnemyCountToTrigger;
         }
 
         private double getCharacterSpezificItemCount(CharacterBody body)

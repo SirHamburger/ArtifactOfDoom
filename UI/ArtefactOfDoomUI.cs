@@ -153,9 +153,12 @@ namespace ArtifactOfDoom
 
                         //                    ModExpBarGroup.AddComponent<Text
                     }
-
-                    if (!ArtifactOfDoomConfig.useArtifactOfSacreficeCalculation.Value && !ArtifactOfDoomConfig.disableItemProgressBar.Value)
+                    Debug.LogError ("ArtifactOfDoomConfig.useArtifactOfSacreficeCalculation.Value"+ArtifactOfDoomConfig.useArtifactOfSacreficeCalculation.Value);
+                    Debug.LogError("ArtifactOfDoomConfig.disableItemProgressBar.Value"+ArtifactOfDoomConfig.disableItemProgressBar.Value);
+                    //if(!ArtifactOfDoomConfig.disableItemProgressBar.Value)
+                    if (!ArtifactOfDoomConfig.useArtifactOfSacreficeCalculation.Value)
                     {
+                        Debug.LogError("!ArtifactOfDoomConfig.useArtifactOfSacreficeCalculation.Value && !ArtifactOfDoomConfig.disableItemProgressBar.Value");
                         ModExpBarGroup = new GameObject("ItemGainBar");
                         ModExpBarGroup.transform.SetParent(ModCanvas.transform);
                         ModExpBarGroup.AddComponent<RectTransform>();
@@ -163,10 +166,11 @@ namespace ArtifactOfDoom
                         ModExpBarGroup.GetComponent<RectTransform>().anchorMax = new Vector2(0.35f, 0.06f);
                         ModExpBarGroup.GetComponent<RectTransform>().sizeDelta = Vector2.zero;
                         ModExpBarGroup.GetComponent<RectTransform>().anchoredPosition = Vector2.zero;
-                        ModExpBarGroup.AddComponent<NetworkIdentity>().serverOnly = false;
+                        ModExpBarGroup.AddComponent<NetworkIdentity>();
+
                         itemGainBar = ModExpBarGroup;
                         itemGainBar.AddComponent<Image>();
-                        itemGainBar.GetComponent<Image>().color = new Color(255, 255, 255,0.3f);
+                        itemGainBar.GetComponent<Image>().color = new Color(255, 255, 255, 0.3f);
 
 
 
@@ -177,10 +181,11 @@ namespace ArtifactOfDoom
                         ModExpBarGroup.GetComponent<RectTransform>().anchorMax = new Vector2(0.65f, 0.06f);
                         ModExpBarGroup.GetComponent<RectTransform>().sizeDelta = Vector2.zero;
                         ModExpBarGroup.GetComponent<RectTransform>().anchoredPosition = Vector2.zero;
-                        ModExpBarGroup.AddComponent<NetworkIdentity>().serverOnly = false;
+                        ModExpBarGroup.AddComponent<NetworkIdentity>();
                         itemGainFrame = ModExpBarGroup;
                         itemGainFrame.AddComponent<Image>();
                         itemGainFrame.GetComponent<Image>().color = new Color(255, 0, 0, 0.1f);
+                        
 
 
                     }
@@ -198,15 +203,6 @@ namespace ArtifactOfDoom
         }
         public static void updateItemProgressBar(int enemiesKilled, int enemiesNeeded)
         {
-            //Debug.LogWarning("enemiesNeeded für updateItemProgressBar: " + enemiesNeeded);
-            //Debug.LogWarning("enemiesKilled für updateItemProgressBar: " + enemiesKilled);
-            double progress = (double)enemiesKilled / ((double)enemiesNeeded);
-            itemGainBar.GetComponent<RectTransform>().anchorMin = new Vector2(0.35f, 0.10f);
-            itemGainBar.GetComponent<RectTransform>().anchorMax = new Vector2(0.35f + (float)(progress * 0.3), 0.11f);
-            //Debug.LogWarning("progress für updateItemProgressBar: " + progress);
-            //itemGainFrame.GetComponent<RectTransform>().anchorMin = new Vector2(0.35f+(float)(progress*0.3),  0.10f);
-            //Debug.LogWarning("0.35f+(float)(progress*0.3) für updateItemProgressBar: " + (0.35f+(float)(progress*0.3)));
-            //itemGainFrame.GetComponent<RectTransform>().anchorMax = new Vector2(0.65f, 0.11f);
 
 
         }
@@ -216,6 +212,7 @@ namespace ArtifactOfDoom
         public static IRpcFunc<string, string> AddGainedItemsToPlayers { get; set; }
         public static IRpcFunc<string, string> AddLostItemsOfPlayers { get; set; }
         public static IRpcFunc<string, string> UpdateProgressBar { get; set; }
+        public static IRpcFunc<string, bool> askForSettings { get; set; }
 
         public const string ModVer = "0.9.4";
         public const string ModName = "ArtifactOfDoom";
@@ -282,13 +279,33 @@ namespace ArtifactOfDoom
             {
                 Debug.LogWarning("string killedNeededEnemies für rpc: " + killedNeededEnemies);
                 string[] stringkilledNeededEnemies = killedNeededEnemies.Split(',');
-
+                Debug.LogError("in line 276");
                 int enemiesKilled = Convert.ToInt32(stringkilledNeededEnemies[0]);
                 int enemiesNeeded = Convert.ToInt32(stringkilledNeededEnemies[1]) + 2;
-                updateItemProgressBar(enemiesKilled, enemiesNeeded);
+                Debug.LogError("in line 279");
+                    double progress = (double)enemiesKilled / ((double)enemiesNeeded);
+                                    Debug.LogError("in line 2282");
+                    if( itemGainBar.GetComponent<RectTransform>()==null)
+                        return "Error while excecuting Update progress bar";
+                    if ((0.35f + (float)(progress * 0.3)) > 0.65f)
+                        itemGainBar.GetComponent<RectTransform>().anchorMax = new Vector2(0.65f, 0.06f);
+                    else
+                    {
+                        itemGainBar.GetComponent<RectTransform>().anchorMin = new Vector2(0.35f, 0.05f);
+                                        Debug.LogError("in line 288");
+                        itemGainBar.GetComponent<RectTransform>().anchorMax = new Vector2(0.35f + (float)(progress * 0.3), 0.06f);
+                    }
+
                 return "dummie";
             });
-
+            askForSettings = miniRpc.RegisterFunc(Target.Server, (NetworkUser user, string killedNeededEnemies) => //--------------------HierSTuffMachen!!
+            {
+                Debug.LogError("ArtifactOfDoomConfig.useArtifactOfSacreficeCalculation.Value" + ArtifactOfDoomConfig.useArtifactOfSacreficeCalculation.Value);
+                Debug.LogError("ArtifactOfDoomConfig.useArtifactOfSacreficeCalculation.Value" + ArtifactOfDoomConfig.useArtifactOfSacreficeCalculation.Value);
+                if (!ArtifactOfDoomConfig.useArtifactOfSacreficeCalculation.Value && !ArtifactOfDoomConfig.disableItemProgressBar.Value)
+                return  true;
+                return false;
+            });
 
 
             // The "_ ="'s above mean that the return value will be ignored. In your code you should assign the return value to something to be able to call the function.
