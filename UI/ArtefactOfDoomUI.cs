@@ -154,13 +154,13 @@ namespace ArtifactOfDoom
                         //                    ModExpBarGroup.AddComponent<Text
                     }
 
-                    if (!ArtifactOfDoomConfig.useArtifactOfSacreficeCalculation.Value)
+                    if (!ArtifactOfDoomConfig.useArtifactOfSacreficeCalculation.Value && !ArtifactOfDoomConfig.disableItemProgressBar.Value)
                     {
                         ModExpBarGroup = new GameObject("ItemGainBar");
                         ModExpBarGroup.transform.SetParent(ModCanvas.transform);
                         ModExpBarGroup.AddComponent<RectTransform>();
-                        ModExpBarGroup.GetComponent<RectTransform>().anchorMin = new Vector2(0.35f, 0.10f);
-                        ModExpBarGroup.GetComponent<RectTransform>().anchorMax = new Vector2(0.35f, 0.11f);
+                        ModExpBarGroup.GetComponent<RectTransform>().anchorMin = new Vector2(0.35f, 0.05f);
+                        ModExpBarGroup.GetComponent<RectTransform>().anchorMax = new Vector2(0.35f, 0.06f);
                         ModExpBarGroup.GetComponent<RectTransform>().sizeDelta = Vector2.zero;
                         ModExpBarGroup.GetComponent<RectTransform>().anchoredPosition = Vector2.zero;
                         ModExpBarGroup.AddComponent<NetworkIdentity>().serverOnly = false;
@@ -173,8 +173,8 @@ namespace ArtifactOfDoom
                         ModExpBarGroup = new GameObject("ItemGainFrame");
                         ModExpBarGroup.transform.SetParent(ModCanvas.transform);
                         ModExpBarGroup.AddComponent<RectTransform>();
-                        ModExpBarGroup.GetComponent<RectTransform>().anchorMin = new Vector2(0.35f, 0.10f);
-                        ModExpBarGroup.GetComponent<RectTransform>().anchorMax = new Vector2(0.65f, 0.11f);
+                        ModExpBarGroup.GetComponent<RectTransform>().anchorMin = new Vector2(0.35f, 0.05f);
+                        ModExpBarGroup.GetComponent<RectTransform>().anchorMax = new Vector2(0.65f, 0.06f);
                         ModExpBarGroup.GetComponent<RectTransform>().sizeDelta = Vector2.zero;
                         ModExpBarGroup.GetComponent<RectTransform>().anchoredPosition = Vector2.zero;
                         ModExpBarGroup.AddComponent<NetworkIdentity>().serverOnly = false;

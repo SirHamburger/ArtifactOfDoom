@@ -43,6 +43,8 @@ namespace ArtifactOfDoom
         public static ConfigEntry<bool> useArtifactOfSacreficeCalculation;
         public static ConfigEntry<double> multiplayerForArtifactOfSacrificeDropRate;
 
+        public static ConfigEntry<bool> disableItemProgressBar;
+
         public static ConfigEntry<double> timeAfterHitToNotLooseItemMonsoon;
         public static ConfigEntry<double> timeAfterHitToNotLooseItemDrizzly;
         public static ConfigEntry<double> timeAfterHitToNotLooseItemRainstorm;
@@ -116,6 +118,9 @@ namespace ArtifactOfDoom
                 "Chance the item gain to a specific drop rate of enemys"));
             multiplayerForArtifactOfSacrificeDropRate= cfgFile.Bind(new ConfigDefinition("Global.VanillaTweaks", "multiplayerForArtifactOfSacrificeDropRate"), 2.0, new ConfigDescription(
                 "Multiplayer for the drop rate (base Chance is 5)"));
+
+            disableItemProgressBar= cfgFile.Bind(new ConfigDefinition("Global.VanillaTweaks", "disableItemProgressBar"), false, new ConfigDescription(
+                "If true it disables the Progress bar in the bottom of the UI"));
 
             exponentailFactorIfYouAreUnderAverageItemsPerStage = cfgFile.Bind(new ConfigDefinition("Global.VanillaTweaks", "exponentailFactorIfYouAreUnderAverageItemsPerStage"), 0.0, new ConfigDescription(
                 "The exponent to Calculate how many kills you'll need if you're under averageItemsPerStage. The formular is totalitems^exponentailFactorIfYouAreUnderAverageItemsPerStage. Default is 0 so you'll need always two kills."));
