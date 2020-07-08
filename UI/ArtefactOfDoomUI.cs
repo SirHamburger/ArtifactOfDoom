@@ -37,6 +37,8 @@ namespace ArtifactOfDoom
     public class ArtifactOfDoomUI : BaseUnityPlugin
     {
         public GameObject ModCanvas = null;
+        private static bool ArtifactIsActiv=false;
+        private static bool calculationSacrifice = false;
         void Awake()
         {
             On.RoR2.UI.ExpBar.Awake += ExpBarAwakeAddon;
@@ -88,7 +90,9 @@ namespace ArtifactOfDoom
         public void ExpBarAwakeAddon(On.RoR2.UI.ExpBar.orig_Awake orig, RoR2.UI.ExpBar self)
         {
             orig(self);
-            if (!ArtifactOfDoom.artifactIsActive)
+            Debug.LogError("ExpBarAwakeAddon");
+            Debug.LogError("ArtifactIsActiv " + ArtifactIsActiv);
+            if (!ArtifactIsActiv)
                 return;
             var currentRect = self.gameObject.GetComponentsInChildren<RectTransform>();
             if (currentRect != null && VanillaExpBarRoot == null)
@@ -106,6 +110,8 @@ namespace ArtifactOfDoom
 
         private void MainExpBarStart()
         {
+            //Debug.LogError("MainExpBarStart");
+            Debug.LogError("AArtifactIsActiv " + ArtifactIsActiv);
             if (VanillaExpBarRoot != null)
             {
                 try
@@ -145,18 +151,20 @@ namespace ArtifactOfDoom
                         ModExpBarGroup.GetComponent<RectTransform>().anchorMax = new Vector2(1.00f, (float)(0.24 + ((float)i * 0.04)));
                         ModExpBarGroup.GetComponent<RectTransform>().sizeDelta = Vector2.zero;
                         ModExpBarGroup.GetComponent<RectTransform>().anchoredPosition = Vector2.zero;
-                        ModExpBarGroup.AddComponent<NetworkIdentity>();
+                        ModExpBarGroup.AddComponent<NetworkIdentity>().serverOnly = false;
 
                         //ModExpBarGroup.AddComponent<Image>();
                         //ModExpBarGroup.GetComponent<Image>().sprite = Resources.Load<Sprite>("textures/itemicons/bg");
                         listLostImages.Add(ModExpBarGroup);
 
-                        //                    ModExpBarGroup.AddComponent<Text
+                        //ModExpBarGroup.AddComponent<Text
                     }
+                    //Debug.LogError("i'm here");
                     Debug.LogError ("ArtifactOfDoomConfig.useArtifactOfSacreficeCalculation.Value"+ArtifactOfDoomConfig.useArtifactOfSacreficeCalculation.Value);
                     Debug.LogError("ArtifactOfDoomConfig.disableItemProgressBar.Value"+ArtifactOfDoomConfig.disableItemProgressBar.Value);
-                    //if(!ArtifactOfDoomConfig.disableItemProgressBar.Value)
-                    if (!ArtifactOfDoomConfig.useArtifactOfSacreficeCalculation.Value)
+                    //Debug.LogError("ArtifactOfDoom.artifactIsActive " +ArtifactOfDoom.artifactIsActive);
+
+                    if(!ArtifactOfDoomConfig.disableItemProgressBar.Value&&!calculationSacrifice)
                     {
                         Debug.LogError("!ArtifactOfDoomConfig.useArtifactOfSacreficeCalculation.Value && !ArtifactOfDoomConfig.disableItemProgressBar.Value");
                         ModExpBarGroup = new GameObject("ItemGainBar");
@@ -166,7 +174,7 @@ namespace ArtifactOfDoom
                         ModExpBarGroup.GetComponent<RectTransform>().anchorMax = new Vector2(0.35f, 0.06f);
                         ModExpBarGroup.GetComponent<RectTransform>().sizeDelta = Vector2.zero;
                         ModExpBarGroup.GetComponent<RectTransform>().anchoredPosition = Vector2.zero;
-                        ModExpBarGroup.AddComponent<NetworkIdentity>();
+                        ModExpBarGroup.AddComponent<NetworkIdentity>().serverOnly = false;
 
                         itemGainBar = ModExpBarGroup;
                         itemGainBar.AddComponent<Image>();
@@ -181,13 +189,10 @@ namespace ArtifactOfDoom
                         ModExpBarGroup.GetComponent<RectTransform>().anchorMax = new Vector2(0.65f, 0.06f);
                         ModExpBarGroup.GetComponent<RectTransform>().sizeDelta = Vector2.zero;
                         ModExpBarGroup.GetComponent<RectTransform>().anchoredPosition = Vector2.zero;
-                        ModExpBarGroup.AddComponent<NetworkIdentity>();
+                        ModExpBarGroup.AddComponent<NetworkIdentity>().serverOnly = false;
                         itemGainFrame = ModExpBarGroup;
                         itemGainFrame.AddComponent<Image>();
                         itemGainFrame.GetComponent<Image>().color = new Color(255, 0, 0, 0.1f);
-                        
-
-
                     }
 
 
@@ -212,7 +217,8 @@ namespace ArtifactOfDoom
         public static IRpcFunc<string, string> AddGainedItemsToPlayers { get; set; }
         public static IRpcFunc<string, string> AddLostItemsOfPlayers { get; set; }
         public static IRpcFunc<string, string> UpdateProgressBar { get; set; }
-        public static IRpcFunc<string, bool> askForSettings { get; set; }
+        public static IRpcFunc<bool, string> isArtifactActive{ get; set; }
+         public static IRpcFunc<bool, string> isCalculationSacrifice{ get; set; }
 
         public const string ModVer = "0.9.4";
         public const string ModName = "ArtifactOfDoom";
@@ -234,6 +240,7 @@ namespace ArtifactOfDoom
 
             AddGainedItemsToPlayers = miniRpc.RegisterFunc(Target.Client, (NetworkUser user, string QueueGainedItemSpriteToString) => //--------------------HierSTuffMachen!!
             {
+
 
                 string[] QueueGainedItemSprite = QueueGainedItemSpriteToString.Split(' ');
 
@@ -277,14 +284,18 @@ namespace ArtifactOfDoom
             });
             UpdateProgressBar = miniRpc.RegisterFunc(Target.Client, (NetworkUser user, string killedNeededEnemies) => //--------------------HierSTuffMachen!!
             {
-                Debug.LogWarning("string killedNeededEnemies für rpc: " + killedNeededEnemies);
+                Debug.LogError("ArtifactOfDoomConfig.disableItemProgressBar.Value"+ ArtifactOfDoomConfig.disableItemProgressBar.Value);
+                Debug.LogError("ArtifactOfDoomConfig.useArtifactOfSacreficeCalculation.Value"+ ArtifactOfDoomConfig.useArtifactOfSacreficeCalculation.Value);
+                if(ArtifactOfDoomConfig.disableItemProgressBar.Value||calculationSacrifice)
+                return "Disabled Progress Bar";
+                //Debug.LogWarning("string killedNeededEnemies für rpc: " + killedNeededEnemies);
                 string[] stringkilledNeededEnemies = killedNeededEnemies.Split(',');
-                Debug.LogError("in line 276");
+                //Debug.LogError("in line 276");
                 int enemiesKilled = Convert.ToInt32(stringkilledNeededEnemies[0]);
                 int enemiesNeeded = Convert.ToInt32(stringkilledNeededEnemies[1]) + 2;
-                Debug.LogError("in line 279");
+                //Debug.LogError("in line 279");
                     double progress = (double)enemiesKilled / ((double)enemiesNeeded);
-                                    Debug.LogError("in line 2282");
+                  //                  Debug.LogError("in line 2282");
                     if( itemGainBar.GetComponent<RectTransform>()==null)
                         return "Error while excecuting Update progress bar";
                     if ((0.35f + (float)(progress * 0.3)) > 0.65f)
@@ -292,19 +303,22 @@ namespace ArtifactOfDoom
                     else
                     {
                         itemGainBar.GetComponent<RectTransform>().anchorMin = new Vector2(0.35f, 0.05f);
-                                        Debug.LogError("in line 288");
+                    //                    Debug.LogError("in line 288");
                         itemGainBar.GetComponent<RectTransform>().anchorMax = new Vector2(0.35f + (float)(progress * 0.3), 0.06f);
                     }
 
                 return "dummie";
             });
-            askForSettings = miniRpc.RegisterFunc(Target.Server, (NetworkUser user, string killedNeededEnemies) => //--------------------HierSTuffMachen!!
+            isArtifactActive = miniRpc.RegisterFunc(Target.Client, (NetworkUser user, bool isActive) => //--------------------HierSTuffMachen!!
             {
-                Debug.LogError("ArtifactOfDoomConfig.useArtifactOfSacreficeCalculation.Value" + ArtifactOfDoomConfig.useArtifactOfSacreficeCalculation.Value);
-                Debug.LogError("ArtifactOfDoomConfig.useArtifactOfSacreficeCalculation.Value" + ArtifactOfDoomConfig.useArtifactOfSacreficeCalculation.Value);
-                if (!ArtifactOfDoomConfig.useArtifactOfSacreficeCalculation.Value && !ArtifactOfDoomConfig.disableItemProgressBar.Value)
-                return  true;
-                return false;
+                ArtifactIsActiv = isActive;
+                return "";
+            });
+            isCalculationSacrifice = miniRpc.RegisterFunc(Target.Client, (NetworkUser user, bool isActive) => //--------------------HierSTuffMachen!!
+            {
+                Debug.LogError("Set CalculationSacrifice to " + isActive);
+                calculationSacrifice = isActive;
+                return "";
             });
 
 

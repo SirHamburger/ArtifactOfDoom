@@ -91,13 +91,21 @@ namespace ArtifactOfDoom
                     information[information.Length - 1] = "Gainitems";
                     self.statsToDisplay = information;
                 };
+            On.RoR2.PreGameController.StartRun+=(orig,self)=>
+            {
+                orig(self);
+                Debug.LogError("PreGAmeController");
+                 //artifactIsActive = this.IsActiveAndEnabled();
+            };
             On.RoR2.SceneDirector.PopulateScene += (orig, self) =>
                 {
-
+                    orig(self);
                     currentStage = RoR2.Run.instance.stageClearCount + 1;
+                                    Debug.LogError("PopulateScene");
+
                     artifactIsActive = this.IsActiveAndEnabled();
 
-                    orig(self);
+                    
                     if (Run.instance.selectedDifficulty == DifficultyIndex.Easy)
                         timeForBuff = ArtifactOfDoomConfig.timeAfterHitToNotLooseItemDrizzly.Value;
                     if (Run.instance.selectedDifficulty == DifficultyIndex.Normal)
@@ -109,35 +117,46 @@ namespace ArtifactOfDoom
                     Playername = new List<CharacterBody>();
                     counter = new List<int>();
                     LockNetworkUser.Clear();
-
                 };
+            On.RoR2.Run.Start += (orig,self) =>
+            {
+                orig(self);
+                //Debug.LogError("-------------------here----------------------------------");
+                    ArtifactOfDoomUI.isArtifactActive.Invoke(this.IsActiveAndEnabled(), result =>
+                        {
+                            //Debug.LogError("Got Message Of IsArtifactActive");
+                        },null);
+                                            ArtifactOfDoomUI.isCalculationSacrifice.Invoke(ArtifactOfDoomConfig.useArtifactOfSacreficeCalculation.Value, result =>
+                        {
+                            //Debug.LogError("Got Message Of IsArtifactActive");
+                        },null);
+            };
             On.RoR2.CharacterBody.OnInventoryChanged += (orig, self) =>
             {
                 orig(self);
-                try{
-                if (!this.IsActiveAndEnabled())
-                    return;
-                if(!self.isPlayerControlled)
-                    return;
-                NetworkUser tempNetworkUser = getNetworkUserOfCharacterBody(self);
-                int calculatesEnemyCountToTrigger = calculateEnemyCountToTrigger(self);
-                if (!Playername.Contains(self))
+                try
                 {
-                    Playername.Add(self);
-                    counter.Add(0);
+                    if (!this.IsActiveAndEnabled())
+                        return;
+                    if (!self.isPlayerControlled)
+                        return;
+                    NetworkUser tempNetworkUser = getNetworkUserOfCharacterBody(self);
+                    int calculatesEnemyCountToTrigger = calculateEnemyCountToTrigger(self);
+                    if (!Playername.Contains(self))
+                    {
+                        Playername.Add(self);
+                        counter.Add(0);
+                    }
+                    if (tempNetworkUser == null)
+                    {
+                        Debug.LogError("Network user == null");
+                        string tempString = counter[Playername.IndexOf(self)] + "," + calculatesEnemyCountToTrigger;
+                        ArtifactOfDoomUI.UpdateProgressBar.Invoke(tempString, result =>
+                        {
+                        }, tempNetworkUser);
+                    }
                 }
-                if(tempNetworkUser==null)
-                {
-                    Debug.LogError("Network user == null");
-                    return;
-                }
-
-                string tempString = counter[Playername.IndexOf(self)] + "," + calculatesEnemyCountToTrigger;
-                ArtifactOfDoomUI.UpdateProgressBar.Invoke(tempString, result =>
-                {
-                }, tempNetworkUser);
-                }
-                catch(Exception e)
+                catch (Exception e)
                 {
                     Debug.LogError("Error while inventory changed");
                 }
@@ -200,12 +219,12 @@ namespace ArtifactOfDoom
                 {
                     counter[Playername.IndexOf(currentBody)]++;
 
-                     NetworkUser tempNetworkUser = getNetworkUserOfDamageReport(damageReport, true);
-                     string temp = counter[Playername.IndexOf(currentBody)] + "," + calculatesEnemyCountToTrigger;
-                     Debug.LogWarning("currentBody für rpc: " + currentBody.name);
-                     ArtifactOfDoomUI.UpdateProgressBar.Invoke(temp, result =>
-                            {
-                            }, tempNetworkUser);
+                    NetworkUser tempNetworkUser = getNetworkUserOfDamageReport(damageReport, true);
+                    string temp = counter[Playername.IndexOf(currentBody)] + "," + calculatesEnemyCountToTrigger;
+                    Debug.LogWarning("currentBody für rpc: " + currentBody.name);
+                    ArtifactOfDoomUI.UpdateProgressBar.Invoke(temp, result =>
+                           {
+                           }, tempNetworkUser);
 
                 }
                 else
@@ -290,10 +309,10 @@ namespace ArtifactOfDoom
                             {
                                 LockItemGainNetworkUser[tempNetworkUser] = false;
                             }, tempNetworkUser);
-                         string tempString = counter[Playername.IndexOf(currentBody)] + "," + calculatesEnemyCountToTrigger;
-                         ArtifactOfDoomUI.UpdateProgressBar.Invoke(tempString, result =>
-                                {
-                                }, tempNetworkUser);
+                        string tempString = counter[Playername.IndexOf(currentBody)] + "," + calculatesEnemyCountToTrigger;
+                        ArtifactOfDoomUI.UpdateProgressBar.Invoke(tempString, result =>
+                               {
+                               }, tempNetworkUser);
                     }
 
 
@@ -472,11 +491,11 @@ namespace ArtifactOfDoom
                         {
                             LockNetworkUser[tempNetworkUser] = false;
                         }, tempNetworkUser);
-                         int calculatesEnemyCountToTrigger = calculateEnemyCountToTrigger(self.body);
-                         string tempString = counter[Playername.IndexOf(self.body)] + "," + calculatesEnemyCountToTrigger;
-                         ArtifactOfDoomUI.UpdateProgressBar.Invoke(tempString, result =>
-                                {
-                                }, tempNetworkUser);
+                        int calculatesEnemyCountToTrigger = calculateEnemyCountToTrigger(self.body);
+                        string tempString = counter[Playername.IndexOf(self.body)] + "," + calculatesEnemyCountToTrigger;
+                        ArtifactOfDoomUI.UpdateProgressBar.Invoke(tempString, result =>
+                               {
+                               }, tempNetworkUser);
                     }
                 }
 
