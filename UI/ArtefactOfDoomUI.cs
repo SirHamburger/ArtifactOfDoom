@@ -90,8 +90,8 @@ namespace ArtifactOfDoom
         public void ExpBarAwakeAddon(On.RoR2.UI.ExpBar.orig_Awake orig, RoR2.UI.ExpBar self)
         {
             orig(self);
-            Debug.LogError("ExpBarAwakeAddon");
-            Debug.LogError("ArtifactIsActiv " + ArtifactIsActiv);
+            //Debug.LogError("ExpBarAwakeAddon");
+            //Debug.LogError("ArtifactIsActiv " + ArtifactIsActiv);
             if (!ArtifactIsActiv)
                 return;
             var currentRect = self.gameObject.GetComponentsInChildren<RectTransform>();
@@ -111,7 +111,7 @@ namespace ArtifactOfDoom
         private void MainExpBarStart()
         {
             //Debug.LogError("MainExpBarStart");
-            Debug.LogError("AArtifactIsActiv " + ArtifactIsActiv);
+            //Debug.LogError("AArtifactIsActiv " + ArtifactIsActiv);
             if (VanillaExpBarRoot != null)
             {
                 try
@@ -160,13 +160,13 @@ namespace ArtifactOfDoom
                         //ModExpBarGroup.AddComponent<Text
                     }
                     //Debug.LogError("i'm here");
-                    Debug.LogError ("ArtifactOfDoomConfig.useArtifactOfSacreficeCalculation.Value"+ArtifactOfDoomConfig.useArtifactOfSacreficeCalculation.Value);
-                    Debug.LogError("ArtifactOfDoomConfig.disableItemProgressBar.Value"+ArtifactOfDoomConfig.disableItemProgressBar.Value);
+                    //Debug.LogError ("ArtifactOfDoomConfig.useArtifactOfSacreficeCalculation.Value"+ArtifactOfDoomConfig.useArtifactOfSacreficeCalculation.Value);
+                    //Debug.LogError("ArtifactOfDoomConfig.disableItemProgressBar.Value"+ArtifactOfDoomConfig.disableItemProgressBar.Value);
                     //Debug.LogError("ArtifactOfDoom.artifactIsActive " +ArtifactOfDoom.artifactIsActive);
 
                     if(!ArtifactOfDoomConfig.disableItemProgressBar.Value&&!calculationSacrifice)
                     {
-                        Debug.LogError("!ArtifactOfDoomConfig.useArtifactOfSacreficeCalculation.Value && !ArtifactOfDoomConfig.disableItemProgressBar.Value");
+                        //Debug.LogError("!ArtifactOfDoomConfig.useArtifactOfSacreficeCalculation.Value && !ArtifactOfDoomConfig.disableItemProgressBar.Value");
                         ModExpBarGroup = new GameObject("ItemGainBar");
                         ModExpBarGroup.transform.SetParent(ModCanvas.transform);
                         ModExpBarGroup.AddComponent<RectTransform>();
@@ -220,7 +220,7 @@ namespace ArtifactOfDoom
         public static IRpcFunc<bool, string> isArtifactActive{ get; set; }
          public static IRpcFunc<bool, string> isCalculationSacrifice{ get; set; }
 
-        public const string ModVer = "0.9.4";
+        public const string ModVer = "1.0.0";
         public const string ModName = "ArtifactOfDoom";
         public const string ModGuid = "com.SirHamburger.ArtifactOfDoom";
 
@@ -284,8 +284,8 @@ namespace ArtifactOfDoom
             });
             UpdateProgressBar = miniRpc.RegisterFunc(Target.Client, (NetworkUser user, string killedNeededEnemies) => //--------------------HierSTuffMachen!!
             {
-                Debug.LogError("ArtifactOfDoomConfig.disableItemProgressBar.Value"+ ArtifactOfDoomConfig.disableItemProgressBar.Value);
-                Debug.LogError("ArtifactOfDoomConfig.useArtifactOfSacreficeCalculation.Value"+ ArtifactOfDoomConfig.useArtifactOfSacreficeCalculation.Value);
+                //Debug.LogError("ArtifactOfDoomConfig.disableItemProgressBar.Value"+ ArtifactOfDoomConfig.disableItemProgressBar.Value);
+                //Debug.LogError("ArtifactOfDoomConfig.useArtifactOfSacreficeCalculation.Value"+ ArtifactOfDoomConfig.useArtifactOfSacreficeCalculation.Value);
                 if(ArtifactOfDoomConfig.disableItemProgressBar.Value||calculationSacrifice)
                 return "Disabled Progress Bar";
                 //Debug.LogWarning("string killedNeededEnemies für rpc: " + killedNeededEnemies);
@@ -316,7 +316,7 @@ namespace ArtifactOfDoom
             });
             isCalculationSacrifice = miniRpc.RegisterFunc(Target.Client, (NetworkUser user, bool isActive) => //--------------------HierSTuffMachen!!
             {
-                Debug.LogError("Set CalculationSacrifice to " + isActive);
+                //Debug.LogError("Set CalculationSacrifice to " + isActive);
                 calculationSacrifice = isActive;
                 return "";
             });

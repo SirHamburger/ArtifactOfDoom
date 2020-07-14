@@ -17,6 +17,7 @@ https://github.com/wildbook/R2Mods/tree/develop/MiniRpcLib
 ## What does this mod do
 This mod gives you items after killing some enemies. But you'll loose items if you get hit.
 
+
 The calculation for the required kills is:
 ```(totalItems - currentStage * averageItemsPerStage) ^ exponentTriggerItems```
 `totalItems` is the current item count of each character. `CurrentStage` is the number of stages completed and `exponentTriggerItems` and `averageItemsPerStage` can be changed in the config file.
@@ -43,6 +44,10 @@ In the settings you can specify for each character how many items he'll get if h
 
 I'm not sure if the buff and the character specific settings make the game too easy. So if you think so just change the settings or tell me what the perfect settings are.
 
+If you don't like the progress bar you can disable it in the config.
+To use the calculation of sacrifice you've to enable it in the config.
+
+
 ## UI
 On the left side there are the symbols of the gained items. ***These are only the items which you obtained by the mod.*** On the right side there are all lost items. The UI resets every stage.
 
@@ -52,6 +57,12 @@ https://github.com/SirHamburger/ArtifactOfDoom
 You can also reach me in Discord (Sir Hamburger#8447)
 
 ## Patchnotes
+### Version 1.0.0
+* Added progress bar
+* Added Artifact of Sacrifice like item gain
+* Added formular for gaining items if under average items
+* Added nerf for ArtifactOfSwarm
+
 ### Version 0.9.4
 Tougher Times now working (hopefully).
 

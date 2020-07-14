@@ -94,14 +94,14 @@ namespace ArtifactOfDoom
             On.RoR2.PreGameController.StartRun+=(orig,self)=>
             {
                 orig(self);
-                Debug.LogError("PreGAmeController");
+                //Debug.LogError("PreGAmeController");
                  //artifactIsActive = this.IsActiveAndEnabled();
             };
             On.RoR2.SceneDirector.PopulateScene += (orig, self) =>
                 {
                     orig(self);
                     currentStage = RoR2.Run.instance.stageClearCount + 1;
-                                    Debug.LogError("PopulateScene");
+                    //                Debug.LogError("PopulateScene");
 
                     artifactIsActive = this.IsActiveAndEnabled();
 
@@ -149,7 +149,7 @@ namespace ArtifactOfDoom
                     }
                     if (tempNetworkUser == null)
                     {
-                        Debug.LogError("Network user == null");
+                        //Debug.LogError("Network user == null");
                         string tempString = counter[Playername.IndexOf(self)] + "," + calculatesEnemyCountToTrigger;
                         ArtifactOfDoomUI.UpdateProgressBar.Invoke(tempString, result =>
                         {
@@ -221,7 +221,7 @@ namespace ArtifactOfDoom
 
                     NetworkUser tempNetworkUser = getNetworkUserOfDamageReport(damageReport, true);
                     string temp = counter[Playername.IndexOf(currentBody)] + "," + calculatesEnemyCountToTrigger;
-                    Debug.LogWarning("currentBody für rpc: " + currentBody.name);
+                    //Debug.LogWarning("currentBody für rpc: " + currentBody.name);
                     ArtifactOfDoomUI.UpdateProgressBar.Invoke(temp, result =>
                            {
                            }, tempNetworkUser);
@@ -303,7 +303,7 @@ namespace ArtifactOfDoom
                     {
                         LockItemGainNetworkUser[tempNetworkUser] = true;
                         if (tempNetworkUser == null)
-                            Debug.LogError("--------------------------------tempNetworkUser==null---------------------------");
+                            //Debug.LogError("--------------------------------tempNetworkUser==null---------------------------");
 
                         ArtifactOfDoomUI.AddGainedItemsToPlayers.Invoke(temp, result =>
                             {
