@@ -37,7 +37,7 @@ namespace ArtifactOfDoom
     public class ArtifactOfDoomUI : BaseUnityPlugin
     {
         public GameObject ModCanvas = null;
-        private static bool ArtifactIsActiv=false;
+        private static bool ArtifactIsActiv = false;
         private static bool calculationSacrifice = false;
         void Awake()
         {
@@ -164,7 +164,7 @@ namespace ArtifactOfDoom
                     //Debug.LogError("ArtifactOfDoomConfig.disableItemProgressBar.Value"+ArtifactOfDoomConfig.disableItemProgressBar.Value);
                     //Debug.LogError("ArtifactOfDoom.artifactIsActive " +ArtifactOfDoom.artifactIsActive);
 
-                    if(!ArtifactOfDoomConfig.disableItemProgressBar.Value&&!calculationSacrifice)
+                    if (!ArtifactOfDoomConfig.disableItemProgressBar.Value && !calculationSacrifice)
                     {
                         //Debug.LogError("!ArtifactOfDoomConfig.useArtifactOfSacreficeCalculation.Value && !ArtifactOfDoomConfig.disableItemProgressBar.Value");
                         ModExpBarGroup = new GameObject("ItemGainBar");
@@ -217,8 +217,8 @@ namespace ArtifactOfDoom
         public static IRpcFunc<string, string> AddGainedItemsToPlayers { get; set; }
         public static IRpcFunc<string, string> AddLostItemsOfPlayers { get; set; }
         public static IRpcFunc<string, string> UpdateProgressBar { get; set; }
-        public static IRpcFunc<bool, string> isArtifactActive{ get; set; }
-         public static IRpcFunc<bool, string> isCalculationSacrifice{ get; set; }
+        public static IRpcFunc<bool, string> isArtifactActive { get; set; }
+        public static IRpcFunc<bool, string> isCalculationSacrifice { get; set; }
 
         public const string ModVer = "1.0.0";
         public const string ModName = "ArtifactOfDoom";
@@ -228,7 +228,7 @@ namespace ArtifactOfDoom
         {
             // Fix the damn in-game console stealing our not-in-game consoles output.
             // Not related to the demo, just very useful.
-            On.RoR2.RoR2Application.UnitySystemConsoleRedirector.Redirect += orig => { };
+            //On.RoR2.RoR2Application.UnitySystemConsoleRedirector.Redirect += orig => { };
 
             // Create a MiniRpcInstance that automatically registers all commands to our ModGuid
             // This lets us support multiple mods using the same command ID
@@ -286,26 +286,32 @@ namespace ArtifactOfDoom
             {
                 //Debug.LogError("ArtifactOfDoomConfig.disableItemProgressBar.Value"+ ArtifactOfDoomConfig.disableItemProgressBar.Value);
                 //Debug.LogError("ArtifactOfDoomConfig.useArtifactOfSacreficeCalculation.Value"+ ArtifactOfDoomConfig.useArtifactOfSacreficeCalculation.Value);
-                if(ArtifactOfDoomConfig.disableItemProgressBar.Value||calculationSacrifice)
-                return "Disabled Progress Bar";
+                if (ArtifactOfDoomConfig.disableItemProgressBar.Value || calculationSacrifice)
+                    return "Disabled Progress Bar";
+                if (killedNeededEnemies == null)
+                {
+                    Debug.Log("killedNeededEnemies == null");
+                    return "error";
+                }
+
                 //Debug.LogWarning("string killedNeededEnemies für rpc: " + killedNeededEnemies);
                 string[] stringkilledNeededEnemies = killedNeededEnemies.Split(',');
                 //Debug.LogError("in line 276");
                 int enemiesKilled = Convert.ToInt32(stringkilledNeededEnemies[0]);
                 int enemiesNeeded = Convert.ToInt32(stringkilledNeededEnemies[1]) + 2;
                 //Debug.LogError("in line 279");
-                    double progress = (double)enemiesKilled / ((double)enemiesNeeded);
-                  //                  Debug.LogError("in line 2282");
-                    if( itemGainBar.GetComponent<RectTransform>()==null)
-                        return "Error while excecuting Update progress bar";
-                    if ((0.35f + (float)(progress * 0.3)) > 0.65f)
-                        itemGainBar.GetComponent<RectTransform>().anchorMax = new Vector2(0.65f, 0.06f);
-                    else
-                    {
-                        itemGainBar.GetComponent<RectTransform>().anchorMin = new Vector2(0.35f, 0.05f);
+                double progress = (double)enemiesKilled / ((double)enemiesNeeded);
+                //                  Debug.LogError("in line 2282");
+                if (itemGainBar.GetComponent<RectTransform>() == null)
+                    return "Error while excecuting Update progress bar";
+                if ((0.35f + (float)(progress * 0.3)) > 0.65f)
+                    itemGainBar.GetComponent<RectTransform>().anchorMax = new Vector2(0.65f, 0.06f);
+                else
+                {
+                    itemGainBar.GetComponent<RectTransform>().anchorMin = new Vector2(0.35f, 0.05f);
                     //                    Debug.LogError("in line 288");
-                        itemGainBar.GetComponent<RectTransform>().anchorMax = new Vector2(0.35f + (float)(progress * 0.3), 0.06f);
-                    }
+                    itemGainBar.GetComponent<RectTransform>().anchorMax = new Vector2(0.35f + (float)(progress * 0.3), 0.06f);
+                }
 
                 return "dummie";
             });
