@@ -88,11 +88,11 @@ namespace ArtifactOfDoom
                 //                Debug.LogError("PopulateScene");
 
                 if (Run.instance.selectedDifficulty == DifficultyIndex.Easy)
-                    timeForBuff = ArtifactOfDoomConfig.timeAfterHitToNotLooseItemDrizzly.Value;
+                    timeForBuff = ArtifactOfDoomConfig.timeAfterHitToNotLoseItemDrizzly.Value;
                 if (Run.instance.selectedDifficulty == DifficultyIndex.Normal)
-                    timeForBuff = ArtifactOfDoomConfig.timeAfterHitToNotLooseItemRainstorm.Value;
+                    timeForBuff = ArtifactOfDoomConfig.timeAfterHitToNotLoseItemRainstorm.Value;
                 if (Run.instance.selectedDifficulty == DifficultyIndex.Hard)
-                    timeForBuff = ArtifactOfDoomConfig.timeAfterHitToNotLooseItemMonsoon.Value;
+                    timeForBuff = ArtifactOfDoomConfig.timeAfterHitToNotLoseItemMonsoon.Value;
                 QueueLostItemSprite = new Dictionary<uint, Queue<ItemDef>>();
                 QueueGainedItemSprite = new Dictionary<uint, Queue<ItemDef>>();
                 Playername = new List<CharacterBody>();
@@ -365,9 +365,9 @@ namespace ArtifactOfDoom
                 
                 }
 
-                if (self.body.HasBuff(ArtifactOfDoomConfig.buffIndexDidLooseItem))
+                if (self.body.HasBuff(ArtifactOfDoomConfig.buffIndexDidLoseItem))
                 {
-                    if (debug) Debug.LogWarning("you did loose an item not long ago so you don't loose one now");
+                    if (debug) Debug.LogWarning("you did lose an item not long ago so you don't lose one now");
                     return;
                 }
 
@@ -478,7 +478,7 @@ namespace ArtifactOfDoom
                                 QueueLostItemSprite[pos].Dequeue();
 
                             double buffLengthMultiplier = getCharacterSpezificBuffLengthMultiplier(self.body.baseNameToken);
-                            self.body.AddTimedBuff(ArtifactOfDoomConfig.buffIndexDidLooseItem, (float)(timeForBuff * (float)buffLengthMultiplier));
+                            self.body.AddTimedBuff(ArtifactOfDoomConfig.buffIndexDidLoseItem, (float)(timeForBuff * (float)buffLengthMultiplier));
                         }
 
                         chanceToTrigger -= 100;
@@ -632,37 +632,37 @@ namespace ArtifactOfDoom
             {
                 case "COMMANDO_BODY_NAME":
                     if (debug) { Debug.LogWarning($"Character baseNameToken = {baseNameToken} returning: Commando"); }
-                    return ArtifactOfDoomConfig.CommandoMultiplyerForTimedBuff.Value;
+                    return ArtifactOfDoomConfig.CommandoMultiplierForTimedBuff.Value;
                 case "HUNTRESS_BODY_NAME":
                     if (debug) { Debug.LogWarning($"Character baseNameToken = {baseNameToken} returning: Huntress"); }
-                    return ArtifactOfDoomConfig.HuntressMultiplyerForTimedBuff.Value;
+                    return ArtifactOfDoomConfig.HuntressMultiplierForTimedBuff.Value;
                 case "ENGI_BODY_NAME":
                     if (debug) { Debug.LogWarning($"Character baseNameToken = {baseNameToken} returning: Engineer"); }
-                    return ArtifactOfDoomConfig.EngineerMultiplyerForTimedBuff.Value;
+                    return ArtifactOfDoomConfig.EngineerMultiplierForTimedBuff.Value;
                 case "TOOLBOT_BODY_NAME":
                     if (debug) { Debug.LogWarning($"Character baseNameToken = {baseNameToken} returning: MULT"); }
-                    return ArtifactOfDoomConfig.MULTMultiplyerForTimedBuff.Value;
+                    return ArtifactOfDoomConfig.MULTMultiplierForTimedBuff.Value;
                 case "MAGE_BODY_NAME":
                     if (debug) { Debug.LogWarning($"Character baseNameToken = {baseNameToken} returning: Artificer"); }
-                    return ArtifactOfDoomConfig.ArtificerMultiplyerForTimedBuff.Value;
+                    return ArtifactOfDoomConfig.ArtificerMultiplierForTimedBuff.Value;
                 case "MERC_BODY_NAME":
                     if (debug) { Debug.LogWarning($"Character baseNameToken = {baseNameToken} returning: Mercenary"); }
-                    return ArtifactOfDoomConfig.MercenaryMultiplyerForTimedBuff.Value;
+                    return ArtifactOfDoomConfig.MercenaryMultiplierForTimedBuff.Value;
                 case "TREEBOT_BODY_NAME":
                     if (debug) { Debug.LogWarning($"Character baseNameToken = {baseNameToken} returning: Rex"); }
-                    return ArtifactOfDoomConfig.RexMultiplyerForTimedBuff.Value;
+                    return ArtifactOfDoomConfig.RexMultiplierForTimedBuff.Value;
                 case "LOADER_BODY_NAME":
                     if (debug) { Debug.LogWarning($"Character baseNameToken = {baseNameToken} returning: Loader"); }
-                    return ArtifactOfDoomConfig.LoaderMultiplyerForTimedBuff.Value;
+                    return ArtifactOfDoomConfig.LoaderMultiplierForTimedBuff.Value;
                 case "CROCO_BODY_NAME":
                     if (debug) { Debug.LogWarning($"Character baseNameToken = {baseNameToken} returning: Acrid"); }
-                    return ArtifactOfDoomConfig.AcridMultiplyerForTimedBuff.Value;
+                    return ArtifactOfDoomConfig.AcridMultiplierForTimedBuff.Value;
                 case "CAPTAIN_BODY_NAME":
                     if (debug) { Debug.LogWarning($"Character baseNameToken = {baseNameToken} returning: Acrid"); }
-                    return ArtifactOfDoomConfig.CaptainMultiplyerForTimedBuff.Value;
+                    return ArtifactOfDoomConfig.CaptainMultiplierForTimedBuff.Value;
                 default:
                     if (debug) { Debug.LogWarning($"Character baseNameToken = {baseNameToken} returning: Acrid"); }
-                    return ArtifactOfDoomConfig.CustomSurvivorMultiplyerForTimedBuff.Value;
+                    return ArtifactOfDoomConfig.CustomSurvivorMultiplierForTimedBuff.Value;
             }
         }
         public ItemIndex GiveAndReturnRandomItem(Inventory inventory)
