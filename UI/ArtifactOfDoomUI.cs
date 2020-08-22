@@ -1,19 +1,12 @@
 using BepInEx;
-using UnityEngine;
-using UnityEngine.UI;
-using System.Collections.Generic;
-using UnityEngine.Networking;
-
 using MiniRpcLib;
-using MiniRpcLib.Action;
 using MiniRpcLib.Func;
-
-
-
-
-using System;
-
 using RoR2;
+using System;
+using System.Collections.Generic;
+using UnityEngine;
+using UnityEngine.Networking;
+using UnityEngine.UI;
 
 
 /*
@@ -32,23 +25,22 @@ namespace ArtifactOfDoom
 {
 
     [R2API.Utils.R2APISubmoduleDependency("ResourcesAPI")]
-    [BepInPlugin("com.ohway.UIMod", "UI Modifier", "1.0")]
+    [BepInPlugin("com.SirHamburger.ArtifactOfDoomUI", "UI Modifier", "1.0")]
     [BepInDependency(MiniRpcPlugin.Dependency)]
     public class ArtifactOfDoomUI : BaseUnityPlugin
     {
         public GameObject ModCanvas = null;
         private static bool ArtifactIsActiv = false;
         private static bool calculationSacrifice = false;
-        void Awake()
+        public void Awake()
         {
             On.RoR2.UI.ExpBar.Awake += ExpBarAwakeAddon;
-
 
             try
             {
                 SetUpMiniRPC();
             }
-            catch (Exception e)
+            catch (Exception)
             {
                 Debug.Log($"[SirHamburger] Error in SetUpMiniRPC");
             }

@@ -1,20 +1,11 @@
 ﻿
+using R2API;
 using RoR2;
+using RoR2.Stats;
 using System;
+using System.Collections.Generic;
 using TILER2;
 using UnityEngine;
-using System.Collections.Generic;
-
-
-
-
-
-using RoR2.Stats;
-
-
-
-
-
 
 namespace ArtifactOfDoom
 {
@@ -24,7 +15,7 @@ namespace ArtifactOfDoom
         public override string displayName => "Artifact of Doom";
 
         protected override string NewLangName(string langid = null) => displayName;
-        protected override string NewLangDesc(string langid = null) => "You get items on enemy kills but loose items every time you take damage.";
+        protected override string NewLangDesc(string langid = null) => "You get items on enemy kills but lose items every time you take damage.";
         private static List<CharacterBody> Playername = new List<CharacterBody>();
         private static List<int> counter = new List<int>();
         private int currentStage = 0;
@@ -32,8 +23,8 @@ namespace ArtifactOfDoom
         private Dictionary<NetworkUser, bool> LockNetworkUser = new Dictionary<NetworkUser, bool>();
         private Dictionary<NetworkUser, bool> LockItemGainNetworkUser = new Dictionary<NetworkUser, bool>();
 
-        private static RoR2.Stats.StatDef statsLostItems;
-        private static RoR2.Stats.StatDef statsGainItems;
+        private static StatDef statsLostItems;
+        private static StatDef statsGainItems;
 
         //public static Dictionary<CharacterBody, Queue<Sprite>>  PlayerItems = new Dictionary<CharacterBody, Queue<Sprite>>();
         //private static Queue<Sprite>  QueueLostItemSprite = new Queue<Sprite>();
@@ -48,23 +39,17 @@ namespace ArtifactOfDoom
 
         public void Awake()
         {
-            Chat.AddMessage("Loaded MyModName!");
+            Chat.AddMessage($"Loaded {displayName}!");
         }
-
 
         public ArtifactOfDoom()
         {
-
             iconPathName = "@ArtifactOfDoom:Assets/Import/artifactofdoom_icon/ArtifactOfDoomActivated.png";
             iconPathNameDisabled = "@ArtifactOfDoom:Assets/Import/artifactofdoom_icon/ArtifactOfDoomDeactivated.png";
-
-
-
         }
 
         protected override void LoadBehavior()
         {
-
             Playername = new List<CharacterBody>();
             counter = new List<int>();
             currentStage = 0;
@@ -72,76 +57,80 @@ namespace ArtifactOfDoom
             statsLostItems = null;
             statsGainItems = null;
 
-
-            statsLostItems = RoR2.Stats.StatDef.Register("Lostitems", RoR2.Stats.StatRecordType.Sum, RoR2.Stats.StatDataType.ULong, 0, null);
-            statsGainItems = RoR2.Stats.StatDef.Register("Gainitems", RoR2.Stats.StatRecordType.Sum, RoR2.Stats.StatDataType.ULong, 0, null);
-
-
+            statsLostItems = StatDef.Register("Lostitems", StatRecordType.Sum, StatDataType.ULong, 0, null);
+            statsGainItems = StatDef.Register("Gainitems", StatRecordType.Sum, StatDataType.ULong, 0, null);
 
             On.RoR2.UI.GameEndReportPanelController.Awake += (orig, self) =>
+            {
+                orig(self);
+                if (!IsActiveAndEnabled())
                 {
-                    orig(self);
-                    if (!this.IsActiveAndEnabled())
-                    {
-                        return;
-                    }
-                    string[] information = new string[self.statsToDisplay.Length + 2];
-                    self.statsToDisplay.CopyTo(information, 0);
-                    information[information.Length - 2] = "Lostitems";
-                    information[information.Length - 1] = "Gainitems";
-                    self.statsToDisplay = information;
-                };
+                    return;
+                }
+                string[] information = new string[self.statsToDisplay.Length + 2];
+                self.statsToDisplay.CopyTo(information, 0);
+                information[information.Length - 2] = "Lostitems";
+                information[information.Length - 1] = "Gainitems";
+                self.statsToDisplay = information;
+            };
+
             On.RoR2.PreGameController.StartRun+=(orig,self)=>
             {
                 orig(self);
                 //Debug.LogError("PreGAmeController");
                  //artifactIsActive = this.IsActiveAndEnabled();
             };
+
             On.RoR2.SceneDirector.PopulateScene += (orig, self) =>
-                {
-                    orig(self);
-                    currentStage = RoR2.Run.instance.stageClearCount + 1;
-                    //                Debug.LogError("PopulateScene");
+            {
+                orig(self);
+                currentStage = Run.instance.stageClearCount + 1;
+                //                Debug.LogError("PopulateScene");
 
-                    artifactIsActive = this.IsActiveAndEnabled();
+                if (Run.instance.selectedDifficulty == DifficultyIndex.Easy)
+                    timeForBuff = ArtifactOfDoomConfig.timeAfterHitToNotLooseItemDrizzly.Value;
+                if (Run.instance.selectedDifficulty == DifficultyIndex.Normal)
+                    timeForBuff = ArtifactOfDoomConfig.timeAfterHitToNotLooseItemRainstorm.Value;
+                if (Run.instance.selectedDifficulty == DifficultyIndex.Hard)
+                    timeForBuff = ArtifactOfDoomConfig.timeAfterHitToNotLooseItemMonsoon.Value;
+                QueueLostItemSprite = new Dictionary<uint, Queue<ItemDef>>();
+                QueueGainedItemSprite = new Dictionary<uint, Queue<ItemDef>>();
+                Playername = new List<CharacterBody>();
+                counter = new List<int>();
+                LockNetworkUser.Clear();
+            };
 
-                    
-                    if (Run.instance.selectedDifficulty == DifficultyIndex.Easy)
-                        timeForBuff = ArtifactOfDoomConfig.timeAfterHitToNotLooseItemDrizzly.Value;
-                    if (Run.instance.selectedDifficulty == DifficultyIndex.Normal)
-                        timeForBuff = ArtifactOfDoomConfig.timeAfterHitToNotLooseItemRainstorm.Value;
-                    if (Run.instance.selectedDifficulty == DifficultyIndex.Hard)
-                        timeForBuff = ArtifactOfDoomConfig.timeAfterHitToNotLooseItemMonsoon.Value;
-                    QueueLostItemSprite = new Dictionary<uint, Queue<ItemDef>>();
-                    QueueGainedItemSprite = new Dictionary<uint, Queue<ItemDef>>();
-                    Playername = new List<CharacterBody>();
-                    counter = new List<int>();
-                    LockNetworkUser.Clear();
-                };
             On.RoR2.Run.Start += (orig,self) =>
             {
                 orig(self);
                 //Debug.LogError("-------------------here----------------------------------");
-                    ArtifactOfDoomUI.isArtifactActive.Invoke(this.IsActiveAndEnabled(), result =>
+                ArtifactOfDoomUI.isArtifactActive.Invoke(
+                    IsActiveAndEnabled(),
+                    result =>
                         {
                             //Debug.LogError("Got Message Of IsArtifactActive");
-                        },null);
-                                            ArtifactOfDoomUI.isCalculationSacrifice.Invoke(ArtifactOfDoomConfig.useArtifactOfSacreficeCalculation.Value, result =>
+                        },
+                    null);
+                ArtifactOfDoomUI.isCalculationSacrifice.Invoke(
+                    ArtifactOfDoomConfig.useArtifactOfSacrificeCalculation.Value,
+                    result =>
                         {
                             //Debug.LogError("Got Message Of IsArtifactActive");
-                        },null);
+                        },
+                    null);
             };
+
             On.RoR2.CharacterBody.OnInventoryChanged += (orig, self) =>
             {
                 orig(self);
                 try
                 {
-                    if (!this.IsActiveAndEnabled())
+                    if (!IsActiveAndEnabled())
                         return;
                     if (!self.isPlayerControlled)
                         return;
                     NetworkUser tempNetworkUser = getNetworkUserOfCharacterBody(self);
-                    int calculatesEnemyCountToTrigger = calculateEnemyCountToTrigger(self);
+                    int calculatesEnemyCountToTrigger = calculateEnemyCountToTrigger(self.inventory);
                     if (!Playername.Contains(self))
                     {
                         Playername.Add(self);
@@ -156,23 +145,24 @@ namespace ArtifactOfDoom
                         }, tempNetworkUser);
                     }
                 }
-                catch (Exception e)
+                catch (Exception)
                 {
                     Debug.LogError("Error while inventory changed");
                 }
 
             };
+
             On.RoR2.GlobalEventManager.OnCharacterDeath += (orig, self, damageReport) =>
             {
                 //try
                 //{
                 orig(self, damageReport);
 
-                if (!this.IsActiveAndEnabled())
+                if (!IsActiveAndEnabled())
                 {
                     return;
                 }
-                if (RoR2.Run.instance.isGameOverServer)
+                if (Run.instance.isGameOverServer)
                     return;
                 if (damageReport.victimBody.isPlayerControlled)
                     return;
@@ -213,9 +203,9 @@ namespace ArtifactOfDoom
 
                 uint pos = 0;
 
-                int calculatesEnemyCountToTrigger = calculateEnemyCountToTrigger(currentBody);
+                int calculatesEnemyCountToTrigger = calculateEnemyCountToTrigger(currentBody.inventory);
                 bool enemyTrigger = getEnemyDropRate(damageReport);
-                if (counter[Playername.IndexOf(currentBody)] <= calculatesEnemyCountToTrigger && !ArtifactOfDoomConfig.useArtifactOfSacreficeCalculation.Value)
+                if (counter[Playername.IndexOf(currentBody)] <= calculatesEnemyCountToTrigger && !ArtifactOfDoomConfig.useArtifactOfSacrificeCalculation.Value)
                 {
                     counter[Playername.IndexOf(currentBody)]++;
 
@@ -229,25 +219,29 @@ namespace ArtifactOfDoom
                 }
                 else
                 {
-                    if (ArtifactOfDoomConfig.useArtifactOfSacreficeCalculation.Value && !enemyTrigger)
+                    if (ArtifactOfDoomConfig.useArtifactOfSacrificeCalculation.Value && !enemyTrigger)
                         return;
+
+                    CharacterBody body;
+
                     if (damageReport.attackerOwnerMaster != null)
                     {
-                        double chanceToTrigger = getCharacterSpezificBuffLengthMultiplier(damageReport.attackerOwnerMaster.GetBody());
+                        body = damageReport.attackerOwnerMaster.GetBody();
+
+                        double chanceToTrigger = getCharacterSpezificBuffLengthMultiplier(body.baseNameToken);
                         chanceToTrigger *= 100;
                         var rand = new System.Random();
                         while (chanceToTrigger > rand.Next(0, 99))
                         {
-                            ItemIndex addedItem = GiveAndReturnRandomItem(damageReport.attackerOwnerMaster.GetBody().inventory);
+                            ItemIndex addedItem = GiveAndReturnRandomItem(body.inventory);
 
-
-                            PlayerStatsComponent.FindBodyStatSheet(damageReport.attackerOwnerMaster.GetBody()).PushStatValue(statsGainItems, 1UL);
-                            if (QueueGainedItemSprite.ContainsKey(damageReport.attackerOwnerMaster.GetBody().netId.Value))
-                                pos = damageReport.attackerOwnerMaster.GetBody().netId.Value;
+                            PlayerStatsComponent.FindBodyStatSheet(body).PushStatValue(statsGainItems, 1UL);
+                            if (QueueGainedItemSprite.ContainsKey(body.netId.Value))
+                                pos = body.netId.Value;
                             else
                             {
-                                QueueGainedItemSprite.Add(damageReport.attackerOwnerMaster.GetBody().netId.Value, new Queue<ItemDef>());
-                                pos = damageReport.attackerOwnerMaster.GetBody().netId.Value;
+                                QueueGainedItemSprite.Add(body.netId.Value, new Queue<ItemDef>());
+                                pos = body.netId.Value;
                             }
                             QueueGainedItemSprite[pos].Enqueue(ItemCatalog.GetItemDef(addedItem));
                             chanceToTrigger -= 100;
@@ -255,39 +249,38 @@ namespace ArtifactOfDoom
                     }
                     else
                     {
-                        double chanceToTrigger = getCharacterSpezificItemCount(damageReport.attackerBody);
+                        body = damageReport.attackerBody;
+                        double chanceToTrigger = getCharacterSpezificItemCount(body.baseNameToken);
                         chanceToTrigger *= 100;
                         var rand = new System.Random();
                         while (chanceToTrigger > rand.Next(0, 99))
                         {
-                            ItemIndex addedItem = GiveAndReturnRandomItem(damageReport.attackerBody.inventory);
-                            PlayerStatsComponent.FindBodyStatSheet(damageReport.attackerBody).PushStatValue(statsGainItems, 1UL);
-                            if (QueueGainedItemSprite.ContainsKey(damageReport.attackerBody.netId.Value))
-                                pos = damageReport.attackerBody.netId.Value;
+                            ItemIndex addedItem = GiveAndReturnRandomItem(body.inventory);
+                            PlayerStatsComponent.FindBodyStatSheet(body).PushStatValue(statsGainItems, 1UL);
+                            if (QueueGainedItemSprite.ContainsKey(body.netId.Value))
+                                pos = body.netId.Value;
                             else
                             {
                                 try
                                 {
-                                    QueueGainedItemSprite.Add(damageReport.attackerBody.netId.Value, new Queue<ItemDef>());
-                                    pos = damageReport.attackerBody.netId.Value;
+                                    QueueGainedItemSprite.Add(body.netId.Value, new Queue<ItemDef>());
+                                    pos = body.netId.Value;
                                 }
-                                catch (Exception e)
+                                catch (Exception)
                                 {
-                                    Debug.Log($"[SirHamburger ArtifactOfDoom] Error while excecuting : QueueGainedItemSprite.Add(damageReport.attackerBody.netId.Value, new Queue<Sprite>()); (line 203)");
+                                    Debug.Log("[SirHamburger ArtifactOfDoom] Error while excecuting : QueueGainedItemSprite.Add(body.netId.Value, new Queue<Sprite>()); (line 203)");
                                 }
                             }
                             QueueGainedItemSprite[pos].Enqueue(ItemCatalog.GetItemDef(addedItem));
                             chanceToTrigger -= 100;
                         }
-
                     }
 
                     if (QueueGainedItemSprite[pos].Count > 10)
                         QueueGainedItemSprite[pos].Dequeue();
 
-
                     string temp = "";
-                    foreach (var element in ArtifactOfDoom.QueueGainedItemSprite[pos])
+                    foreach (var element in QueueGainedItemSprite[pos])
                     {
                         temp += element.name + " ";
                     }
@@ -303,66 +296,90 @@ namespace ArtifactOfDoom
                     {
                         LockItemGainNetworkUser[tempNetworkUser] = true;
                         if (tempNetworkUser == null)
+                        {
                             //Debug.LogError("--------------------------------tempNetworkUser==null---------------------------");
+                        }
 
                         ArtifactOfDoomUI.AddGainedItemsToPlayers.Invoke(temp, result =>
-                            {
-                                LockItemGainNetworkUser[tempNetworkUser] = false;
-                            }, tempNetworkUser);
+                        {
+                            LockItemGainNetworkUser[tempNetworkUser] = false;
+                        },
+                        tempNetworkUser);
+
                         string tempString = counter[Playername.IndexOf(currentBody)] + "," + calculatesEnemyCountToTrigger;
                         ArtifactOfDoomUI.UpdateProgressBar.Invoke(tempString, result =>
-                               {
-                               }, tempNetworkUser);
+                        {
+                        },
+                        tempNetworkUser);
                     }
 
-
-
                     counter[Playername.IndexOf(currentBody)] = 0;
-
                 }
-
-
             };
             On.RoR2.HealthComponent.TakeDamage += (orig, self, damageinfo) =>
             {
-
                 //For adding possibility to dont loose items for some time: characterBody.AddTimedBuff(BuffIndex.Immune, duration);
                 orig(self, damageinfo);
 
-                if (!this.IsActiveAndEnabled())
+                if (!IsActiveAndEnabled())
                 {
-
                     return;
                 }
+
                 if (damageinfo.rejected)
                 {
                     //Debug.Log("Teddie?");
                     return;
                 }
 
-                if (debug) Debug.LogWarning("Line 287");
+                if (debug) Debug.LogWarning("Line 336");
+
                 if (self.body == null)
-                { if (debug) Debug.LogWarning("self.body == null)"); return; }
+                {
+                    if (debug) Debug.LogWarning("self.body == null)"); 
+                    return;
+                }
+
                 if (self.body.inventory == null)
-                { if (debug) Debug.LogWarning("self.body.inventory == null)"); return; }
-                if (RoR2.Run.instance.isGameOverServer)
-                { if (debug) Debug.LogWarning("RoR2.Run.instance.isGameOverServer)"); return; }
+                {
+                    if (debug) Debug.LogWarning("self.body.inventory == null)");
+                    return;
+                }
+
+                if (Run.instance.isGameOverServer)
+                { 
+                    if (debug) Debug.LogWarning("RoR2.Run.instance.isGameOverServer)"); 
+                    return; 
+                }
+
                 if (damageinfo == null)
-                { if (debug) Debug.LogWarning("damageinfo == null)"); return; }
+                { 
+                    if (debug) Debug.LogWarning("damageinfo == null)"); 
+                    return; 
+                }
+
                 if (damageinfo.attacker == null)
-                { if (debug) Debug.LogWarning("damageinfo.attacker.name==null)"); return; }
+                { 
+                    if (debug) Debug.LogWarning("damageinfo.attacker.name==null)"); 
+                    return; 
+                
+                }
+
                 if (self.body.HasBuff(ArtifactOfDoomConfig.buffIndexDidLooseItem))
                 {
                     if (debug) Debug.LogWarning("you did loose an item not long ago so you don't loose one now");
                     return;
                 }
-                if (debug) Debug.LogWarning("Line 294");
-                int totalItems = getTotalItemCountOfPlayer(self.body);
-                if (debug) Debug.LogWarning("Line 298");
+
+                if (debug) Debug.LogWarning("Line 375");
+
+                int totalItems = getTotalItemCountOfPlayer(self.body.inventory);
+
+                if (debug) Debug.LogWarning("Line 379");
+
                 if (self.body.isPlayerControlled && (totalItems > 0) && self.name != damageinfo.attacker.name)
                 {
-
-                    if (debug) Debug.LogWarning("Line 301");
+                    if (debug) Debug.LogWarning("Line 383");
                     Dictionary<ItemIndex, int> lstItemIndex = new Dictionary<ItemIndex, int>();
                     List<ItemIndex> index = new List<ItemIndex>();
                     foreach (var element in ItemCatalog.allItems)
@@ -373,7 +390,7 @@ namespace ArtifactOfDoom
                             index.Add(element);
                         }
                     }
-                    if (debug) Debug.LogWarning("Line 312");
+                    if (debug) Debug.LogWarning("Line 394");
 
                     double chanceToTrigger = 100.0;
                     if (totalItems <= (ArtifactOfDoomConfig.minItemsPerStage.Value * currentStage))
@@ -383,39 +400,39 @@ namespace ArtifactOfDoom
                         chanceToTrigger *= 100;
                     }
                     //Debug.LogError("ChanceToTriggerLoose_Item"+ chanceToTrigger);
-                    if (debug) Debug.LogWarning("Line 320");
+                    if (debug) Debug.LogWarning("Line 404");
 
                     var rand = new System.Random();
                     for (int i = 0; i < self.body.inventory.GetItemCount(ItemIndex.Clover) + 1; i++)
-
                     {
                         int randomValue = rand.Next(1, 100);
 
-                        if (chanceToTrigger < (double)randomValue)
+                        if (chanceToTrigger < randomValue)
                         {
                             return;
                         }
                     }
                     chanceToTrigger = 100.0;
-                    if (debug) Debug.LogWarning("Line 329");
+                    if (debug) Debug.LogWarning("Line 417");
 
                     if (totalItems > (ArtifactOfDoomConfig.maxItemsPerStage.Value * currentStage))
                     {
                         chanceToTrigger = Math.Pow((double)(totalItems) / ((double)ArtifactOfDoomConfig.maxItemsPerStage.Value * currentStage), ArtifactOfDoomConfig.exponentailFactorToCalculateSumOfLostItems.Value);
                         chanceToTrigger *= 100;
-
                     }
-                    if (debug) Debug.LogWarning("Line 337");
+                    if (debug) Debug.LogWarning("Line 424");
 
                     int lostItems = 0;
 
                     uint pos = 50000;
-                    if (debug) Debug.LogWarning("Line 342");
+                    if (debug) Debug.LogWarning("Line 429");
 
                     while (chanceToTrigger > 0)
                     {
                         if (QueueLostItemSprite.ContainsKey(self.body.netId.Value))
+                        {
                             pos = self.body.netId.Value;
+                        }
                         else
                         {
                             try
@@ -423,12 +440,13 @@ namespace ArtifactOfDoom
                                 QueueLostItemSprite.Add(self.body.netId.Value, new Queue<ItemDef>());
                                 pos = self.body.netId.Value;
                             }
-                            catch (Exception e)
+                            catch (Exception)
                             {
                                 Debug.Log($"[SirHamburger ArtifactOfDoom] Error in Line 311");
 
                             }
                         }
+
                         if (chanceToTrigger < rand.Next(0, 99))
                         {
                             break;
@@ -436,41 +454,37 @@ namespace ArtifactOfDoom
                         lostItems++;
                         int randomPosition = rand.Next(0, lstItemIndex.Count - 1);
                         ItemIndex itemToRemove = index[randomPosition];
-                        if (debug) Debug.LogWarning("Line 394");
+                        if (debug) Debug.LogWarning("Line 458");
                         while ((lstItemIndex[itemToRemove] == 0))
                         {
                             randomPosition = rand.Next(0, lstItemIndex.Count - 1);
                             itemToRemove = index[randomPosition];
                         }
                         lstItemIndex[itemToRemove]--;
-                        if (debug) Debug.LogWarning("Line 401");
+                        if (debug) Debug.LogWarning("Line 465");
 
                         if (!ItemCatalog.lunarItemList.Contains(itemToRemove) && (ItemCatalog.GetItemDef(itemToRemove).tier != ItemTier.NoTier))
                         {
-                            if (debug) Debug.LogWarning("Line 405");
+                            if (debug) Debug.LogWarning("Line 469");
 
                             self.body.inventory.RemoveItem(itemToRemove, 1);
 
                             PlayerStatsComponent.FindBodyStatSheet(self.body).PushStatValue(statsLostItems, 1UL);
 
-                            if (debug) Debug.LogWarning("Line 411");
+                            if (debug) Debug.LogWarning("Line 475");
 
                             QueueLostItemSprite[pos].Enqueue(ItemCatalog.GetItemDef(itemToRemove));
                             if (QueueLostItemSprite[pos].Count > 10)
                                 QueueLostItemSprite[pos].Dequeue();
 
-                            double buffLengthMultiplier = getCharacterSpezificBuffLengthMultiplier(self.body);
+                            double buffLengthMultiplier = getCharacterSpezificBuffLengthMultiplier(self.body.baseNameToken);
                             self.body.AddTimedBuff(ArtifactOfDoomConfig.buffIndexDidLooseItem, (float)(timeForBuff * (float)buffLengthMultiplier));
-
-
                         }
-                        else
-                        {
 
-                        }
                         chanceToTrigger -= 100;
                     }
-                    if (debug) Debug.LogWarning("Line 431");
+
+                    if (debug) Debug.LogWarning("Line 488");
 
                     string temp = "";
                     foreach (var element in ArtifactOfDoom.QueueLostItemSprite[pos])
@@ -478,7 +492,7 @@ namespace ArtifactOfDoom
                         temp += element.name + " ";
                     }
                     NetworkUser tempNetworkUser = getNetworkUserOfCharacterBody(self.body);
-                    if (debug) Debug.LogWarning("Line 444");
+                    if (debug) Debug.LogWarning("Line 496");
 
                     if (tempNetworkUser == null)
                         Debug.LogError("--------------------------------tempNetworkUser(lostitems)==null---------------------------");
@@ -490,18 +504,19 @@ namespace ArtifactOfDoom
                         ArtifactOfDoomUI.AddLostItemsOfPlayers.Invoke(temp, result =>
                         {
                             LockNetworkUser[tempNetworkUser] = false;
-                        }, tempNetworkUser);
-                        int calculatesEnemyCountToTrigger = calculateEnemyCountToTrigger(self.body);
+                        },
+                        tempNetworkUser);
+                        int calculatesEnemyCountToTrigger = calculateEnemyCountToTrigger(self.body.inventory);
                         string tempString = counter[Playername.IndexOf(self.body)] + "," + calculatesEnemyCountToTrigger;
                         ArtifactOfDoomUI.UpdateProgressBar.Invoke(tempString, result =>
-                               {
-                               }, tempNetworkUser);
+                        {
+                        },
+                        tempNetworkUser);
                     }
                 }
-
-
             };
         }
+
         private NetworkUser getNetworkUserOfDamageReport(DamageReport report, bool withMaster)
         {
             NetworkUser tempNetworkUser = null;
@@ -516,8 +531,6 @@ namespace ArtifactOfDoom
                             tempNetworkUser = element;
                         }
                     }
-
-
                 }
                 else
                 {
@@ -528,11 +541,11 @@ namespace ArtifactOfDoom
                             tempNetworkUser = element;
                         }
                     }
-
                 }
             }
             return tempNetworkUser;
         }
+
         private NetworkUser getNetworkUserOfCharacterBody(CharacterBody body)
         {
             NetworkUser tempNetworkUser = null;
@@ -546,17 +559,19 @@ namespace ArtifactOfDoom
             }
             return tempNetworkUser;
         }
-        private int getTotalItemCountOfPlayer(CharacterBody body)
+
+        private int getTotalItemCountOfPlayer(Inventory inventory)
         {
-            return body.inventory.GetTotalItemCountOfTier(ItemTier.Tier1) +
-            body.inventory.GetTotalItemCountOfTier(ItemTier.Tier2) +
-            body.inventory.GetTotalItemCountOfTier(ItemTier.Tier3);
+            return inventory.GetTotalItemCountOfTier(ItemTier.Tier1) +
+            inventory.GetTotalItemCountOfTier(ItemTier.Tier2) +
+            inventory.GetTotalItemCountOfTier(ItemTier.Tier3);
         }
-        private int calculateEnemyCountToTrigger(CharacterBody body)
+
+        private int calculateEnemyCountToTrigger(Inventory inventory)
         {
-            double totalItems = getTotalItemCountOfPlayer(body);
-            double calculatedValue = ((double)totalItems - (double)currentStage * (double)ArtifactOfDoomConfig.averageItemsPerStage.Value);
-            int calculatesEnemyCountToTrigger = 0;
+            var totalItems = getTotalItemCountOfPlayer(inventory);
+            var calculatedValue = totalItems - currentStage * ArtifactOfDoomConfig.averageItemsPerStage.Value;
+            int calculatesEnemyCountToTrigger;
             if (calculatedValue >= 0)
                 calculatesEnemyCountToTrigger = (int)Math.Pow(calculatedValue, ArtifactOfDoomConfig.exponentTriggerItems.Value);
             else
@@ -571,155 +586,117 @@ namespace ArtifactOfDoom
             return calculatesEnemyCountToTrigger;
         }
 
-        private double getCharacterSpezificItemCount(CharacterBody body)
+        private double getCharacterSpezificItemCount(string baseNameToken)
         {
-            if (body.name.Contains("Commando"))
+            switch (baseNameToken)
             {
-                if (debug) { Debug.LogWarning("Character BodyName = " + body.name + " returning: Commando"); }
-                return ArtifactOfDoomConfig.commandoBonusItems.Value;
+                case "COMMANDO_BODY_NAME":
+                    if (debug) { Debug.LogWarning($"Character baseNameToken = {baseNameToken} returning: Commando"); }
+                    return ArtifactOfDoomConfig.CommandoBonusItems.Value;
+                case "HUNTRESS_BODY_NAME":
+                    if (debug) { Debug.LogWarning($"Character baseNameToken = {baseNameToken} returning: Huntress"); }
+                    return ArtifactOfDoomConfig.HuntressBonusItems.Value;
+                case "ENGI_BODY_NAME":
+                    if (debug) { Debug.LogWarning($"Character baseNameToken = {baseNameToken} returning: Engineer"); }
+                    return ArtifactOfDoomConfig.EngineerBonusItems.Value;
+                case "TOOLBOT_BODY_NAME":
+                    if (debug) { Debug.LogWarning($"Character baseNameToken = {baseNameToken} returning: MULT"); }
+                    return ArtifactOfDoomConfig.MULTBonusItems.Value;
+                case "MAGE_BODY_NAME":
+                    if (debug) { Debug.LogWarning($"Character baseNameToken = {baseNameToken} returning: Artificer"); }
+                    return ArtifactOfDoomConfig.ArtificerBonusItems.Value;
+                case "MERC_BODY_NAME":
+                    if (debug) { Debug.LogWarning($"Character baseNameToken = {baseNameToken} returning: Mercenary"); }
+                    return ArtifactOfDoomConfig.MercenaryBonusItems.Value;
+                case "TREEBOT_BODY_NAME":
+                    if (debug) { Debug.LogWarning($"Character baseNameToken = {baseNameToken} returning: Rex"); }
+                    return ArtifactOfDoomConfig.RexBonusItems.Value;
+                case "LOADER_BODY_NAME":
+                    if (debug) { Debug.LogWarning($"Character baseNameToken = {baseNameToken} returning: Loader"); }
+                    return ArtifactOfDoomConfig.LoaderBonusItems.Value;
+                case "CROCO_BODY_NAME":
+                    if (debug) { Debug.LogWarning($"Character baseNameToken = {baseNameToken} returning: Acrid"); }
+                    return ArtifactOfDoomConfig.AcridBonusItems.Value;
+                case "CAPTAIN_BODY_NAME":
+                    if (debug) { Debug.LogWarning($"Character baseNameToken = {baseNameToken} returning: Acrid"); }
+                    return ArtifactOfDoomConfig.CaptainBonusItems.Value;
+                default:
+                    if (debug) { Debug.LogWarning($"Character baseNameToken = {baseNameToken} returning: Acrid"); }
+                    return ArtifactOfDoomConfig.CustomSurvivorBonusItems.Value;
             }
-            if (body.name.Contains("Huntress"))
-            {
-                if (debug) { Debug.LogWarning("Character BodyName = " + body.name + " returning: Huntress"); }
-
-                return ArtifactOfDoomConfig.HuntressBonusItems.Value;
-            }
-            if (body.name.Contains("Toolbot"))
-            {
-                if (debug) { Debug.LogWarning("Character BodyName = " + body.name + " returning: MUL"); }
-
-                return ArtifactOfDoomConfig.MULTBonusItems.Value;
-            }
-            if (body.name.Contains("Engi"))
-            {
-                if (debug) { Debug.LogWarning("Character BodyName = " + body.name + " returning: Engineer"); }
-
-                return ArtifactOfDoomConfig.EngineerBonusItems.Value;
-            }
-            if (body.name.Contains("Mage"))
-            {
-                if (debug) { Debug.LogWarning("Character BodyName = " + body.name + " returning: Artificer"); }
-
-                return ArtifactOfDoomConfig.ArtificerBonusItems.Value;
-            }
-            if (body.name.Contains("Merc"))
-            {
-                if (debug) { Debug.LogWarning("Character BodyName = " + body.name + " returning: Mercenary"); }
-
-                return ArtifactOfDoomConfig.MercenaryBonusItems.Value;
-            }
-
-            if (body.name.Contains("Treebot"))
-            {
-                if (debug) { Debug.LogWarning("Character BodyName = " + body.name + " returning: Rex"); }
-
-                return ArtifactOfDoomConfig.RexBonusItems.Value;
-            }
-            if (body.name.Contains("Loader"))
-            {
-                if (debug) { Debug.LogWarning("Character BodyName = " + body.name + " returning: Loader"); }
-
-                return ArtifactOfDoomConfig.LoaderBonusItems.Value;
-            }
-            if (body.name.Contains("Croco"))
-            {
-                if (debug) { Debug.LogWarning("Character BodyName = " + body.name + " returning: Acrid"); }
-
-                return ArtifactOfDoomConfig.AcridBonusItems.Value;
-            }
-            Debug.LogWarning("Character BodyName = " + body.name + " Didnt find valid Body. \n Please report this to SirHamburger");
-            return 1.0;
         }
-        private double getCharacterSpezificBuffLengthMultiplier(CharacterBody body)
+
+        private double getCharacterSpezificBuffLengthMultiplier(string baseNameToken)
         {
-
-            if (body.name.Contains("Commando"))
+            switch (baseNameToken)
             {
-                if (debug) { Debug.LogWarning("Character BodyName = " + body.name + " returning: Commando"); }
-                return ArtifactOfDoomConfig.commandoMultiplyerForTimedBuff.Value;
+                case "COMMANDO_BODY_NAME":
+                    if (debug) { Debug.LogWarning($"Character baseNameToken = {baseNameToken} returning: Commando"); }
+                    return ArtifactOfDoomConfig.CommandoMultiplyerForTimedBuff.Value;
+                case "HUNTRESS_BODY_NAME":
+                    if (debug) { Debug.LogWarning($"Character baseNameToken = {baseNameToken} returning: Huntress"); }
+                    return ArtifactOfDoomConfig.HuntressMultiplyerForTimedBuff.Value;
+                case "ENGI_BODY_NAME":
+                    if (debug) { Debug.LogWarning($"Character baseNameToken = {baseNameToken} returning: Engineer"); }
+                    return ArtifactOfDoomConfig.EngineerMultiplyerForTimedBuff.Value;
+                case "TOOLBOT_BODY_NAME":
+                    if (debug) { Debug.LogWarning($"Character baseNameToken = {baseNameToken} returning: MULT"); }
+                    return ArtifactOfDoomConfig.MULTMultiplyerForTimedBuff.Value;
+                case "MAGE_BODY_NAME":
+                    if (debug) { Debug.LogWarning($"Character baseNameToken = {baseNameToken} returning: Artificer"); }
+                    return ArtifactOfDoomConfig.ArtificerMultiplyerForTimedBuff.Value;
+                case "MERC_BODY_NAME":
+                    if (debug) { Debug.LogWarning($"Character baseNameToken = {baseNameToken} returning: Mercenary"); }
+                    return ArtifactOfDoomConfig.MercenaryMultiplyerForTimedBuff.Value;
+                case "TREEBOT_BODY_NAME":
+                    if (debug) { Debug.LogWarning($"Character baseNameToken = {baseNameToken} returning: Rex"); }
+                    return ArtifactOfDoomConfig.RexMultiplyerForTimedBuff.Value;
+                case "LOADER_BODY_NAME":
+                    if (debug) { Debug.LogWarning($"Character baseNameToken = {baseNameToken} returning: Loader"); }
+                    return ArtifactOfDoomConfig.LoaderMultiplyerForTimedBuff.Value;
+                case "CROCO_BODY_NAME":
+                    if (debug) { Debug.LogWarning($"Character baseNameToken = {baseNameToken} returning: Acrid"); }
+                    return ArtifactOfDoomConfig.AcridMultiplyerForTimedBuff.Value;
+                case "CAPTAIN_BODY_NAME":
+                    if (debug) { Debug.LogWarning($"Character baseNameToken = {baseNameToken} returning: Acrid"); }
+                    return ArtifactOfDoomConfig.CaptainMultiplyerForTimedBuff.Value;
+                default:
+                    if (debug) { Debug.LogWarning($"Character baseNameToken = {baseNameToken} returning: Acrid"); }
+                    return ArtifactOfDoomConfig.CustomSurvivorMultiplyerForTimedBuff.Value;
             }
-            if (body.name.Contains("Huntress"))
-            {
-                if (debug) { Debug.LogWarning("Character BodyName = " + body.name + " returning: Huntress"); }
-
-                return ArtifactOfDoomConfig.HuntressMultiplyerForTimedBuff.Value;
-            }
-            if (body.name.Contains("Toolbot"))
-            {
-                if (debug) { Debug.LogWarning("Character BodyName = " + body.name + " returning: MUL"); }
-
-                return ArtifactOfDoomConfig.MULTMultiplyerForTimedBuff.Value;
-            }
-            if (body.name.Contains("Engi"))
-            {
-                if (debug) { Debug.LogWarning("Character BodyName = " + body.name + " returning: Engineer"); }
-
-                return ArtifactOfDoomConfig.EngineerMultiplyerForTimedBuff.Value;
-            }
-            if (body.name.Contains("Mage"))
-            {
-                if (debug) { Debug.LogWarning("Character BodyName = " + body.name + " returning: Artificer"); }
-
-                return ArtifactOfDoomConfig.ArtificerMultiplyerForTimedBuff.Value;
-            }
-            if (body.name.Contains("Merc"))
-            {
-                if (debug) { Debug.LogWarning("Character BodyName = " + body.name + " returning: Mercenary"); }
-
-                return ArtifactOfDoomConfig.MercenaryMultiplyerForTimedBuff.Value;
-            }
-
-            if (body.name.Contains("Treebot"))
-            {
-                if (debug) { Debug.LogWarning("Character BodyName = " + body.name + " returning: Rex"); }
-
-                return ArtifactOfDoomConfig.RexMultiplyerForTimedBuff.Value;
-            }
-            if (body.name.Contains("Loader"))
-            {
-                if (debug) { Debug.LogWarning("Character BodyName = " + body.name + " returning: Loader"); }
-
-                return ArtifactOfDoomConfig.LoaderMultiplyerForTimedBuff.Value;
-            }
-            if (body.name.Contains("Croco"))
-            {
-                if (debug) { Debug.LogWarning("Character BodyName = " + body.name + " returning: Acrid"); }
-
-                return ArtifactOfDoomConfig.AcridMultiplyerForTimedBuff.Value;
-            }
-            Debug.LogWarning("Character BodyName = " + body.name + " Didnt find valid Body. \n Please report this to SirHamburger");
-            return 1.0;
         }
         public ItemIndex GiveAndReturnRandomItem(Inventory inventory)
         {
+            var tier1 = ItemDropAPI.GetDefaultDropList(ItemTier.Tier1);
+            var tier2 = ItemDropAPI.GetDefaultDropList(ItemTier.Tier2);
+            var tier3 = ItemDropAPI.GetDefaultDropList(ItemTier.Tier3);
 
-            WeightedSelection<List<PickupIndex>> weightedSelection = new WeightedSelection<List<PickupIndex>>(8);
-            weightedSelection.AddChoice(Run.instance.availableTier1DropList, 80f);
-            weightedSelection.AddChoice(Run.instance.availableTier2DropList, 19f);
-            weightedSelection.AddChoice(Run.instance.availableTier3DropList, 1f);
+            WeightedSelection<List<ItemIndex>> weightedSelection = new WeightedSelection<List<ItemIndex>>();
+            weightedSelection.AddChoice(tier1, 80f);
+            weightedSelection.AddChoice(tier2, 19f);
+            weightedSelection.AddChoice(tier3, 1f);
 
-            List<PickupIndex> list = weightedSelection.Evaluate(UnityEngine.Random.value);
-            ItemIndex givenItem = list[UnityEngine.Random.Range(0, list.Count)].itemIndex;
-            inventory.GiveItem(givenItem, 1);
+            List<ItemIndex> list = weightedSelection.Evaluate(UnityEngine.Random.value);
+
+            var givenItem = list[UnityEngine.Random.Range(0, list.Count)];
+
+            inventory.GiveItem(givenItem);
             return givenItem;
-
         }
 
         protected override void UnloadBehavior()
         {
-
-            ArtifactOfDoom.QueueLostItemSprite = new Dictionary<uint, Queue<ItemDef>>();
-            ArtifactOfDoom.QueueGainedItemSprite = new Dictionary<uint, Queue<ItemDef>>();
-            ArtifactOfDoom.statsLostItems = null;
-            ArtifactOfDoom.statsGainItems = null;
-            ArtifactOfDoom.Playername = new List<CharacterBody>();
-            ArtifactOfDoom.counter = new List<int>();
-
+            QueueLostItemSprite = new Dictionary<uint, Queue<ItemDef>>();
+            QueueGainedItemSprite = new Dictionary<uint, Queue<ItemDef>>();
+            statsLostItems = null;
+            statsGainItems = null;
+            Playername = new List<CharacterBody>();
+            counter = new List<int>();
         }
 
         private bool getEnemyDropRate(DamageReport damageReport)
         {
-            if (!ArtifactOfDoomConfig.useArtifactOfSacreficeCalculation.Value)
+            if (!ArtifactOfDoomConfig.useArtifactOfSacrificeCalculation.Value)
                 return false;
             if (!damageReport.victimMaster)
             {
@@ -741,6 +718,5 @@ namespace ArtifactOfDoom
             }
             return false;
         }
-
     }
 }

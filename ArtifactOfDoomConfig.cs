@@ -1,16 +1,13 @@
 ﻿using BepInEx;
+using BepInEx.Configuration;
 using R2API;
 using R2API.Utils;
 using RoR2;
-
 using System.Reflection;
-using UnityEngine;
-using UnityEditor;
-using System;
-using BepInEx.Configuration;
-using Path = System.IO.Path;
 using TILER2;
+using UnityEngine;
 using static TILER2.MiscUtil;
+using Path = System.IO.Path;
 
 namespace ArtifactOfDoom
 {
@@ -23,7 +20,6 @@ namespace ArtifactOfDoom
         public const string ModVer = "1.0.0";
         public const string ModName = "ArtifactOfDoom";
         public const string ModGuid = "com.SirHamburger.ArtifactOfDoom";
-        private static Transform HUDroot = null;
 
         public static GameObject GameObjectReference;
 
@@ -40,7 +36,7 @@ namespace ArtifactOfDoom
         public static ConfigEntry<double> exponentailFactorToCalculateSumOfLostItems;
         public static ConfigEntry<bool> artifactOfSwarmNerf;
 
-        public static ConfigEntry<bool> useArtifactOfSacreficeCalculation;
+        public static ConfigEntry<bool> useArtifactOfSacrificeCalculation;
         public static ConfigEntry<double> multiplayerForArtifactOfSacrificeDropRate;
 
         public static ConfigEntry<bool> disableItemProgressBar;
@@ -48,8 +44,8 @@ namespace ArtifactOfDoom
         public static ConfigEntry<double> timeAfterHitToNotLooseItemMonsoon;
         public static ConfigEntry<double> timeAfterHitToNotLooseItemDrizzly;
         public static ConfigEntry<double> timeAfterHitToNotLooseItemRainstorm;
-        public static ConfigEntry<double> commandoBonusItems;
-        public static ConfigEntry<double> commandoMultiplyerForTimedBuff;
+        public static ConfigEntry<double> CommandoBonusItems;
+        public static ConfigEntry<double> CommandoMultiplyerForTimedBuff;
         public static ConfigEntry<double> HuntressBonusItems;
         public static ConfigEntry<double> HuntressMultiplyerForTimedBuff;
         public static ConfigEntry<double> MULTBonusItems;
@@ -66,16 +62,13 @@ namespace ArtifactOfDoom
         public static ConfigEntry<double> LoaderMultiplyerForTimedBuff;
         public static ConfigEntry<double> AcridBonusItems;
         public static ConfigEntry<double> AcridMultiplyerForTimedBuff;
+        public static ConfigEntry<double> CaptainBonusItems;
+        public static ConfigEntry<double> CaptainMultiplyerForTimedBuff;
+        public static ConfigEntry<double> CustomSurvivorBonusItems;
+        public static ConfigEntry<double> CustomSurvivorMultiplyerForTimedBuff;
         public static ConfigEntry<double> exponentTriggerItems;
 
-
-
-
         public static BuffIndex buffIndexDidLooseItem;
-
-
-
-
 
         private void Awake()
         {
@@ -86,10 +79,6 @@ namespace ArtifactOfDoom
                 var provider = new AssetBundleResourcesProvider("@ArtifactOfDoom", bundle);
                 ResourcesAPI.AddProvider(provider);
             }
-
-
-
-
         
             cfgFile = new ConfigFile(Path.Combine(Paths.ConfigPath, ModGuid + ".cfg"), true);
 
@@ -112,9 +101,9 @@ namespace ArtifactOfDoom
                 "The exponent to Calculate how many items you'll loose if you're over maxItemsPerStage"));
 
             artifactOfSwarmNerf = cfgFile.Bind(new ConfigDefinition("Global.VanillaTweaks", "artifactOfSwarmNerf"), false, new ConfigDescription(
-                "Enable the nerf for Artifact of swarm where you've to kill double as many enemies"));
+                "Enable the nerf for Artifact of Swarm where you've to kill double as many enemies"));
 
-            useArtifactOfSacreficeCalculation= cfgFile.Bind(new ConfigDefinition("Global.VanillaTweaks", "useArtifactOfSacreficeCalculation"), false, new ConfigDescription(
+            useArtifactOfSacrificeCalculation= cfgFile.Bind(new ConfigDefinition("Global.VanillaTweaks", "useArtifactOfSacreficeCalculation"), false, new ConfigDescription(
                 "Chance the item gain to a specific drop rate of enemys"));
             multiplayerForArtifactOfSacrificeDropRate= cfgFile.Bind(new ConfigDefinition("Global.VanillaTweaks", "multiplayerForArtifactOfSacrificeDropRate"), 2.0, new ConfigDescription(
                 "Multiplayer for the drop rate (base Chance is 5)"));
@@ -131,9 +120,9 @@ namespace ArtifactOfDoom
             timeAfterHitToNotLooseItemMonsoon = cfgFile.Bind(new ConfigDefinition("Global.VanillaTweaks", "timeAfterHitToNotLooseItemMonsoon"), 0.05, new ConfigDescription(
                 "The time in seconds where you will not loose items after you lost one on monsoon"));
 
-            commandoBonusItems = cfgFile.Bind(new ConfigDefinition("Global.VanillaTweaks", "CommandoBonusItems"), 1.0, new ConfigDescription(
+            CommandoBonusItems = cfgFile.Bind(new ConfigDefinition("Global.VanillaTweaks", "CommandoBonusItems"), 1.0, new ConfigDescription(
                 "The count of items which you get if you kill enough enemies"));
-            commandoMultiplyerForTimedBuff = cfgFile.Bind(new ConfigDefinition("Global.VanillaTweaks", "commandoMultiplyerForTimedBuff"), 1.0, new ConfigDescription(
+            CommandoMultiplyerForTimedBuff = cfgFile.Bind(new ConfigDefinition("Global.VanillaTweaks", "commandoMultiplyerForTimedBuff"), 1.0, new ConfigDescription(
                 "The Multiplier for that specific character for the length of timeAfterHitToNotLooseItems"));
             HuntressBonusItems = cfgFile.Bind(new ConfigDefinition("Global.VanillaTweaks", "HuntressBonusItems"), 1.0, new ConfigDescription(
                 "The count of items which you get if you kill enough enemies"));
@@ -168,7 +157,6 @@ namespace ArtifactOfDoom
             AcridMultiplyerForTimedBuff = cfgFile.Bind(new ConfigDefinition("Global.VanillaTweaks", "AcridMultiplyerForTimedBuff"), 4.0, new ConfigDescription(
                 "The Multiplier for that specific character for the length of timeAfterHitToNotLooseItems"));
 
-
             int longestName = 0;
             foreach (ItemBoilerplate x in masterItemList)
             {
@@ -182,7 +170,7 @@ namespace ArtifactOfDoom
                 if (x is Artifact afct)
                     Logger.LogMessage(" Artifact ADOOM" + x.itemCodeName.PadRight(longestName) + " / " + ((int)afct.regIndex).ToString());
                 else
-                    Logger.LogMessage("    Other ADOOM" + x.itemCodeName.PadRight(longestName) + " / N/A");
+                    Logger.LogMessage("Other ADOOM" + x.itemCodeName.PadRight(longestName) + " / N/A");
             }
 
             var didLooseItem = new R2API.CustomBuff("didLooseItem", "", Color.black, false, false);
