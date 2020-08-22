@@ -2,6 +2,7 @@ using BepInEx;
 using MiniRpcLib;
 using MiniRpcLib.Func;
 using RoR2;
+using RoR2.UI;
 using System;
 using System.Collections.Generic;
 using UnityEngine;
@@ -23,19 +24,21 @@ using UnityEngine.UI;
 
 namespace ArtifactOfDoom
 {
-
-    [R2API.Utils.R2APISubmoduleDependency("ResourcesAPI")]
-    [BepInPlugin("com.SirHamburger.ArtifactOfDoomUI", "ArtifactOfDoom UI Modifier", "1.0")]
-    [BepInDependency(MiniRpcPlugin.Dependency)]
     public class ArtifactOfDoomUI : BaseUnityPlugin
     {
-        public GameObject ModCanvas = null;
+        public GameObject ModCanvas = new GameObject();
+        public GameObject ItemContainer = new GameObject();
+        public GameObject ItemGainBar = new GameObject();
+        public GameObject ItemGainFrame = new GameObject();
+        public static List<GameObject> listGainedImages = new List<GameObject>();
+        public static List<GameObject> listLostImages = new List<GameObject>();
+        public HealthBar HealthBar;
+        public ExpBar ExpBar;
         private static bool ArtifactIsActive = false;
         private static bool calculationSacrifice = false;
+
         public void Awake()
         {
-            On.RoR2.UI.ExpBar.Awake += ExpBarAwakeAddon;
-
             try
             {
                 SetUpMiniRPC();
@@ -44,156 +47,138 @@ namespace ArtifactOfDoom
             {
                 Debug.Log($"[SirHamburger] Error in SetUpMiniRPC");
             }
-            On.RoR2.Inventory.RemoveItem += (orig, self, itemindex1, ItemIndex2) =>
-            {
-                orig(self, itemindex1, ItemIndex2);
 
-            };
-        }
-        private void SetUpModCanvas()
-        {
-            if (ModCanvas == null)
-            {
-                ModCanvas = new GameObject("UIModifierCanvas");
-                ModCanvas.AddComponent<Canvas>();
-                ModCanvas.GetComponent<Canvas>().renderMode = RenderMode.ScreenSpaceCamera;
-                if (VanillaExpBarRoot != null)
-                {
-                    ModCanvas.GetComponent<Canvas>().worldCamera = VanillaExpBarRoot.transform.root.gameObject.GetComponent<Canvas>().worldCamera;
-                }
+            On.RoR2.UI.HUD.Awake += HudAwake;
 
-                ModCanvas.AddComponent<CanvasScaler>();
-                ModCanvas.GetComponent<CanvasScaler>().uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
-                ModCanvas.GetComponent<CanvasScaler>().referenceResolution = new Vector2(1920, 1080);
-                ModCanvas.GetComponent<CanvasScaler>().screenMatchMode = CanvasScaler.ScreenMatchMode.Expand;
-            }
+            On.RoR2.Inventory.RemoveItem += RemoveItem;
         }
 
-
-        #region Exp bar GameObjects
-        public GameObject VanillaExpBarRoot = null;
-        public GameObject ModExpBarGroup = null;
-        public static List<GameObject> listGainedImages = new List<GameObject>();
-        public static List<GameObject> listLostImages = new List<GameObject>();
-        public static GameObject itemGainBar;
-        public static GameObject itemGainFrame;
-
-        #endregion
-        public void ExpBarAwakeAddon(On.RoR2.UI.ExpBar.orig_Awake orig, RoR2.UI.ExpBar self)
+        private void HudAwake(On.RoR2.UI.HUD.orig_Awake self, HUD orig)
         {
-            orig(self);
-            //Debug.LogError("ExpBarAwakeAddon");
-            //Debug.LogError("ArtifactIsActiv " + ArtifactIsActiv);
+            self(orig);
+            initializeItemUI();
+            ExpBar = orig.expBar;
+            ItemGainFrame.transform.SetParent(orig.healthBar.transform, false);
+            HealthBar = orig.healthBar;
+        }
+
+        private void initializeItemUI()
+        {
             if (!ArtifactIsActive)
                 return;
-            var currentRect = self.gameObject.GetComponentsInChildren<RectTransform>();
-            if (currentRect != null && VanillaExpBarRoot == null)
+
+            try
             {
-                for (int i = 0; i < currentRect.Length; ++i)
+                SetUpModCanvas();
+
+                ItemContainer = new GameObject();
+                ItemContainer.name = "Item Container";
+                ItemContainer.transform.SetParent(ModCanvas.transform, false);
+                ItemContainer.transform.localPosition = new Vector2(0, -100f);
+                ItemContainer.GetComponent<GridLayoutGroup>().cellSize = new Vector2(50f, 50f);
+                ItemContainer.GetComponent<GridLayoutGroup>().spacing = new Vector2(8f, 8f);
+                ItemContainer.GetComponent<RectTransform>().anchorMin = new Vector2(0f, 1f);
+                ItemContainer.GetComponent<RectTransform>().anchorMax = new Vector2(1f, 1f);
+                ItemContainer.GetComponent<RectTransform>().pivot = new Vector2(0.5f, 1f);
+                ItemContainer.GetComponent<RectTransform>().sizeDelta = new Vector2(-16f, 0);
+                ItemContainer.AddComponent<ContentSizeFitter>().verticalFit = ContentSizeFitter.FitMode.PreferredSize;
+
+                listGainedImages.Clear();
+                listLostImages.Clear();
+
+                for (int i = 0; i < 10; i++)
                 {
-                    if (currentRect[i].name == "ExpBarRoot")
-                    {
-                        VanillaExpBarRoot = currentRect[i].gameObject;
-                        MainExpBarStart();
-                    }
+                    var gainedItems = new GameObject("GainedItems" + i);
+
+                    gainedItems.transform.SetParent(ItemContainer.transform, false);
+                    //ModExpBarGroup.transform.position = new Vector3(0,0,0);
+
+                    gainedItems.AddComponent<RectTransform>();
+
+                    gainedItems.GetComponent<RectTransform>().anchorMin = new Vector2(0.0f, (float)(0.20 + ((float)i * 0.04)));
+                    gainedItems.GetComponent<RectTransform>().anchorMax = new Vector2(0.03f, (float)(0.24 + ((float)i * 0.04)));
+                    gainedItems.GetComponent<RectTransform>().sizeDelta = Vector2.zero;
+                    gainedItems.GetComponent<RectTransform>().anchoredPosition = Vector2.zero;
+                    //gainedItems.AddComponent<Image>();
+                    //gainedItems.GetComponent<Image>().sprite = Resources.Load<Sprite>("textures/itemicons/bg");
+                    gainedItems.AddComponent<NetworkIdentity>().serverOnly = false;
+                    listGainedImages.Add(gainedItems);
+
+                    var lostItems = new GameObject("LostItems" + i);
+
+                    lostItems.transform.SetParent(ModCanvas.transform, false);
+                    //ModExpBarGroup.transform.position = new Vector3(0,0,0);
+
+                    lostItems.AddComponent<RectTransform>();
+                    lostItems.GetComponent<RectTransform>().anchorMin = new Vector2(0.97f, (float)(0.20 + ((float)i * 0.04)));
+                    lostItems.GetComponent<RectTransform>().anchorMax = new Vector2(1.00f, (float)(0.24 + ((float)i * 0.04)));
+                    lostItems.GetComponent<RectTransform>().sizeDelta = Vector2.zero;
+                    lostItems.GetComponent<RectTransform>().anchoredPosition = Vector2.zero;
+                    lostItems.AddComponent<NetworkIdentity>().serverOnly = false;
+
+                    //lostItems.AddComponent<Image>();
+                    //lostItems.GetComponent<Image>().sprite = Resources.Load<Sprite>("textures/itemicons/bg");
+                    listLostImages.Add(lostItems);
+
+                    //ModExpBarGroup.AddComponent<Text
                 }
+                //Debug.LogError("i'm here");
+                //Debug.LogError ("ArtifactOfDoomConfig.useArtifactOfSacreficeCalculation.Value"+ArtifactOfDoomConfig.useArtifactOfSacreficeCalculation.Value);
+                //Debug.LogError("ArtifactOfDoomConfig.disableItemProgressBar.Value"+ArtifactOfDoomConfig.disableItemProgressBar.Value);
+                //Debug.LogError("ArtifactOfDoom.artifactIsActive " +ArtifactOfDoom.artifactIsActive);
+
+                if (!ArtifactOfDoomConfig.disableItemProgressBar.Value && !calculationSacrifice)
+                {
+                    ItemGainFrame = new GameObject("ItemGainFrame");
+                    ItemGainFrame.AddComponent<RectTransform>();
+                    ItemGainFrame.GetComponent<RectTransform>().anchorMin = new Vector2(0.35f, 0.05f);
+                    ItemGainFrame.GetComponent<RectTransform>().anchorMax = new Vector2(0.65f, 0.06f);
+                    ItemGainFrame.GetComponent<RectTransform>().sizeDelta = Vector2.zero;
+                    ItemGainFrame.GetComponent<RectTransform>().anchoredPosition = Vector2.zero;
+                    ItemGainFrame.AddComponent<NetworkIdentity>().serverOnly = false;
+                    ItemGainFrame.AddComponent<Image>();
+                    ItemGainFrame.GetComponent<Image>().color = new Color(255, 0, 0, 0.1f);
+
+                    //Debug.LogError("!ArtifactOfDoomConfig.useArtifactOfSacreficeCalculation.Value && !ArtifactOfDoomConfig.disableItemProgressBar.Value");
+                    ItemGainBar = new GameObject("ItemGainBar");
+                    ItemGainBar.transform.SetParent(ItemGainFrame.transform, false);
+                    ItemGainBar.AddComponent<RectTransform>();
+                    ItemGainBar.GetComponent<RectTransform>().anchorMin = new Vector2(0.35f, 0.05f);
+                    ItemGainBar.GetComponent<RectTransform>().anchorMax = new Vector2(0.35f, 0.06f);
+                    ItemGainBar.GetComponent<RectTransform>().sizeDelta = Vector2.zero;
+                    ItemGainBar.GetComponent<RectTransform>().anchoredPosition = Vector2.zero;
+                    ItemGainBar.AddComponent<NetworkIdentity>().serverOnly = false;
+                    ItemGainBar.AddComponent<Image>();
+                    ItemGainBar.GetComponent<Image>().color = new Color(255, 255, 255, 0.3f);
+                }
+            }
+            catch (Exception)
+            {
+                Debug.Log($"[SirHamburger Error] while Adding UI elements");
             }
         }
 
-        private void MainExpBarStart()
+        private void SetUpModCanvas()
         {
-            //Debug.LogError("MainExpBarStart");
-            //Debug.LogError("AArtifactIsActiv " + ArtifactIsActiv);
-            if (VanillaExpBarRoot != null)
-            {
-                try
-                {
-                    SetUpModCanvas();
-                    listGainedImages.Clear();
-                    listLostImages.Clear();
+            ModCanvas = new GameObject("UIModifierCanvas");
+            ModCanvas.layer = 5;
+            ModCanvas.GetComponent<Canvas>().renderMode = RenderMode.ScreenSpaceCamera;
+            ModCanvas.GetComponent<Canvas>().sortingOrder = -1; // Required or the UI will render over pause and tooltips.
+            ModCanvas.AddComponent<GraphicRaycaster>();
+            ModCanvas.AddComponent<MPEventSystemProvider>().fallBackToMainEventSystem = true;
+            ModCanvas.AddComponent<MPEventSystemLocator>();
+        }
 
-                    for (int i = 0; i < 10; i++)
-                    {
-                        ModExpBarGroup = new GameObject("GainedItems" + i);
-
-                        ModExpBarGroup.transform.SetParent(ModCanvas.transform);
-                        //ModExpBarGroup.transform.position = new Vector3(0,0,0);
-
-                        ModExpBarGroup.AddComponent<RectTransform>();
-
-                        ModExpBarGroup.GetComponent<RectTransform>().anchorMin = new Vector2(0.0f, (float)(0.20 + ((float)i * 0.04)));
-                        ModExpBarGroup.GetComponent<RectTransform>().anchorMax = new Vector2(0.03f, (float)(0.24 + ((float)i * 0.04)));
-                        ModExpBarGroup.GetComponent<RectTransform>().sizeDelta = Vector2.zero;
-                        ModExpBarGroup.GetComponent<RectTransform>().anchoredPosition = Vector2.zero;
-                        //ModExpBarGroup.AddComponent<Image>();
-                        //ModExpBarGroup.GetComponent<Image>().sprite = Resources.Load<Sprite>("textures/itemicons/bg");
-                        ModExpBarGroup.AddComponent<NetworkIdentity>().serverOnly = false;
-                        listGainedImages.Add(ModExpBarGroup);
-
-                        ModExpBarGroup = new GameObject("LostItems" + i);
-
-                        ModExpBarGroup.transform.SetParent(ModCanvas.transform);
-                        //ModExpBarGroup.transform.position = new Vector3(0,0,0);
-
-                        ModExpBarGroup.AddComponent<RectTransform>();
-                        ModExpBarGroup.GetComponent<RectTransform>().anchorMin = new Vector2(0.97f, (float)(0.20 + ((float)i * 0.04)));
-                        ModExpBarGroup.GetComponent<RectTransform>().anchorMax = new Vector2(1.00f, (float)(0.24 + ((float)i * 0.04)));
-                        ModExpBarGroup.GetComponent<RectTransform>().sizeDelta = Vector2.zero;
-                        ModExpBarGroup.GetComponent<RectTransform>().anchoredPosition = Vector2.zero;
-                        ModExpBarGroup.AddComponent<NetworkIdentity>().serverOnly = false;
-
-                        //ModExpBarGroup.AddComponent<Image>();
-                        //ModExpBarGroup.GetComponent<Image>().sprite = Resources.Load<Sprite>("textures/itemicons/bg");
-                        listLostImages.Add(ModExpBarGroup);
-
-                        //ModExpBarGroup.AddComponent<Text
-                    }
-                    //Debug.LogError("i'm here");
-                    //Debug.LogError ("ArtifactOfDoomConfig.useArtifactOfSacreficeCalculation.Value"+ArtifactOfDoomConfig.useArtifactOfSacreficeCalculation.Value);
-                    //Debug.LogError("ArtifactOfDoomConfig.disableItemProgressBar.Value"+ArtifactOfDoomConfig.disableItemProgressBar.Value);
-                    //Debug.LogError("ArtifactOfDoom.artifactIsActive " +ArtifactOfDoom.artifactIsActive);
-
-                    if (!ArtifactOfDoomConfig.disableItemProgressBar.Value && !calculationSacrifice)
-                    {
-                        //Debug.LogError("!ArtifactOfDoomConfig.useArtifactOfSacreficeCalculation.Value && !ArtifactOfDoomConfig.disableItemProgressBar.Value");
-                        ModExpBarGroup = new GameObject("ItemGainBar");
-                        ModExpBarGroup.transform.SetParent(ModCanvas.transform);
-                        ModExpBarGroup.AddComponent<RectTransform>();
-                        ModExpBarGroup.GetComponent<RectTransform>().anchorMin = new Vector2(0.35f, 0.05f);
-                        ModExpBarGroup.GetComponent<RectTransform>().anchorMax = new Vector2(0.35f, 0.06f);
-                        ModExpBarGroup.GetComponent<RectTransform>().sizeDelta = Vector2.zero;
-                        ModExpBarGroup.GetComponent<RectTransform>().anchoredPosition = Vector2.zero;
-                        ModExpBarGroup.AddComponent<NetworkIdentity>().serverOnly = false;
-
-                        itemGainBar = ModExpBarGroup;
-                        itemGainBar.AddComponent<Image>();
-                        itemGainBar.GetComponent<Image>().color = new Color(255, 255, 255, 0.3f);
-
-                        ModExpBarGroup = new GameObject("ItemGainFrame");
-                        ModExpBarGroup.transform.SetParent(ModCanvas.transform);
-                        ModExpBarGroup.AddComponent<RectTransform>();
-                        ModExpBarGroup.GetComponent<RectTransform>().anchorMin = new Vector2(0.35f, 0.05f);
-                        ModExpBarGroup.GetComponent<RectTransform>().anchorMax = new Vector2(0.65f, 0.06f);
-                        ModExpBarGroup.GetComponent<RectTransform>().sizeDelta = Vector2.zero;
-                        ModExpBarGroup.GetComponent<RectTransform>().anchoredPosition = Vector2.zero;
-                        ModExpBarGroup.AddComponent<NetworkIdentity>().serverOnly = false;
-                        itemGainFrame = ModExpBarGroup;
-                        itemGainFrame.AddComponent<Image>();
-                        itemGainFrame.GetComponent<Image>().color = new Color(255, 0, 0, 0.1f);
-                    }
-                }
-                catch (Exception)
-                {
-                    Debug.Log($"[SirHamburger Error] while Adding UI elements");
-                }
-            }
+        private void RemoveItem(On.RoR2.Inventory.orig_RemoveItem orig, Inventory self, ItemIndex itemindex1, int ItemIndex2)
+        {
+            orig(self, itemindex1, ItemIndex2);
         }
 
         public static IRpcFunc<string, string> AddGainedItemsToPlayers { get; set; }
         public static IRpcFunc<string, string> AddLostItemsOfPlayers { get; set; }
         public static IRpcFunc<string, string> UpdateProgressBar { get; set; }
-        public static IRpcFunc<bool, string> isArtifactActive { get; set; }
-        public static IRpcFunc<bool, string> isCalculationSacrifice { get; set; }
+        public static IRpcFunc<bool, string> IsArtifactActive { get; set; }
+        public static IRpcFunc<bool, string> IsCalculationSacrifice { get; set; }
 
         public const string ModVer = "1.0.0";
         public const string ModName = "ArtifactOfDoom";
@@ -271,27 +256,25 @@ namespace ArtifactOfDoom
                 //Debug.LogError("in line 279");
                 double progress = enemiesKilled / enemiesNeeded;
                 //                  Debug.LogError("in line 2282");
-                if (itemGainBar.GetComponent<RectTransform>() == null)
-                    return "Error while excecuting Update progress bar";
                 if ((0.35f + (float)(progress * 0.3)) > 0.65f)
-                    itemGainBar.GetComponent<RectTransform>().anchorMax = new Vector2(0.65f, 0.06f);
+                    ItemGainBar.GetComponent<RectTransform>().anchorMax = new Vector2(0.65f, 0.06f);
                 else
                 {
-                    itemGainBar.GetComponent<RectTransform>().anchorMin = new Vector2(0.35f, 0.05f);
+                    ItemGainBar.GetComponent<RectTransform>().anchorMin = new Vector2(0.35f, 0.05f);
                     //                    Debug.LogError("in line 288");
-                    itemGainBar.GetComponent<RectTransform>().anchorMax = new Vector2(0.35f + (float)(progress * 0.3), 0.06f);
+                    ItemGainBar.GetComponent<RectTransform>().anchorMax = new Vector2(0.35f + (float)(progress * 0.3), 0.06f);
                 }
 
                 return "dummie";
             });
 
-            isArtifactActive = miniRpc.RegisterFunc(Target.Client, (NetworkUser user, bool isActive) => //--------------------HierSTuffMachen!!
+            IsArtifactActive = miniRpc.RegisterFunc(Target.Client, (NetworkUser user, bool isActive) => //--------------------HierSTuffMachen!!
             {
                 ArtifactIsActive = isActive;
                 return "";
             });
 
-            isCalculationSacrifice = miniRpc.RegisterFunc(Target.Client, (NetworkUser user, bool isActive) => //--------------------HierSTuffMachen!!
+            IsCalculationSacrifice = miniRpc.RegisterFunc(Target.Client, (NetworkUser user, bool isActive) => //--------------------HierSTuffMachen!!
             {
                 //Debug.LogError("Set CalculationSacrifice to " + isActive);
                 calculationSacrifice = isActive;
@@ -306,6 +289,12 @@ namespace ArtifactOfDoom
             //                     ----|    This number is only needed because we already created an RpcFunc with ID 0 (the first one we made without an ID).
             SomeCommandName = 2345, // If you use IDs in your own code, you will most likely want to give all commands explicit IDs, which will avoid this issue.
             SomeOtherCommandName,
+        }
+
+        private void OnDestroy()
+        {
+            On.RoR2.UI.HUD.Awake -= HudAwake;
+            On.RoR2.Inventory.RemoveItem -= RemoveItem;
         }
     }
 }

@@ -34,12 +34,14 @@ namespace ArtifactOfDoom
 
         private static double timeForBuff = 0.0;
 
-        public static bool artifactIsActive = false;
-
 
         public void Awake()
         {
-            Chat.AddMessage($"Loaded {displayName}!");
+            if (IsActiveAndEnabled())
+            {
+                Chat.AddMessage($"Loaded {displayName}!");
+                LoadModBehavior();
+            }
         }
 
         public ArtifactOfDoom()
@@ -48,7 +50,7 @@ namespace ArtifactOfDoom
             iconPathNameDisabled = "@ArtifactOfDoom:Assets/Import/artifactofdoom_icon/ArtifactOfDoomDeactivated.png";
         }
 
-        protected override void LoadBehavior()
+        private void LoadModBehavior()
         {
             Playername = new List<CharacterBody>();
             counter = new List<int>();
@@ -104,14 +106,14 @@ namespace ArtifactOfDoom
             {
                 orig(self);
                 //Debug.LogError("-------------------here----------------------------------");
-                ArtifactOfDoomUI.isArtifactActive.Invoke(
+                ArtifactOfDoomUI.IsArtifactActive.Invoke(
                     IsActiveAndEnabled(),
                     result =>
                         {
                             //Debug.LogError("Got Message Of IsArtifactActive");
                         },
                     null);
-                ArtifactOfDoomUI.isCalculationSacrifice.Invoke(
+                ArtifactOfDoomUI.IsCalculationSacrifice.Invoke(
                     ArtifactOfDoomConfig.useArtifactOfSacrificeCalculation.Value,
                     result =>
                         {
