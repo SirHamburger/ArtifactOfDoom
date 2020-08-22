@@ -25,12 +25,12 @@ namespace ArtifactOfDoom
 {
 
     [R2API.Utils.R2APISubmoduleDependency("ResourcesAPI")]
-    [BepInPlugin("com.SirHamburger.ArtifactOfDoomUI", "UI Modifier", "1.0")]
+    [BepInPlugin("com.SirHamburger.ArtifactOfDoomUI", "ArtifactOfDoom UI Modifier", "1.0")]
     [BepInDependency(MiniRpcPlugin.Dependency)]
     public class ArtifactOfDoomUI : BaseUnityPlugin
     {
         public GameObject ModCanvas = null;
-        private static bool ArtifactIsActiv = false;
+        private static bool ArtifactIsActive = false;
         private static bool calculationSacrifice = false;
         public void Awake()
         {
@@ -84,7 +84,7 @@ namespace ArtifactOfDoom
             orig(self);
             //Debug.LogError("ExpBarAwakeAddon");
             //Debug.LogError("ArtifactIsActiv " + ArtifactIsActiv);
-            if (!ArtifactIsActiv)
+            if (!ArtifactIsActive)
                 return;
             var currentRect = self.gameObject.GetComponentsInChildren<RectTransform>();
             if (currentRect != null && VanillaExpBarRoot == null)
@@ -112,14 +112,12 @@ namespace ArtifactOfDoom
                     listGainedImages.Clear();
                     listLostImages.Clear();
 
-
                     for (int i = 0; i < 10; i++)
                     {
                         ModExpBarGroup = new GameObject("GainedItems" + i);
 
                         ModExpBarGroup.transform.SetParent(ModCanvas.transform);
                         //ModExpBarGroup.transform.position = new Vector3(0,0,0);
-
 
                         ModExpBarGroup.AddComponent<RectTransform>();
 
@@ -131,7 +129,6 @@ namespace ArtifactOfDoom
                         //ModExpBarGroup.GetComponent<Image>().sprite = Resources.Load<Sprite>("textures/itemicons/bg");
                         ModExpBarGroup.AddComponent<NetworkIdentity>().serverOnly = false;
                         listGainedImages.Add(ModExpBarGroup);
-
 
                         ModExpBarGroup = new GameObject("LostItems" + i);
 
@@ -172,8 +169,6 @@ namespace ArtifactOfDoom
                         itemGainBar.AddComponent<Image>();
                         itemGainBar.GetComponent<Image>().color = new Color(255, 255, 255, 0.3f);
 
-
-
                         ModExpBarGroup = new GameObject("ItemGainFrame");
                         ModExpBarGroup.transform.SetParent(ModCanvas.transform);
                         ModExpBarGroup.AddComponent<RectTransform>();
@@ -186,25 +181,13 @@ namespace ArtifactOfDoom
                         itemGainFrame.AddComponent<Image>();
                         itemGainFrame.GetComponent<Image>().color = new Color(255, 0, 0, 0.1f);
                     }
-
-
-
                 }
-                catch (Exception e)
+                catch (Exception)
                 {
                     Debug.Log($"[SirHamburger Error] while Adding UI elements");
                 }
             }
-
-
         }
-        public static void updateItemProgressBar(int enemiesKilled, int enemiesNeeded)
-        {
-
-
-        }
-
-
 
         public static IRpcFunc<string, string> AddGainedItemsToPlayers { get; set; }
         public static IRpcFunc<string, string> AddLostItemsOfPlayers { get; set; }
@@ -228,12 +211,8 @@ namespace ArtifactOfDoom
             // I opted for the ModGuid instead of an arbitrary number or GUID to encourage mods not to set the same ID
             var miniRpc = MiniRpc.CreateInstance(ModGuid);
 
-
-
             AddGainedItemsToPlayers = miniRpc.RegisterFunc(Target.Client, (NetworkUser user, string QueueGainedItemSpriteToString) => //--------------------HierSTuffMachen!!
             {
-
-
                 string[] QueueGainedItemSprite = QueueGainedItemSpriteToString.Split(' ');
 
                 int i = 0;
@@ -242,20 +221,18 @@ namespace ArtifactOfDoom
                     if (element != "")
                     {
 
-                        if (ArtifactOfDoomUI.listGainedImages[i].GetComponent<Image>() == null)
-                            ArtifactOfDoomUI.listGainedImages[i].AddComponent<Image>();
-                        ArtifactOfDoomUI.listGainedImages[i].GetComponent<Image>().sprite = ItemCatalog.GetItemDef(ItemCatalog.FindItemIndex(element)).pickupIconSprite;
+                        if (listGainedImages[i].GetComponent<Image>() == null)
+                            listGainedImages[i].AddComponent<Image>();
+                        listGainedImages[i].GetComponent<Image>().sprite = ItemCatalog.GetItemDef(ItemCatalog.FindItemIndex(element)).pickupIconSprite;
 
                         i++;
-
                     }
-
                 }
                 return "dummie";
             });
+
             AddLostItemsOfPlayers = miniRpc.RegisterFunc(Target.Client, (NetworkUser user, string QueueLostItemSpriteToString) => //--------------------HierSTuffMachen!!
             {
-
                 string[] QueueLostItemSprite = QueueLostItemSpriteToString.Split(' ');
 
                 int i = 0;
@@ -263,10 +240,9 @@ namespace ArtifactOfDoom
                 {
                     if (element != "")
                     {
-
-                        if (ArtifactOfDoomUI.listLostImages[i].GetComponent<Image>() == null)
-                            ArtifactOfDoomUI.listLostImages[i].AddComponent<Image>();
-                        ArtifactOfDoomUI.listLostImages[i].GetComponent<Image>().sprite = ItemCatalog.GetItemDef(ItemCatalog.FindItemIndex(element)).pickupIconSprite;
+                        if (listLostImages[i].GetComponent<Image>() == null)
+                            listLostImages[i].AddComponent<Image>();
+                        listLostImages[i].GetComponent<Image>().sprite = ItemCatalog.GetItemDef(ItemCatalog.FindItemIndex(element)).pickupIconSprite;
 
                         i++;
                     }
@@ -274,6 +250,7 @@ namespace ArtifactOfDoom
                 }
                 return "dummie";
             });
+
             UpdateProgressBar = miniRpc.RegisterFunc(Target.Client, (NetworkUser user, string killedNeededEnemies) => //--------------------HierSTuffMachen!!
             {
                 //Debug.LogError("ArtifactOfDoomConfig.disableItemProgressBar.Value"+ ArtifactOfDoomConfig.disableItemProgressBar.Value);
@@ -292,7 +269,7 @@ namespace ArtifactOfDoom
                 int enemiesKilled = Convert.ToInt32(stringkilledNeededEnemies[0]);
                 int enemiesNeeded = Convert.ToInt32(stringkilledNeededEnemies[1]) + 2;
                 //Debug.LogError("in line 279");
-                double progress = (double)enemiesKilled / ((double)enemiesNeeded);
+                double progress = enemiesKilled / enemiesNeeded;
                 //                  Debug.LogError("in line 2282");
                 if (itemGainBar.GetComponent<RectTransform>() == null)
                     return "Error while excecuting Update progress bar";
@@ -307,11 +284,13 @@ namespace ArtifactOfDoom
 
                 return "dummie";
             });
+
             isArtifactActive = miniRpc.RegisterFunc(Target.Client, (NetworkUser user, bool isActive) => //--------------------HierSTuffMachen!!
             {
-                ArtifactIsActiv = isActive;
+                ArtifactIsActive = isActive;
                 return "";
             });
+
             isCalculationSacrifice = miniRpc.RegisterFunc(Target.Client, (NetworkUser user, bool isActive) => //--------------------HierSTuffMachen!!
             {
                 //Debug.LogError("Set CalculationSacrifice to " + isActive);
@@ -319,16 +298,14 @@ namespace ArtifactOfDoom
                 return "";
             });
 
-
             // The "_ ="'s above mean that the return value will be ignored. In your code you should assign the return value to something to be able to call the function.
         }
+
         enum CommandId
         {
             //                     ----|    This number is only needed because we already created an RpcFunc with ID 0 (the first one we made without an ID).
             SomeCommandName = 2345, // If you use IDs in your own code, you will most likely want to give all commands explicit IDs, which will avoid this issue.
             SomeOtherCommandName,
         }
-
-
     }
 }
