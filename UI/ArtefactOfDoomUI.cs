@@ -125,7 +125,7 @@ namespace ArtifactOfDoom
 
         private void MainExpBarStart()
         {
-            Debug.LogError("MainExpBarStart");
+            //Debug.LogError("MainExpBarStart");
             //Debug.LogError("AArtifactIsActiv " + ArtifactIsActiv);
             if (VanillaExpBarRoot != null)
             {
@@ -259,7 +259,6 @@ namespace ArtifactOfDoom
 
             AddGainedItemsToPlayers = miniRpc.RegisterFunc(Target.Client, (NetworkUser user, string QueueGainedItemSpriteToString) => //--------------------HierSTuffMachen!!
             {
-                
 
                 string[] QueueGainedItemSprite = QueueGainedItemSpriteToString.Split(' ');
 
@@ -303,12 +302,11 @@ namespace ArtifactOfDoom
             });
             UpdateProgressBar = miniRpc.RegisterFunc(Target.Client, (NetworkUser user, string killedNeededEnemies) => //--------------------HierSTuffMachen!!
             {
-                Debug.LogWarning("in UpdateProgressBar");
+                //Debug.LogWarning("in UpdateProgressBar");
                 //Debug.LogError("ArtifactOfDoomConfig.disableItemProgressBar.Value"+ ArtifactOfDoomConfig.disableItemProgressBar.Value);
                 //Debug.LogError("ArtifactOfDoomConfig.useArtifactOfSacreficeCalculation.Value"+ ArtifactOfDoomConfig.useArtifactOfSacreficeCalculation.Value);
                 if (ArtifactOfDoomConfig.disableItemProgressBar.Value || calculationSacrifice)
                     return "Disabled Progress Bar";
-                                    Debug.LogWarning("line 292");
 
                 if (killedNeededEnemies == null)
                 {

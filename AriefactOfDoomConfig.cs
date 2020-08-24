@@ -68,6 +68,10 @@ namespace ArtifactOfDoom
         public static ConfigEntry<double> AcridMultiplyerForTimedBuff;
         public static ConfigEntry<double> exponentTriggerItems;
 
+        public static ConfigEntry<double> CaptainBonusItems;
+        public static ConfigEntry<double>CaptainMultiplyerForTimedBuff;
+        
+
 
 
 
@@ -166,6 +170,10 @@ namespace ArtifactOfDoom
             AcridBonusItems = cfgFile.Bind(new ConfigDefinition("Global.VanillaTweaks", "AcridBonusItems"), 1.0, new ConfigDescription(
                 "The count of items which you get if you kill enough enemies"));
             AcridMultiplyerForTimedBuff = cfgFile.Bind(new ConfigDefinition("Global.VanillaTweaks", "AcridMultiplyerForTimedBuff"), 4.0, new ConfigDescription(
+                "The Multiplier for that specific character for the length of timeAfterHitToNotLooseItems"));
+            CaptainBonusItems = cfgFile.Bind(new ConfigDefinition("Global.VanillaTweaks", "CaptainBonusItems"), 1.0, new ConfigDescription(
+                "The count of items which you get if you kill enough enemies"));
+            CaptainMultiplyerForTimedBuff = cfgFile.Bind(new ConfigDefinition("Global.VanillaTweaks", "CaptaindMultiplyerForTimedBuff"), 1.0, new ConfigDescription(
                 "The Multiplier for that specific character for the length of timeAfterHitToNotLooseItems"));
 
 

@@ -221,7 +221,7 @@ namespace ArtifactOfDoom
 
                     NetworkUser tempNetworkUser = getNetworkUserOfDamageReport(damageReport, true);
                     string temp = counter[Playername.IndexOf(currentBody)] + "," + calculatesEnemyCountToTrigger;
-                    Debug.LogError(tempNetworkUser.name);
+
                     //Debug.LogWarning("currentBody für rpc: " + currentBody.name);
                     ArtifactOfDoomUI.UpdateProgressBar.Invoke(temp, result =>
                            {
@@ -304,7 +304,7 @@ namespace ArtifactOfDoom
                     {
                         LockItemGainNetworkUser[tempNetworkUser] = true;
                         if (tempNetworkUser == null)
-                            //Debug.LogError("--------------------------------tempNetworkUser==null---------------------------");
+                            Debug.LogError("--------------------------------tempNetworkUser==null---------------------------");
 
                         ArtifactOfDoomUI.AddGainedItemsToPlayers.Invoke(temp, result =>
                             {
@@ -446,7 +446,7 @@ namespace ArtifactOfDoom
                         lstItemIndex[itemToRemove]--;
                         if (debug) Debug.LogWarning("Line 401");
 
-                        if (!ItemCatalog.lunarItemList.Contains(itemToRemove) && (ItemCatalog.GetItemDef(itemToRemove).tier != ItemTier.NoTier))
+                        if (!ItemCatalog.lunarItemList.Contains(itemToRemove) && (ItemCatalog.GetItemDef(itemToRemove).tier != ItemTier.NoTier && itemToRemove!=ItemIndex.CaptainDefenseMatrix))
                         {
                             if (debug) Debug.LogWarning("Line 405");
 
@@ -628,7 +628,13 @@ namespace ArtifactOfDoom
 
                 return ArtifactOfDoomConfig.AcridBonusItems.Value;
             }
-            Debug.LogWarning("Character BodyName = " + body.name + " Didnt find valid Body. \n Please report this to SirHamburger");
+            if (body.name.Contains("Captain"))
+            {
+                if (debug) { Debug.LogWarning("Character BodyName = " + body.name + " returning: Captain"); }
+
+                return ArtifactOfDoomConfig.CaptainBonusItems.Value;
+            }
+            Debug.LogWarning("Character BodyName = " + body.name + " Didnt find valid Body. \n If the character is NOT a custom character report this please to SirHamburger");
             return 1.0;
         }
         private double getCharacterSpezificBuffLengthMultiplier(CharacterBody body)
@@ -688,7 +694,13 @@ namespace ArtifactOfDoom
 
                 return ArtifactOfDoomConfig.AcridMultiplyerForTimedBuff.Value;
             }
-            Debug.LogWarning("Character BodyName = " + body.name + " Didnt find valid Body. \n Please report this to SirHamburger");
+                        if (body.name.Contains("Captain"))
+            {
+                if (debug) { Debug.LogWarning("Character BodyName = " + body.name + " returning: Captain"); }
+
+                return ArtifactOfDoomConfig.CaptainMultiplyerForTimedBuff.Value;
+            }
+            Debug.LogWarning("Character BodyName = " + body.name + " Didnt find valid Body. \n If the character is NOT a custom character report this please to SirHamburger");
             return 1.0;
         }
         public ItemIndex GiveAndReturnRandomItem(Inventory inventory)
