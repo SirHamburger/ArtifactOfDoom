@@ -221,6 +221,7 @@ namespace ArtifactOfDoom
 
                     NetworkUser tempNetworkUser = getNetworkUserOfDamageReport(damageReport, true);
                     string temp = counter[Playername.IndexOf(currentBody)] + "," + calculatesEnemyCountToTrigger;
+                    Debug.LogError(tempNetworkUser.name);
                     //Debug.LogWarning("currentBody für rpc: " + currentBody.name);
                     ArtifactOfDoomUI.UpdateProgressBar.Invoke(temp, result =>
                            {

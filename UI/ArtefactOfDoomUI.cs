@@ -41,7 +41,8 @@ namespace ArtifactOfDoom
         private static bool calculationSacrifice = false;
         void Awake()
         {
-            On.RoR2.UI.ExpBar.Awake += ExpBarAwakeAddon;
+            //On.RoR2.UI.HealthBar.Awake += ExpBarAwakeAddon;
+            On.RoR2.UI.HUD.Awake += ExpBarAwakeAddon;
 
 
             try
@@ -50,7 +51,7 @@ namespace ArtifactOfDoom
             }
             catch (Exception e)
             {
-                Debug.Log($"[SirHamburger] Error in SetUpMiniRPC");
+                Debug.LogError($"[SirHamburger] Error in SetUpMiniRPC");
             }
             On.RoR2.Inventory.RemoveItem += (orig, self, itemindex1, ItemIndex2) =>
             {
@@ -79,7 +80,7 @@ namespace ArtifactOfDoom
 
 
         #region Exp bar GameObjects
-        public GameObject VanillaExpBarRoot = null;
+        public Transform VanillaExpBarRoot = null;
         public GameObject ModExpBarGroup = null;
         public static List<GameObject> listGainedImages = new List<GameObject>();
         public static List<GameObject> listLostImages = new List<GameObject>();
@@ -87,30 +88,44 @@ namespace ArtifactOfDoom
         public static GameObject itemGainFrame;
 
         #endregion
-        public void ExpBarAwakeAddon(On.RoR2.UI.ExpBar.orig_Awake orig, RoR2.UI.ExpBar self)
+        public void ExpBarAwakeAddon(On.RoR2.UI.HUD.orig_Awake orig, RoR2.UI.HUD self)
         {
             orig(self);
             //Debug.LogError("ExpBarAwakeAddon");
             //Debug.LogError("ArtifactIsActiv " + ArtifactIsActiv);
             if (!ArtifactIsActiv)
                 return;
-            var currentRect = self.gameObject.GetComponentsInChildren<RectTransform>();
-            if (currentRect != null && VanillaExpBarRoot == null)
-            {
-                for (int i = 0; i < currentRect.Length; ++i)
-                {
-                    if (currentRect[i].name == "ExpBarRoot")
-                    {
-                        VanillaExpBarRoot = currentRect[i].gameObject;
-                        MainExpBarStart();
-                    }
-                }
-            }
+            //var currentRect = self.gameObject.GetComponentsInChildren<RectTransform>();
+            //if (currentRect != null && VanillaExpBarRoot == null)
+            //{
+            //    //for (int i = 0; i < currentRect.Length; ++i)
+            //    //{
+            //    //    if (currentRect[i].name == "ExpBarRoot")
+            //    //    {
+            //    //        //VanillaExpBarRoot = currentRect[i].gameObject;
+            //    //     
+            //    //    }
+            //    //}
+            //    
+            //}
+            VanillaExpBarRoot=self.transform.root;
+            //var GameObjectReference = new GameObject("GameObjectName");
+            //GameObjectReference.transform.SetParent(HUDroot);
+            //GameObjectReference.AddComponent<RectTransform>();
+            //GameObjectReference.GetComponent<RectTransform>().anchorMin = Vector2.zero;
+            //GameObjectReference.GetComponent<RectTransform>().anchorMax = Vector2.one;
+            //GameObjectReference.GetComponent<RectTransform>().sizeDelta = Vector2.zero;
+            //GameObjectReference.GetComponent<RectTransform>().anchoredPosition = Vector2.zero;
+            //GameObjectReference.AddComponent<Image>();
+            //GameObjectReference.GetComponent<Image>().sprite = ItemCatalog.GetItemDef(ItemIndex.Bear).pickupIconSprite;
+            MainExpBarStart();
+            //if(currentRect==null)
+            //    Debug.LogError("currentRect==null");
         }
 
         private void MainExpBarStart()
         {
-            //Debug.LogError("MainExpBarStart");
+            Debug.LogError("MainExpBarStart");
             //Debug.LogError("AArtifactIsActiv " + ArtifactIsActiv);
             if (VanillaExpBarRoot != null)
             {
@@ -203,6 +218,10 @@ namespace ArtifactOfDoom
                     Debug.Log($"[SirHamburger Error] while Adding UI elements");
                 }
             }
+            else
+            {
+                Debug.LogError("VanillaExpBarRoot == null");
+            }
 
 
         }
@@ -220,7 +239,7 @@ namespace ArtifactOfDoom
         public static IRpcFunc<bool, string> isArtifactActive { get; set; }
         public static IRpcFunc<bool, string> isCalculationSacrifice { get; set; }
 
-        public const string ModVer = "1.0.0";
+        public const string ModVer = "1.0.1";
         public const string ModName = "ArtifactOfDoom";
         public const string ModGuid = "com.SirHamburger.ArtifactOfDoom";
 
@@ -240,7 +259,7 @@ namespace ArtifactOfDoom
 
             AddGainedItemsToPlayers = miniRpc.RegisterFunc(Target.Client, (NetworkUser user, string QueueGainedItemSpriteToString) => //--------------------HierSTuffMachen!!
             {
-
+                
 
                 string[] QueueGainedItemSprite = QueueGainedItemSpriteToString.Split(' ');
 
@@ -284,10 +303,13 @@ namespace ArtifactOfDoom
             });
             UpdateProgressBar = miniRpc.RegisterFunc(Target.Client, (NetworkUser user, string killedNeededEnemies) => //--------------------HierSTuffMachen!!
             {
+                Debug.LogWarning("in UpdateProgressBar");
                 //Debug.LogError("ArtifactOfDoomConfig.disableItemProgressBar.Value"+ ArtifactOfDoomConfig.disableItemProgressBar.Value);
                 //Debug.LogError("ArtifactOfDoomConfig.useArtifactOfSacreficeCalculation.Value"+ ArtifactOfDoomConfig.useArtifactOfSacreficeCalculation.Value);
                 if (ArtifactOfDoomConfig.disableItemProgressBar.Value || calculationSacrifice)
                     return "Disabled Progress Bar";
+                                    Debug.LogWarning("line 292");
+
                 if (killedNeededEnemies == null)
                 {
                     Debug.Log("killedNeededEnemies == null");
@@ -297,22 +319,37 @@ namespace ArtifactOfDoom
                 //Debug.LogWarning("string killedNeededEnemies für rpc: " + killedNeededEnemies);
                 string[] stringkilledNeededEnemies = killedNeededEnemies.Split(',');
                 //Debug.LogError("in line 276");
+                if(stringkilledNeededEnemies == null)
+                    Debug.LogError("stringkilledneededEnemies=null");
+
                 int enemiesKilled = Convert.ToInt32(stringkilledNeededEnemies[0]);
                 int enemiesNeeded = Convert.ToInt32(stringkilledNeededEnemies[1]) + 2;
+
                 //Debug.LogError("in line 279");
+                if(itemGainBar==null)
+                    return "error";
                 double progress = (double)enemiesKilled / ((double)enemiesNeeded);
+
                 //                  Debug.LogError("in line 2282");
                 if (itemGainBar.GetComponent<RectTransform>() == null)
                     return "Error while excecuting Update progress bar";
+
                 if ((0.35f + (float)(progress * 0.3)) > 0.65f)
+                {
+                
+                    if(itemGainBar.GetComponent<RectTransform>().anchorMax==null)
+                        Debug.LogError("itemGainBar.GetComponent<RectTransform>().anchorMax==null");
+
                     itemGainBar.GetComponent<RectTransform>().anchorMax = new Vector2(0.65f, 0.06f);
+                }
                 else
                 {
+
                     itemGainBar.GetComponent<RectTransform>().anchorMin = new Vector2(0.35f, 0.05f);
                     //                    Debug.LogError("in line 288");
+
                     itemGainBar.GetComponent<RectTransform>().anchorMax = new Vector2(0.35f + (float)(progress * 0.3), 0.06f);
                 }
-
                 return "dummie";
             });
             isArtifactActive = miniRpc.RegisterFunc(Target.Client, (NetworkUser user, bool isActive) => //--------------------HierSTuffMachen!!
@@ -327,6 +364,7 @@ namespace ArtifactOfDoom
                 return "";
             });
 
+            Debug.LogWarning("minirpc succsessfull set up");
 
             // The "_ ="'s above mean that the return value will be ignored. In your code you should assign the return value to something to be able to call the function.
         }
