@@ -108,7 +108,7 @@ namespace ArtifactOfDoom
             //    //}
             //    
             //}
-            VanillaExpBarRoot=self.transform.root;
+            VanillaExpBarRoot = self.transform.root;
             //var GameObjectReference = new GameObject("GameObjectName");
             //GameObjectReference.transform.SetParent(HUDroot);
             //GameObjectReference.AddComponent<RectTransform>();
@@ -134,7 +134,11 @@ namespace ArtifactOfDoom
                     SetUpModCanvas();
                     listGainedImages.Clear();
                     listLostImages.Clear();
-
+                    float baseSize = (Convert.ToSingle(ArtifactOfDoomConfig.sizeOfSideBars.Value));
+                    float baseSizePlusMargin = baseSize + (float)0.01;
+                   
+                    float screenResultuionMultiplier= Screen.currentResolution.width/Screen.currentResolution.height;
+                     float baseSizeY = baseSize * screenResultuionMultiplier;
 
                     for (int i = 0; i < 10; i++)
                     {
@@ -146,8 +150,8 @@ namespace ArtifactOfDoom
 
                         ModExpBarGroup.AddComponent<RectTransform>();
 
-                        ModExpBarGroup.GetComponent<RectTransform>().anchorMin = new Vector2(0.0f, (float)(0.20 + ((float)i * 0.04)));
-                        ModExpBarGroup.GetComponent<RectTransform>().anchorMax = new Vector2(0.03f, (float)(0.24 + ((float)i * 0.04)));
+                        ModExpBarGroup.GetComponent<RectTransform>().anchorMin = new Vector2(0.0f, (float)(0.20 + ((float)i * baseSizePlusMargin)));
+                        ModExpBarGroup.GetComponent<RectTransform>().anchorMax = new Vector2(baseSize, (float)(0.2+ baseSizeY + ((float)i * baseSizePlusMargin)));
                         ModExpBarGroup.GetComponent<RectTransform>().sizeDelta = Vector2.zero;
                         ModExpBarGroup.GetComponent<RectTransform>().anchoredPosition = Vector2.zero;
                         //ModExpBarGroup.AddComponent<Image>();
@@ -162,8 +166,8 @@ namespace ArtifactOfDoom
                         //ModExpBarGroup.transform.position = new Vector3(0,0,0);
 
                         ModExpBarGroup.AddComponent<RectTransform>();
-                        ModExpBarGroup.GetComponent<RectTransform>().anchorMin = new Vector2(0.97f, (float)(0.20 + ((float)i * 0.04)));
-                        ModExpBarGroup.GetComponent<RectTransform>().anchorMax = new Vector2(1.00f, (float)(0.24 + ((float)i * 0.04)));
+                        ModExpBarGroup.GetComponent<RectTransform>().anchorMin = new Vector2((float)1.0-baseSize, (float)(0.20 + ((float)i * baseSizePlusMargin)));
+                        ModExpBarGroup.GetComponent<RectTransform>().anchorMax = new Vector2(1.00f, (float)(0.2+baseSizeY + ((float)i * baseSizePlusMargin)));
                         ModExpBarGroup.GetComponent<RectTransform>().sizeDelta = Vector2.zero;
                         ModExpBarGroup.GetComponent<RectTransform>().anchoredPosition = Vector2.zero;
                         ModExpBarGroup.AddComponent<NetworkIdentity>().serverOnly = false;
@@ -239,7 +243,7 @@ namespace ArtifactOfDoom
         public static IRpcFunc<bool, string> isArtifactActive { get; set; }
         public static IRpcFunc<bool, string> isCalculationSacrifice { get; set; }
 
-        public const string ModVer = "1.0.1";
+        public const string ModVer = "1.1.1";
         public const string ModName = "ArtifactOfDoom";
         public const string ModGuid = "com.SirHamburger.ArtifactOfDoom";
 
@@ -259,44 +263,49 @@ namespace ArtifactOfDoom
 
             AddGainedItemsToPlayers = miniRpc.RegisterFunc(Target.Client, (NetworkUser user, string QueueGainedItemSpriteToString) => //--------------------HierSTuffMachen!!
             {
-
-                string[] QueueGainedItemSprite = QueueGainedItemSpriteToString.Split(' ');
-
-                int i = 0;
-                foreach (var element in QueueGainedItemSprite)
+                if (!ArtifactOfDoomConfig.disableSideBars.Value)
                 {
-                    if (element != "")
+
+                    string[] QueueGainedItemSprite = QueueGainedItemSpriteToString.Split(' ');
+
+                    int i = 0;
+                    foreach (var element in QueueGainedItemSprite)
                     {
+                        if (element != "")
+                        {
 
-                        if (ArtifactOfDoomUI.listGainedImages[i].GetComponent<Image>() == null)
-                            ArtifactOfDoomUI.listGainedImages[i].AddComponent<Image>();
-                        ArtifactOfDoomUI.listGainedImages[i].GetComponent<Image>().sprite = ItemCatalog.GetItemDef(ItemCatalog.FindItemIndex(element)).pickupIconSprite;
+                            if (ArtifactOfDoomUI.listGainedImages[i].GetComponent<Image>() == null)
+                                ArtifactOfDoomUI.listGainedImages[i].AddComponent<Image>();
+                            ArtifactOfDoomUI.listGainedImages[i].GetComponent<Image>().sprite = ItemCatalog.GetItemDef(ItemCatalog.FindItemIndex(element)).pickupIconSprite;
 
-                        i++;
+                            i++;
+
+                        }
 
                     }
-
                 }
                 return "dummie";
             });
             AddLostItemsOfPlayers = miniRpc.RegisterFunc(Target.Client, (NetworkUser user, string QueueLostItemSpriteToString) => //--------------------HierSTuffMachen!!
             {
-
-                string[] QueueLostItemSprite = QueueLostItemSpriteToString.Split(' ');
-
-                int i = 0;
-                foreach (var element in QueueLostItemSprite)
+                if (!ArtifactOfDoomConfig.disableSideBars.Value)
                 {
-                    if (element != "")
+                    string[] QueueLostItemSprite = QueueLostItemSpriteToString.Split(' ');
+
+                    int i = 0;
+                    foreach (var element in QueueLostItemSprite)
                     {
+                        if (element != "")
+                        {
 
-                        if (ArtifactOfDoomUI.listLostImages[i].GetComponent<Image>() == null)
-                            ArtifactOfDoomUI.listLostImages[i].AddComponent<Image>();
-                        ArtifactOfDoomUI.listLostImages[i].GetComponent<Image>().sprite = ItemCatalog.GetItemDef(ItemCatalog.FindItemIndex(element)).pickupIconSprite;
+                            if (ArtifactOfDoomUI.listLostImages[i].GetComponent<Image>() == null)
+                                ArtifactOfDoomUI.listLostImages[i].AddComponent<Image>();
+                            ArtifactOfDoomUI.listLostImages[i].GetComponent<Image>().sprite = ItemCatalog.GetItemDef(ItemCatalog.FindItemIndex(element)).pickupIconSprite;
 
-                        i++;
+                            i++;
+                        }
+
                     }
-
                 }
                 return "dummie";
             });
@@ -317,14 +326,14 @@ namespace ArtifactOfDoom
                 //Debug.LogWarning("string killedNeededEnemies für rpc: " + killedNeededEnemies);
                 string[] stringkilledNeededEnemies = killedNeededEnemies.Split(',');
                 //Debug.LogError("in line 276");
-                if(stringkilledNeededEnemies == null)
+                if (stringkilledNeededEnemies == null)
                     Debug.LogError("stringkilledneededEnemies=null");
 
                 int enemiesKilled = Convert.ToInt32(stringkilledNeededEnemies[0]);
                 int enemiesNeeded = Convert.ToInt32(stringkilledNeededEnemies[1]) + 2;
 
                 //Debug.LogError("in line 279");
-                if(itemGainBar==null)
+                if (itemGainBar == null)
                     return "error";
                 double progress = (double)enemiesKilled / ((double)enemiesNeeded);
 
@@ -334,8 +343,8 @@ namespace ArtifactOfDoom
 
                 if ((0.35f + (float)(progress * 0.3)) > 0.65f)
                 {
-                
-                    if(itemGainBar.GetComponent<RectTransform>().anchorMax==null)
+
+                    if (itemGainBar.GetComponent<RectTransform>().anchorMax == null)
                         Debug.LogError("itemGainBar.GetComponent<RectTransform>().anchorMax==null");
 
                     itemGainBar.GetComponent<RectTransform>().anchorMax = new Vector2(0.65f, 0.06f);

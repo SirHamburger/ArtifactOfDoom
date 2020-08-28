@@ -20,6 +20,8 @@ namespace ArtifactOfDoom
 {
     public class ArtifactOfDoom : Artifact<ArtifactOfDoom>
     {
+        private const string GrayColor = "7e91af";
+        private const string ErrorColor = "ff0000";
         public static bool debug = false;
         public override string displayName => "Artifact of Doom";
 
@@ -55,8 +57,8 @@ namespace ArtifactOfDoom
         public ArtifactOfDoom()
         {
 
-            iconPathName = "@ArtifactOfDoom:Assets/Import/artifactofdoom_icon/ArtifactOfDoomActivated.png";
-            iconPathNameDisabled = "@ArtifactOfDoom:Assets/Import/artifactofdoom_icon/ArtifactOfDoomDeactivated.png";
+            iconPathName = "@ArtifactOfDoom:Assets/Import/artifactofdoom_icon/ArtifactDoomEnabled.png";
+            iconPathNameDisabled = "@ArtifactOfDoom:Assets/Import/artifactofdoom_icon/ArtifactDoomDisabled.png";
 
 
 
@@ -91,12 +93,12 @@ namespace ArtifactOfDoom
                     information[information.Length - 1] = "Gainitems";
                     self.statsToDisplay = information;
                 };
-            On.RoR2.PreGameController.StartRun+=(orig,self)=>
-            {
-                orig(self);
-                //Debug.LogError("PreGAmeController");
-                 //artifactIsActive = this.IsActiveAndEnabled();
-            };
+            On.RoR2.PreGameController.StartRun += (orig, self) =>
+              {
+                  orig(self);
+                  //Debug.LogError("PreGAmeController");
+                  //artifactIsActive = this.IsActiveAndEnabled();
+              };
             On.RoR2.SceneDirector.PopulateScene += (orig, self) =>
                 {
                     orig(self);
@@ -105,7 +107,7 @@ namespace ArtifactOfDoom
 
                     artifactIsActive = this.IsActiveAndEnabled();
 
-                    
+
                     if (Run.instance.selectedDifficulty == DifficultyIndex.Easy)
                         timeForBuff = ArtifactOfDoomConfig.timeAfterHitToNotLooseItemDrizzly.Value;
                     if (Run.instance.selectedDifficulty == DifficultyIndex.Normal)
@@ -118,18 +120,18 @@ namespace ArtifactOfDoom
                     counter = new List<int>();
                     LockNetworkUser.Clear();
                 };
-            On.RoR2.Run.Start += (orig,self) =>
+            On.RoR2.Run.Start += (orig, self) =>
             {
                 orig(self);
                 //Debug.LogError("-------------------here----------------------------------");
-                    ArtifactOfDoomUI.isArtifactActive.Invoke(this.IsActiveAndEnabled(), result =>
-                        {
-                            //Debug.LogError("Got Message Of IsArtifactActive");
-                        },null);
-                                            ArtifactOfDoomUI.isCalculationSacrifice.Invoke(ArtifactOfDoomConfig.useArtifactOfSacreficeCalculation.Value, result =>
-                        {
-                            //Debug.LogError("Got Message Of IsArtifactActive");
-                        },null);
+                ArtifactOfDoomUI.isArtifactActive.Invoke(this.IsActiveAndEnabled(), result =>
+                    {
+                        //Debug.LogError("Got Message Of IsArtifactActive");
+                    }, null);
+                ArtifactOfDoomUI.isCalculationSacrifice.Invoke(ArtifactOfDoomConfig.useArtifactOfSacreficeCalculation.Value, result =>
+{
+    //Debug.LogError("Got Message Of IsArtifactActive");
+}, null);
             };
             On.RoR2.CharacterBody.OnInventoryChanged += (orig, self) =>
             {
@@ -147,7 +149,7 @@ namespace ArtifactOfDoom
                         Playername.Add(self);
                         counter.Add(0);
                     }
-                    if (tempNetworkUser == null)
+                    if (tempNetworkUser != null)
                     {
                         //Debug.LogError("Network user == null");
                         string tempString = counter[Playername.IndexOf(self)] + "," + calculatesEnemyCountToTrigger;
@@ -240,8 +242,26 @@ namespace ArtifactOfDoom
                         while (chanceToTrigger > rand.Next(0, 99))
                         {
                             ItemIndex addedItem = GiveAndReturnRandomItem(damageReport.attackerOwnerMaster.GetBody().inventory);
-
-
+                            if (ArtifactOfDoomConfig.enableChatItemOutput.Value)
+                            {
+                                
+                                //Chat.SendBroadcastChat(new Chat.SimpleChatMessage
+                                //{
+                                //    
+                                //    baseToken = damageReport.attackerOwnerMaster.GetBody().GetColoredUserName() + " got " + Language.GetString(ItemCatalog.GetItemDef(addedItem).pickupToken)
+                                //});
+                                var pickupDef = ItemCatalog.GetItemDef(addedItem);
+                                var pickupName = Language.GetString(pickupDef.nameToken);
+                                var playerColor = damageReport.attackerOwnerMaster.GetBody().GetColoredUserName();
+                                var itemCount = damageReport.attackerOwnerMaster.GetBody().inventory.GetItemCount(pickupDef.itemIndex);                                
+                                Chat.SendBroadcastChat(new Chat.SimpleChatMessage
+                                {
+                                    baseToken =
+                                    damageReport.attackerOwnerMaster.GetBody().GetColoredUserName() +  $"<color=#{GrayColor}> gained</color> " +
+                                    $"{pickupName ?? "???"} ({itemCount})</color> <color=#{GrayColor}></color>"
+                                    
+                                    //baseToken = self.body.GetColoredUserName() + " lost " + Language.GetString(ItemCatalog.GetItemDef(itemToRemove).pickupToken)
+                                });                            }
                             PlayerStatsComponent.FindBodyStatSheet(damageReport.attackerOwnerMaster.GetBody()).PushStatValue(statsGainItems, 1UL);
                             if (QueueGainedItemSprite.ContainsKey(damageReport.attackerOwnerMaster.GetBody().netId.Value))
                                 pos = damageReport.attackerOwnerMaster.GetBody().netId.Value;
@@ -262,6 +282,21 @@ namespace ArtifactOfDoom
                         while (chanceToTrigger > rand.Next(0, 99))
                         {
                             ItemIndex addedItem = GiveAndReturnRandomItem(damageReport.attackerBody.inventory);
+                            if (ArtifactOfDoomConfig.enableChatItemOutput.Value)
+                            {
+                                 var pickupDef = ItemCatalog.GetItemDef(addedItem);
+                                var pickupName = Language.GetString(pickupDef.nameToken);
+                                var playerColor = damageReport.attackerBody.GetColoredUserName();
+                                var itemCount = damageReport.attackerBody.inventory.GetItemCount(pickupDef.itemIndex);                                
+                                Chat.SendBroadcastChat(new Chat.SimpleChatMessage
+                                {
+                                    baseToken =
+                                    damageReport.attackerBody.GetColoredUserName() +  $"<color=#{GrayColor}> gained</color> " +
+                                    $"{pickupName ?? "???"} ({itemCount})</color> <color=#{GrayColor}></color>"
+                                    
+                                    //baseToken = self.body.GetColoredUserName() + " lost " + Language.GetString(ItemCatalog.GetItemDef(itemToRemove).pickupToken)
+                                });  
+                            }
                             PlayerStatsComponent.FindBodyStatSheet(damageReport.attackerBody).PushStatValue(statsGainItems, 1UL);
                             if (QueueGainedItemSprite.ContainsKey(damageReport.attackerBody.netId.Value))
                                 pos = damageReport.attackerBody.netId.Value;
@@ -446,12 +481,29 @@ namespace ArtifactOfDoom
                         lstItemIndex[itemToRemove]--;
                         if (debug) Debug.LogWarning("Line 401");
 
-                        if (!ItemCatalog.lunarItemList.Contains(itemToRemove) && (ItemCatalog.GetItemDef(itemToRemove).tier != ItemTier.NoTier && itemToRemove!=ItemIndex.CaptainDefenseMatrix))
+                        if (!ItemCatalog.lunarItemList.Contains(itemToRemove) && (ItemCatalog.GetItemDef(itemToRemove).tier != ItemTier.NoTier && itemToRemove != ItemIndex.CaptainDefenseMatrix))
                         {
                             if (debug) Debug.LogWarning("Line 405");
 
                             self.body.inventory.RemoveItem(itemToRemove, 1);
 
+                            //Chat.AddPickupMessage(self.body,itemToRemove,self.body.GetColoredUserName,PickupCatalog.GetPickupDef(itemToRemove).)
+
+                            if (ArtifactOfDoomConfig.enableChatItemOutput.Value)
+                            {
+                                var pickupDef = ItemCatalog.GetItemDef(itemToRemove);
+                                var pickupName = Language.GetString(pickupDef.nameToken);
+                                var playerColor = self.body.GetColoredUserName();
+                                var itemCount = self.body.inventory.GetItemCount(pickupDef.itemIndex);                                
+                                Chat.SendBroadcastChat(new Chat.SimpleChatMessage
+                                {
+                                    baseToken =
+                                    self.body.GetColoredUserName() +  $"<color=#{GrayColor}> lost</color> " +
+                                    $"{pickupName ?? "???"} ({itemCount})</color> <color=#{GrayColor}></color>"
+                                    
+                                    //baseToken = self.body.GetColoredUserName() + " lost " + Language.GetString(ItemCatalog.GetItemDef(itemToRemove).pickupToken)
+                                });
+                            }
                             PlayerStatsComponent.FindBodyStatSheet(self.body).PushStatValue(statsLostItems, 1UL);
 
                             if (debug) Debug.LogWarning("Line 411");
@@ -694,7 +746,7 @@ namespace ArtifactOfDoom
 
                 return ArtifactOfDoomConfig.AcridMultiplyerForTimedBuff.Value;
             }
-                        if (body.name.Contains("Captain"))
+            if (body.name.Contains("Captain"))
             {
                 if (debug) { Debug.LogWarning("Character BodyName = " + body.name + " returning: Captain"); }
 

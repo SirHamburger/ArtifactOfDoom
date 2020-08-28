@@ -4,7 +4,12 @@ A mod for Risk of Rain 2.
 
 Adds an artifact to the game which destroys items of your inventory if you take damage but gives you items if you kill enemies.
 
-## Mods used to create this mod
+##Credits
+### Design
+Special thanks for designing the icons belongs to:
+Oroshibu
+
+### Mods used to create this mod
 The root projekt is TinkersSatchel:
 https://github.com/ThinkInvis/RoR2-TinkersSatchel
 
@@ -57,7 +62,16 @@ https://github.com/SirHamburger/ArtifactOfDoom
 You can also reach me in Discord (Sir Hamburger#8447)
 
 ## Patchnotes
-### Version 1.0.0
+### Version 1.1.1
+Fix for Progressbar after taking an item
+
+### Version 1.1.0
+* Added support for not 16/9 Resolution
+* Added new UI-Settings
+* Changed Artifact logo
+* Changed Thunderstore logo
+* Changed Settings into groups (it can be that you've to update your own settings.)
+### Version 1.0.1
 * Added progress bar
 * Added Artifact of Sacrifice like item gain
 * Added formular for gaining items if under average items
