@@ -1,26 +1,15 @@
 using BepInEx;
-using UnityEngine;
-using UnityEngine.UI;
-using System.Collections.Generic;
-using UnityEngine.Networking;
-
 using MiniRpcLib;
-using MiniRpcLib.Action;
 using MiniRpcLib.Func;
-
-
-
-
-using System;
-
 using RoR2;
+using RoR2.UI;
+using System;
+using System.Collections.Generic;
+using UnityEngine;
+using UnityEngine.Networking;
+using UnityEngine.UI;
 
 
-/*
-	Disclaimer:
-	Despite it all
-	I have no idea what I'm doing to be very honest.
-*/
 
 #region TODO:
 /*
@@ -37,7 +26,7 @@ namespace ArtifactOfDoom
     public class ArtifactOfDoomUI : BaseUnityPlugin
     {
         public GameObject ModCanvas = null;
-        private static bool ArtifactIsActiv = false;
+        private static bool ArtifactIsActive = false;
         private static bool calculationSacrifice = false;
         void Awake()
         {
@@ -49,7 +38,7 @@ namespace ArtifactOfDoom
             {
                 SetUpMiniRPC();
             }
-            catch (Exception e)
+            catch (Exception)
             {
                 Debug.LogError($"[SirHamburger] Error in SetUpMiniRPC");
             }
@@ -91,41 +80,20 @@ namespace ArtifactOfDoom
         public void ExpBarAwakeAddon(On.RoR2.UI.HUD.orig_Awake orig, RoR2.UI.HUD self)
         {
             orig(self);
-            //Debug.LogError("ExpBarAwakeAddon");
-            //Debug.LogError("ArtifactIsActiv " + ArtifactIsActiv);
-            if (!ArtifactIsActiv)
+
+            if (!ArtifactIsActive)
                 return;
-            //var currentRect = self.gameObject.GetComponentsInChildren<RectTransform>();
-            //if (currentRect != null && VanillaExpBarRoot == null)
-            //{
-            //    //for (int i = 0; i < currentRect.Length; ++i)
-            //    //{
-            //    //    if (currentRect[i].name == "ExpBarRoot")
-            //    //    {
-            //    //        //VanillaExpBarRoot = currentRect[i].gameObject;
-            //    //     
-            //    //    }
-            //    //}
-            //    
-            //}
+
             VanillaExpBarRoot = self.transform.root;
-            //var GameObjectReference = new GameObject("GameObjectName");
-            //GameObjectReference.transform.SetParent(HUDroot);
-            //GameObjectReference.AddComponent<RectTransform>();
-            //GameObjectReference.GetComponent<RectTransform>().anchorMin = Vector2.zero;
-            //GameObjectReference.GetComponent<RectTransform>().anchorMax = Vector2.one;
-            //GameObjectReference.GetComponent<RectTransform>().sizeDelta = Vector2.zero;
-            //GameObjectReference.GetComponent<RectTransform>().anchoredPosition = Vector2.zero;
-            //GameObjectReference.AddComponent<Image>();
-            //GameObjectReference.GetComponent<Image>().sprite = ItemCatalog.GetItemDef(ItemIndex.Bear).pickupIconSprite;
+
+
             MainExpBarStart();
-            //if(currentRect==null)
-            //    Debug.LogError("currentRect==null");
+
         }
 
         private void MainExpBarStart()
         {
-            //Debug.LogError("MainExpBarStart");
+            Debug.LogError("MainExpBarStart");
             //Debug.LogError("AArtifactIsActiv " + ArtifactIsActiv);
             if (VanillaExpBarRoot != null)
             {
@@ -217,7 +185,7 @@ namespace ArtifactOfDoom
 
 
                 }
-                catch (Exception e)
+                catch (Exception)
                 {
                     Debug.Log($"[SirHamburger Error] while Adding UI elements");
                 }
@@ -226,7 +194,6 @@ namespace ArtifactOfDoom
             {
                 Debug.LogError("VanillaExpBarRoot == null");
             }
-
 
         }
         public static void updateItemProgressBar(int enemiesKilled, int enemiesNeeded)
@@ -240,8 +207,8 @@ namespace ArtifactOfDoom
         public static IRpcFunc<string, string> AddGainedItemsToPlayers { get; set; }
         public static IRpcFunc<string, string> AddLostItemsOfPlayers { get; set; }
         public static IRpcFunc<string, string> UpdateProgressBar { get; set; }
-        public static IRpcFunc<bool, string> isArtifactActive { get; set; }
-        public static IRpcFunc<bool, string> isCalculationSacrifice { get; set; }
+        public static IRpcFunc<bool, string> IsArtifactActive { get; set; }
+        public static IRpcFunc<bool, string> IsCalculationSacrifice { get; set; }
 
         public const string ModVer = "1.1.1";
         public const string ModName = "ArtifactOfDoom";
@@ -259,13 +226,10 @@ namespace ArtifactOfDoom
             // I opted for the ModGuid instead of an arbitrary number or GUID to encourage mods not to set the same ID
             var miniRpc = MiniRpc.CreateInstance(ModGuid);
 
-
-
             AddGainedItemsToPlayers = miniRpc.RegisterFunc(Target.Client, (NetworkUser user, string QueueGainedItemSpriteToString) => //--------------------HierSTuffMachen!!
             {
                 if (!ArtifactOfDoomConfig.disableSideBars.Value)
                 {
-
                     string[] QueueGainedItemSprite = QueueGainedItemSpriteToString.Split(' ');
 
                     int i = 0;
@@ -359,12 +323,12 @@ namespace ArtifactOfDoom
                 }
                 return "dummie";
             });
-            isArtifactActive = miniRpc.RegisterFunc(Target.Client, (NetworkUser user, bool isActive) => //--------------------HierSTuffMachen!!
+            IsArtifactActive = miniRpc.RegisterFunc(Target.Client, (NetworkUser user, bool isActive) => //--------------------HierSTuffMachen!!
             {
-                ArtifactIsActiv = isActive;
+                ArtifactIsActive = isActive;
                 return "";
             });
-            isCalculationSacrifice = miniRpc.RegisterFunc(Target.Client, (NetworkUser user, bool isActive) => //--------------------HierSTuffMachen!!
+            IsCalculationSacrifice = miniRpc.RegisterFunc(Target.Client, (NetworkUser user, bool isActive) => //--------------------HierSTuffMachen!!
             {
                 //Debug.LogError("Set CalculationSacrifice to " + isActive);
                 calculationSacrifice = isActive;
@@ -382,6 +346,10 @@ namespace ArtifactOfDoom
             SomeOtherCommandName,
         }
 
-
+        private void OnDestroy()
+        {
+            On.RoR2.UI.HUD.Awake -= ExpBarAwakeAddon;
+           // On.RoR2.Inventory.RemoveItem -= RemoveItem;
+        }
     }
 }
