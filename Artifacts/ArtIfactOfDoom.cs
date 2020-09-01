@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using TILER2;
 using UnityEngine;
+using TinyJson;
 
 namespace ArtifactOfDoom
 {
@@ -27,6 +28,7 @@ namespace ArtifactOfDoom
 
         private static StatDef statsLostItems;
         private static StatDef statsGainItems;
+        
 
 
         //public static Dictionary<CharacterBody, Queue<Sprite>>  PlayerItems = new Dictionary<CharacterBody, Queue<Sprite>>();
@@ -46,14 +48,14 @@ namespace ArtifactOfDoom
                 LoadBehavior();
             }
         }
-
+        
 
         public ArtifactOfDoom()
         {
             iconPathName = "@ArtifactOfDoom:Assets/Import/artifactofdoom_icon/ArtifactDoomEnabled.png";
             iconPathNameDisabled = "@ArtifactOfDoom:Assets/Import/artifactofdoom_icon/ArtifactDoomDisabled.png";
         }
-
+        
         protected override void LoadBehavior()
         {
 
@@ -643,6 +645,16 @@ namespace ArtifactOfDoom
                     if (debug) { Debug.LogWarning($"Character baseNameToken = {baseNameToken} returning: Acrid"); }
                     return ArtifactOfDoomConfig.CaptainBonusItems.Value;
                 default:
+                    string CustomChars = ArtifactOfDoomConfig.CustomChars.Value;
+
+                    //Character characters = TinyJson.JSONParser.FromJson<Character>(CustomChars);
+                    List<Character> characters=CustomChars.FromJson<List<Character>>();
+                    foreach(var element in characters)
+                    {
+                        if(baseNameToken == element.Name)
+                        return element.BonusItems;
+                    }
+                    Debug.LogWarning("did not find a valid configuation setting for Character " + baseNameToken + " you can add one in the settings");
                     if (debug) { Debug.LogWarning($"Character baseNameToken = {baseNameToken} returning: Acrid"); }
                     return ArtifactOfDoomConfig.CustomSurvivorBonusItems.Value;
             }
@@ -683,10 +695,26 @@ namespace ArtifactOfDoom
                     if (debug) { Debug.LogWarning($"Character baseNameToken = {baseNameToken} returning: Acrid"); }
                     return ArtifactOfDoomConfig.CaptainMultiplierForTimedBuff.Value;
                 default:
+                    string CustomChars = ArtifactOfDoomConfig.CustomChars.Value;
+
+                    //Character characters = TinyJson.JSONParser.FromJson<Character>(CustomChars);
+                    List<Character> characters=CustomChars.FromJson<List<Character>>();
+                    foreach(var element in characters)
+                    {
+                        if(baseNameToken == element.Name)
+                        return element.MultiplierForTimedBuff;
+                    }
+                    Debug.LogWarning("did not find a valid configuation setting for Character " + baseNameToken + " you can add one in the settings");
                     if (debug) { Debug.LogWarning($"Character baseNameToken = {baseNameToken} returning: Acrid"); }
                     return ArtifactOfDoomConfig.CustomSurvivorMultiplierForTimedBuff.Value;
             }
         }
+        public class Character
+            {
+                public string Name { get; set; }
+                public float MultiplierForTimedBuff { get; set; }
+                public float BonusItems { get; set; }
+            }
         public ItemIndex GiveAndReturnRandomItem(Inventory inventory)
         {
             var tier1 = ItemDropAPI.GetDefaultDropList(ItemTier.Tier1);

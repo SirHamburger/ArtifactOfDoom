@@ -31,7 +31,7 @@ namespace ArtifactOfDoom
         void Awake()
         {
             //On.RoR2.UI.HealthBar.Awake += ExpBarAwakeAddon;
-            On.RoR2.UI.HUD.Awake += ExpBarAwakeAddon;
+            On.RoR2.UI.HUD.Awake += HUDAwake;
 
 
             try
@@ -55,9 +55,9 @@ namespace ArtifactOfDoom
                 ModCanvas = new GameObject("UIModifierCanvas");
                 ModCanvas.AddComponent<Canvas>();
                 ModCanvas.GetComponent<Canvas>().renderMode = RenderMode.ScreenSpaceCamera;
-                if (VanillaExpBarRoot != null)
+                if (HUDRoot != null)
                 {
-                    ModCanvas.GetComponent<Canvas>().worldCamera = VanillaExpBarRoot.transform.root.gameObject.GetComponent<Canvas>().worldCamera;
+                    ModCanvas.GetComponent<Canvas>().worldCamera = HUDRoot.transform.root.gameObject.GetComponent<Canvas>().worldCamera;
                 }
 
                 ModCanvas.AddComponent<CanvasScaler>();
@@ -69,7 +69,7 @@ namespace ArtifactOfDoom
 
 
         #region Exp bar GameObjects
-        public Transform VanillaExpBarRoot = null;
+        public Transform HUDRoot = null;
         public GameObject ModExpBarGroup = null;
         public static List<GameObject> listGainedImages = new List<GameObject>();
         public static List<GameObject> listLostImages = new List<GameObject>();
@@ -77,14 +77,14 @@ namespace ArtifactOfDoom
         public static GameObject itemGainFrame;
 
         #endregion
-        public void ExpBarAwakeAddon(On.RoR2.UI.HUD.orig_Awake orig, RoR2.UI.HUD self)
+        public void HUDAwake(On.RoR2.UI.HUD.orig_Awake orig, RoR2.UI.HUD self)
         {
             orig(self);
 
             if (!ArtifactIsActive)
                 return;
 
-            VanillaExpBarRoot = self.transform.root;
+            HUDRoot = self.transform.root;
 
 
             MainExpBarStart();
@@ -93,9 +93,9 @@ namespace ArtifactOfDoom
 
         private void MainExpBarStart()
         {
-            Debug.LogError("MainExpBarStart");
+            //Debug.LogError("MainExpBarStart");
             //Debug.LogError("AArtifactIsActiv " + ArtifactIsActiv);
-            if (VanillaExpBarRoot != null)
+            if (HUDRoot != null)
             {
                 try
                 {
@@ -103,27 +103,28 @@ namespace ArtifactOfDoom
                     listGainedImages.Clear();
                     listLostImages.Clear();
                     float baseSize = (Convert.ToSingle(ArtifactOfDoomConfig.sizeOfSideBars.Value));
-                    float baseSizePlusMargin = baseSize + (float)0.01;
+                    
                    
-                    float screenResultuionMultiplier= Screen.currentResolution.width/Screen.currentResolution.height;
+                    float screenResultuionMultiplier= (float)Screen.currentResolution.width/(float)Screen.currentResolution.height;
+                    //Debug.LogError("screenResultuionMultiplier " +screenResultuionMultiplier);
+                    //Debug.LogError("float screenResultuionMultiplier=Screen.currentResolution.width/Screen.currentResolution.height;" +Screen.currentResolution.width/Screen.currentResolution.height);
                      float baseSizeY = baseSize * screenResultuionMultiplier;
+                     float baseSizeYPlusMargin = baseSizeY + (float)0.01;
+                    //Debug.LogError("baseSizeY " +baseSizeY);
+                    //Debug.LogError("baseSize " +baseSize);
 
                     for (int i = 0; i < 10; i++)
                     {
                         ModExpBarGroup = new GameObject("GainedItems" + i);
 
                         ModExpBarGroup.transform.SetParent(ModCanvas.transform);
-                        //ModExpBarGroup.transform.position = new Vector3(0,0,0);
-
 
                         ModExpBarGroup.AddComponent<RectTransform>();
 
-                        ModExpBarGroup.GetComponent<RectTransform>().anchorMin = new Vector2(0.0f, (float)(0.20 + ((float)i * baseSizePlusMargin)));
-                        ModExpBarGroup.GetComponent<RectTransform>().anchorMax = new Vector2(baseSize, (float)(0.2+ baseSizeY + ((float)i * baseSizePlusMargin)));
+                        ModExpBarGroup.GetComponent<RectTransform>().anchorMin = new Vector2(0.0f, (float)(0.20 + ((float)i * baseSizeYPlusMargin)));
+                        ModExpBarGroup.GetComponent<RectTransform>().anchorMax = new Vector2(baseSize, (float)(0.2+ baseSizeY + ((float)i * baseSizeYPlusMargin)));
                         ModExpBarGroup.GetComponent<RectTransform>().sizeDelta = Vector2.zero;
                         ModExpBarGroup.GetComponent<RectTransform>().anchoredPosition = Vector2.zero;
-                        //ModExpBarGroup.AddComponent<Image>();
-                        //ModExpBarGroup.GetComponent<Image>().sprite = Resources.Load<Sprite>("textures/itemicons/bg");
                         ModExpBarGroup.AddComponent<NetworkIdentity>().serverOnly = false;
                         listGainedImages.Add(ModExpBarGroup);
 
@@ -131,29 +132,19 @@ namespace ArtifactOfDoom
                         ModExpBarGroup = new GameObject("LostItems" + i);
 
                         ModExpBarGroup.transform.SetParent(ModCanvas.transform);
-                        //ModExpBarGroup.transform.position = new Vector3(0,0,0);
 
                         ModExpBarGroup.AddComponent<RectTransform>();
-                        ModExpBarGroup.GetComponent<RectTransform>().anchorMin = new Vector2((float)1.0-baseSize, (float)(0.20 + ((float)i * baseSizePlusMargin)));
-                        ModExpBarGroup.GetComponent<RectTransform>().anchorMax = new Vector2(1.00f, (float)(0.2+baseSizeY + ((float)i * baseSizePlusMargin)));
+                        ModExpBarGroup.GetComponent<RectTransform>().anchorMin = new Vector2((float)1.0-baseSize, (float)(0.20 + ((float)i * baseSizeYPlusMargin)));
+                        ModExpBarGroup.GetComponent<RectTransform>().anchorMax = new Vector2(1.00f, (float)(0.2+baseSizeY + ((float)i * baseSizeYPlusMargin)));
                         ModExpBarGroup.GetComponent<RectTransform>().sizeDelta = Vector2.zero;
                         ModExpBarGroup.GetComponent<RectTransform>().anchoredPosition = Vector2.zero;
                         ModExpBarGroup.AddComponent<NetworkIdentity>().serverOnly = false;
 
-                        //ModExpBarGroup.AddComponent<Image>();
-                        //ModExpBarGroup.GetComponent<Image>().sprite = Resources.Load<Sprite>("textures/itemicons/bg");
                         listLostImages.Add(ModExpBarGroup);
-
-                        //ModExpBarGroup.AddComponent<Text
                     }
-                    //Debug.LogError("i'm here");
-                    //Debug.LogError ("ArtifactOfDoomConfig.useArtifactOfSacreficeCalculation.Value"+ArtifactOfDoomConfig.useArtifactOfSacreficeCalculation.Value);
-                    //Debug.LogError("ArtifactOfDoomConfig.disableItemProgressBar.Value"+ArtifactOfDoomConfig.disableItemProgressBar.Value);
-                    //Debug.LogError("ArtifactOfDoom.artifactIsActive " +ArtifactOfDoom.artifactIsActive);
 
                     if (!ArtifactOfDoomConfig.disableItemProgressBar.Value && !calculationSacrifice)
                     {
-                        //Debug.LogError("!ArtifactOfDoomConfig.useArtifactOfSacreficeCalculation.Value && !ArtifactOfDoomConfig.disableItemProgressBar.Value");
                         ModExpBarGroup = new GameObject("ItemGainBar");
                         ModExpBarGroup.transform.SetParent(ModCanvas.transform);
                         ModExpBarGroup.AddComponent<RectTransform>();
@@ -192,7 +183,7 @@ namespace ArtifactOfDoom
             }
             else
             {
-                Debug.LogError("VanillaExpBarRoot == null");
+                Debug.LogError("HUDRoot == null");
             }
 
         }
@@ -210,7 +201,7 @@ namespace ArtifactOfDoom
         public static IRpcFunc<bool, string> IsArtifactActive { get; set; }
         public static IRpcFunc<bool, string> IsCalculationSacrifice { get; set; }
 
-        public const string ModVer = "1.1.1";
+        public const string ModVer = "1.2.0";
         public const string ModName = "ArtifactOfDoom";
         public const string ModGuid = "com.SirHamburger.ArtifactOfDoom";
 
@@ -348,7 +339,7 @@ namespace ArtifactOfDoom
 
         private void OnDestroy()
         {
-            On.RoR2.UI.HUD.Awake -= ExpBarAwakeAddon;
+            On.RoR2.UI.HUD.Awake -= HUDAwake;
            // On.RoR2.Inventory.RemoveItem -= RemoveItem;
         }
     }

@@ -17,7 +17,7 @@ namespace ArtifactOfDoom
     [R2APISubmoduleDependency(nameof(ItemAPI), nameof(LanguageAPI), nameof(ResourcesAPI), nameof(PlayerAPI), nameof(PrefabAPI))]
     public class ArtifactOfDoomConfig : BaseUnityPlugin
     {
-        public const string ModVer = "1.1.1";
+        public const string ModVer = "1.2.0";
         public const string ModName = "ArtifactOfDoom";
         public const string ModGuid = "com.SirHamburger.ArtifactOfDoom";
 
@@ -35,6 +35,7 @@ namespace ArtifactOfDoom
         public static ConfigEntry<double> exponentailFactorIfYouAreUnderAverageItemsPerStage;
         public static ConfigEntry<double> exponentailFactorToCalculateSumOfLostItems;
         public static ConfigEntry<bool> artifactOfSwarmNerf;
+        public static ConfigEntry<string> CustomChars;
 
         public static ConfigEntry<bool> useArtifactOfSacrificeCalculation;
         public static ConfigEntry<double> multiplayerForArtifactOfSacrificeDropRate;
@@ -120,7 +121,7 @@ namespace ArtifactOfDoom
                 "Disables the item Sidebars"));
             enableChatItemOutput = cfgFile.Bind(new ConfigDefinition("UI Settings", "enableChatItemOutput"), false, new ConfigDescription(
                 "Enables the chat output for gained/lost Items. This setting is not synced."));
-            sizeOfSideBars = cfgFile.Bind(new ConfigDefinition("UI Settings", "sizeOfSideBars"), 0.03, new ConfigDescription(
+            sizeOfSideBars = cfgFile.Bind(new ConfigDefinition("UI Settings", "sizeOfSideBars"), 0.02, new ConfigDescription(
             "Spezifies the size of the sidebars. 1 is whole window 0 is invisible (but for that plase use the disable setting)."));
             timeAfterHitToNotLoseItemDrizzly = cfgFile.Bind(new ConfigDefinition("Gameplay Settings", "timeAfterHitToNotLooseItemDrizzly"), 0.8, new ConfigDescription(
                      "The time in seconds where you will not lose items after you lost one on drizzly"));
@@ -173,7 +174,9 @@ namespace ArtifactOfDoom
                 "The count of items which you get if you kill enough enemies"));
             CustomSurvivorMultiplierForTimedBuff = cfgFile.Bind(new ConfigDefinition("Character specific settings", "CustomSurvivorMultiplierForTimedBuff"), 1.0, new ConfigDescription(
                 "The Multiplier for that specific character for the length of timeAfterHitToNotLoseItems"));
-
+            CustomChars= cfgFile.Bind(new ConfigDefinition("Character specific settings", "CustomCharacters"), "[{\"Name\": \"CUSTOM_CHAR_BODY_NAME1\", \"MultiplierForTimedBuff\": 1.0, \"BonusItems\": 1.0},{\"Name\": \"CUSTOM_CHAR_BODY_NAME2\", \"MultiplierForTimedBuff\": 2.0, \"BonusItems\": 2.0}]", new ConfigDescription(
+                "The Multiplier for that specific character for the length of timeAfterHitToNotLoseItems"));
+            
 
 
 
