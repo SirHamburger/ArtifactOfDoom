@@ -4,16 +4,16 @@ using R2API;
 using R2API.Utils;
 using RoR2;
 using System.Reflection;
-using TILER2;
+//using TILER2;
 using UnityEngine;
-using static TILER2.MiscUtil;
+//using static TILER2.MiscUtil;
 using Path = System.IO.Path;
 
 namespace ArtifactOfDoom
 {
     [BepInPlugin(ModGuid, ModName, ModVer)]
     [BepInDependency(R2API.R2API.PluginGUID, R2API.R2API.PluginVersion)]
-    [BepInDependency(TILER2Plugin.ModGuid, "1.3.0")]
+    [R2APISubmoduleDependency(nameof(BuffAPI))]
     [R2APISubmoduleDependency(nameof(ItemAPI), nameof(LanguageAPI), nameof(ResourcesAPI), nameof(PlayerAPI), nameof(PrefabAPI))]
     public class ArtifactOfDoomConfig : BaseUnityPlugin
     {
@@ -25,7 +25,7 @@ namespace ArtifactOfDoom
 
         private static ConfigFile cfgFile;
 
-        internal static FilingDictionary<ItemBoilerplate> masterItemList = new FilingDictionary<ItemBoilerplate>();
+        //internal static FilingDictionary<ItemBoilerplate> masterItemList = new FilingDictionary<ItemBoilerplate>();
 
         internal static BepInEx.Logging.ManualLogSource _logger;
 
@@ -78,20 +78,15 @@ namespace ArtifactOfDoom
         private void Awake()
         {
             _logger = Logger;
-            using (var stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("ArtifactOfDoom.artifactofdoom"))
-            {
-                var bundle = AssetBundle.LoadFromStream(stream);
-                var provider = new AssetBundleResourcesProvider("@ArtifactOfDoom", bundle);
-                ResourcesAPI.AddProvider(provider);
-            }
+
 
             cfgFile = new ConfigFile(Path.Combine(Paths.ConfigPath, ModGuid + ".cfg"), true);
 
-            masterItemList = ItemBoilerplate.InitAll("ArtifactOfDoom");
-            foreach (ItemBoilerplate x in masterItemList)
-            {
-                x.SetupConfig(cfgFile);
-            }
+            //masterItemList = ItemBoilerplate.InitAll("ArtifactOfDoom");
+            //foreach (ItemBoilerplate x in masterItemList)
+            //{
+            //    x.SetupConfig(cfgFile);
+            //}
 
             averageItemsPerStage = cfgFile.Bind(new ConfigDefinition("Gameplay Settings", "averageItemsPerStage"), 3, new ConfigDescription(
                 "Base chance in percent that enemys steal items from you ((totalItems - currentStage * averageItemsPerStage) ^ exponentTriggerItems; \nIf that value is lower you'll need to kill more enemies to get an item"));
@@ -181,29 +176,29 @@ namespace ArtifactOfDoom
 
 
             int longestName = 0;
-            foreach (ItemBoilerplate x in masterItemList)
-            {
-                x.SetupAttributes("ARTDOOM", "ADOOM");
-                if (x.itemCodeName.Length > longestName) longestName = x.itemCodeName.Length;
-            }
-
-            Logger.LogMessage("Index dump follows (pairs of name / index):");
-            foreach (ItemBoilerplate x in masterItemList)
-            {
-                if (x is Artifact afct)
-                    Logger.LogMessage(" Artifact ADOOM" + x.itemCodeName.PadRight(longestName) + " / " + ((int)afct.regIndex).ToString());
-                else
-                    Logger.LogMessage("Other ADOOM" + x.itemCodeName.PadRight(longestName) + " / N/A");
-            }
+            //foreach (ItemBoilerplate x in masterItemList)
+            //{
+            //    x.SetupAttributes("ARTDOOM", "ADOOM");
+            //    if (x.itemCodeName.Length > longestName) longestName = x.itemCodeName.Length;
+            //}
+//
+            //Logger.LogMessage("Index dump follows (pairs of name / index):");
+            //foreach (ItemBoilerplate x in masterItemList)
+            //{
+            //    if (x is Artifact afct)
+            //        Logger.LogMessage(" Artifact ADOOM" + x.itemCodeName.PadRight(longestName) + " / " + ((int)afct.regIndex).ToString());
+            //    else
+            //        Logger.LogMessage("Other ADOOM" + x.itemCodeName.PadRight(longestName) + " / N/A");
+            //}
 
             var didLoseItem = new R2API.CustomBuff("didLoseItem", "", Color.black, false, false);
             buffIndexDidLoseItem = BuffAPI.Add(didLoseItem);
-            foreach (ItemBoilerplate x in masterItemList)
-            {
-                x.SetupBehavior();
-            }
+            //foreach (ItemBoilerplate x in masterItemList)
+            //{
+            //    x.SetupBehavior();
+            //}
             //On.RoR2.UI.HUD.Awake +=myFunc
-            // ArtifactOfDoomUI test = new ArtifactOfDoomUI();
+            //ArtifactOfDoomUI test = new ArtifactOfDoomUI();
         }
     }
 }

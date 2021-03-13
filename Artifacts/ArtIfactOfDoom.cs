@@ -1,24 +1,29 @@
 ﻿
 using R2API;
+using R2API.Utils;
+using BepInEx;
+using BepInEx.Logging;
+using System.Reflection;
 using RoR2;
 using RoR2.Stats;
 using System;
 using System.Collections.Generic;
-using TILER2;
+//using TILER2;
 using UnityEngine;
 using TinyJson;
 
 namespace ArtifactOfDoom
 {
-    public class ArtifactOfDoom : Artifact<ArtifactOfDoom>
+    [BepInPlugin("com.SirHamburger.MainArtifactOfDoom", "MainArtifactOfDoom", "1.0")]
+    public class ArtifactOfDoom : BaseUnityPlugin
     {
+    
+
+        ArtifactDef Transmutation = ScriptableObject.CreateInstance<ArtifactDef>();
+
         private const string GrayColor = "7e91af";
         private const string ErrorColor = "ff0000";
         public static bool debug = false;
-        public override string displayName => "Artifact of Doom";
-
-        protected override string NewLangName(string langid = null) => displayName;
-        protected override string NewLangDesc(string langid = null) => "You get items on enemy kills but lose items every time you take damage.";
         private static List<CharacterBody> Playername = new List<CharacterBody>();
         private static List<int> counter = new List<int>();
         private int currentStage = 0;
@@ -42,21 +47,34 @@ namespace ArtifactOfDoom
 
         public void Awake()
         {
-            if (IsActiveAndEnabled())
+            Transmutation.nameToken = "Artifact of Doom";
+            Transmutation.descriptionToken = "You get items on enemy kills but lose items every time you take damage.";
+                    using (var stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("ArtifactOfDoom.artifactofdoom"))
             {
-                Chat.AddMessage($"Loaded {displayName}!");
-                LoadBehavior();
+                var bundle = AssetBundle.LoadFromStream(stream);
+                var provider = new AssetBundleResourcesProvider("@ArtifactOfDoom", bundle);
+                ResourcesAPI.AddProvider(provider);
             }
+                Transmutation.smallIconDeselectedSprite = Resources.Load<Sprite>("@ArtifactOfDoom:Assets/Import/artifactofdoom_icon/ArtifactDoomDisabled.png");
+                 Transmutation.smallIconSelectedSprite = Resources.Load<Sprite>("@ArtifactOfDoom:Assets/Import/artifactofdoom_icon/ArtifactDoomEnabled.png");
+            
+
+            ArtifactCatalog.getAdditionalEntries += (list) =>
+            {
+            list.Add(Transmutation);
+            };
+
+                LoadBehavior();
+            
         }
         
 
         public ArtifactOfDoom()
         {
-            iconPathName = "@ArtifactOfDoom:Assets/Import/artifactofdoom_icon/ArtifactDoomEnabled.png";
-            iconPathNameDisabled = "@ArtifactOfDoom:Assets/Import/artifactofdoom_icon/ArtifactDoomDisabled.png";
+           
         }
         
-        protected override void LoadBehavior()
+        protected void LoadBehavior()
         {
 
             Playername = new List<CharacterBody>();
@@ -74,7 +92,7 @@ namespace ArtifactOfDoom
             On.RoR2.UI.GameEndReportPanelController.Awake += (orig, self) =>
                 {
                     orig(self);
-                    if (!this.IsActiveAndEnabled())
+                    if (!RunArtifactManager.instance.IsArtifactEnabled(Transmutation.artifactIndex))
                     {
                         return;
                     }
@@ -115,7 +133,7 @@ namespace ArtifactOfDoom
             {
                 orig(self);
                 //Debug.LogError("-------------------here----------------------------------");
-                ArtifactOfDoomUI.IsArtifactActive.Invoke(this.IsActiveAndEnabled(), result =>
+                ArtifactOfDoomUI.IsArtifactActive.Invoke(RunArtifactManager.instance.IsArtifactEnabled(Transmutation.artifactIndex), result =>
                     {
                         //Debug.LogError("Got Message Of IsArtifactActive");
                     }, null);
@@ -129,7 +147,7 @@ namespace ArtifactOfDoom
                 orig(self);
                 try
                 {
-                    if (!this.IsActiveAndEnabled())
+                    if (!RunArtifactManager.instance.IsArtifactEnabled(Transmutation.artifactIndex))
                         return;
                     if (!self.isPlayerControlled)
                         return;
@@ -161,7 +179,7 @@ namespace ArtifactOfDoom
                 //{
                 orig(self, damageReport);
 
-                if (!IsActiveAndEnabled())
+                if (!RunArtifactManager.instance.IsArtifactEnabled(Transmutation.artifactIndex))
                 {
                     return;
                 }
@@ -352,7 +370,7 @@ namespace ArtifactOfDoom
                 //For adding possibility to dont loose items for some time: characterBody.AddTimedBuff(BuffIndex.Immune, duration);
                 orig(self, damageinfo);
 
-                if (!IsActiveAndEnabled())
+                if (!RunArtifactManager.instance.IsArtifactEnabled(Transmutation.artifactIndex))
                 {
                     return;
                 }
@@ -734,7 +752,7 @@ namespace ArtifactOfDoom
             return givenItem;
         }
 
-        protected override void UnloadBehavior()
+        protected void OnDestroy()
         {
             QueueLostItemSprite = new Dictionary<uint, Queue<ItemDef>>();
             QueueGainedItemSprite = new Dictionary<uint, Queue<ItemDef>>();
