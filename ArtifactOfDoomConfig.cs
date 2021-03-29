@@ -1,7 +1,6 @@
 ﻿using BepInEx;
 using BepInEx.Configuration;
-using R2API;
-using R2API.Utils;
+using EnigmaticThunder;
 using RoR2;
 using System.Reflection;
 //using TILER2;
@@ -12,12 +11,12 @@ using Path = System.IO.Path;
 namespace ArtifactOfDoom
 {
     [BepInPlugin(ModGuid, ModName, ModVer)]
-    [BepInDependency(R2API.R2API.PluginGUID, R2API.R2API.PluginVersion)]
-    [R2APISubmoduleDependency(nameof(BuffAPI))]
-    [R2APISubmoduleDependency(nameof(ItemAPI), nameof(LanguageAPI), nameof(ResourcesAPI), nameof(PlayerAPI), nameof(PrefabAPI))]
+    //[BepInDependency(R2API.R2API.PluginGUID, R2API.R2API.PluginVersion)]
+    //[R2APISubmoduleDependency(nameof(BuffAPI))]
+    //[R2APISubmoduleDependency(nameof(ItemAPI), nameof(LanguageAPI), nameof(ResourcesAPI), nameof(PlayerAPI), nameof(PrefabAPI))]
     public class ArtifactOfDoomConfig : BaseUnityPlugin
     {
-        public const string ModVer = "1.2.0";
+        public const string ModVer = "1.2.2";
         public const string ModName = "ArtifactOfDoom";
         public const string ModGuid = "com.SirHamburger.ArtifactOfDoom";
 
@@ -190,15 +189,16 @@ namespace ArtifactOfDoom
             //    else
             //        Logger.LogMessage("Other ADOOM" + x.itemCodeName.PadRight(longestName) + " / N/A");
             //}
+            var buff = new BuffDef();
+            buff.buffColor = Color.black;
+            buff.name= "didLoseItem";
+            buff.isDebuff = false;
+            buff.canStack = false;
 
-            var didLoseItem = new R2API.CustomBuff("didLoseItem", "", Color.black, false, false);
-            buffIndexDidLoseItem = BuffAPI.Add(didLoseItem);
-            //foreach (ItemBoilerplate x in masterItemList)
-            //{
-            //    x.SetupBehavior();
-            //}
-            //On.RoR2.UI.HUD.Awake +=myFunc
-            //ArtifactOfDoomUI test = new ArtifactOfDoomUI();
+            EnigmaticThunder.Modules.Buffs.RegisterBuff(buff);
+            //var didLoseItem = new R2API.CustomBuff("didLoseItem", "", Color.black, false, false);
+            //buffIndexDidLoseItem = BuffAPI.Add(buff);
+
         }
     }
 }

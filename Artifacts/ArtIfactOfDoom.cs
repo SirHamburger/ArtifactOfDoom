@@ -1,6 +1,7 @@
 ﻿
-using R2API;
-using R2API.Utils;
+//using R2API;
+//using R2API.Utils;
+using EnigmaticThunder;
 using BepInEx;
 using BepInEx.Logging;
 using System.Reflection;
@@ -10,11 +11,11 @@ using System;
 using System.Collections.Generic;
 //using TILER2;
 using UnityEngine;
-using TinyJson;
+using ArtifactOfDoomTinyJson;
 
 namespace ArtifactOfDoom
 {
-    [BepInPlugin("com.SirHamburger.MainArtifactOfDoom", "MainArtifactOfDoom", "1.0")]
+    [BepInPlugin("com.SirHamburger.MainArtifactOfDoom", "MainArtifactOfDoom", "1.2.2")]
     public class ArtifactOfDoom : BaseUnityPlugin
     {
     
@@ -49,22 +50,29 @@ namespace ArtifactOfDoom
         {
             Transmutation.nameToken = "Artifact of Doom";
             Transmutation.descriptionToken = "You get items on enemy kills but lose items every time you take damage.";
-                    using (var stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("ArtifactOfDoom.artifactofdoom"))
+            
+            using (var stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("ArtifactOfDoom.artifactofdoom"))
             {
                 var bundle = AssetBundle.LoadFromStream(stream);
-                var provider = new AssetBundleResourcesProvider("@ArtifactOfDoom", bundle);
-                ResourcesAPI.AddProvider(provider);
-            }
-                Transmutation.smallIconDeselectedSprite = Resources.Load<Sprite>("@ArtifactOfDoom:Assets/Import/artifactofdoom_icon/ArtifactDoomDisabled.png");
-                 Transmutation.smallIconSelectedSprite = Resources.Load<Sprite>("@ArtifactOfDoom:Assets/Import/artifactofdoom_icon/ArtifactDoomEnabled.png");
+                //TODO: Wie tut der Provider in 
+                //var provider = new AssetBundleResourcesProvider("@ArtifactOfDoom", bundle);
+                //ResourcesAPI.AddProvider(provider);
+                
+                
+            }   
+                Transmutation.smallIconDeselectedSprite = EnigmaticThunder.Modules.Loadouts.CreateSkinIcon(Color.red, Color.black, Color.black, Color.black);
+                //Resources.Load<Sprite>("@ArtifactOfDoom:Assets/Import/artifactofdoom_icon/ArtifactDoomDisabled.png");
+                 Transmutation.smallIconSelectedSprite = EnigmaticThunder.Modules.Loadouts.CreateSkinIcon(Color.green, Color.black, Color.black, Color.black);
+                 //Resources.Load<Sprite>("@ArtifactOfDoom:Assets/Import/artifactofdoom_icon/ArtifactDoomEnabled.png");
             
+            //TODO: Check if not needed
+            //ArtifactCatalog.getAdditionalEntries += (list) =>
+            //{
+            //list.Add(Transmutation);
+            //};
+            EnigmaticThunder.Modules.Artifacts.RegisterArtifact(Transmutation);
 
-            ArtifactCatalog.getAdditionalEntries += (list) =>
-            {
-            list.Add(Transmutation);
-            };
-
-                LoadBehavior();
+            LoadBehavior();
             
         }
         
@@ -133,14 +141,14 @@ namespace ArtifactOfDoom
             {
                 orig(self);
                 //Debug.LogError("-------------------here----------------------------------");
-                ArtifactOfDoomUI.IsArtifactActive.Invoke(RunArtifactManager.instance.IsArtifactEnabled(Transmutation.artifactIndex), result =>
-                    {
-                        //Debug.LogError("Got Message Of IsArtifactActive");
-                    }, null);
-                ArtifactOfDoomUI.IsCalculationSacrifice.Invoke(ArtifactOfDoomConfig.useArtifactOfSacrificeCalculation.Value, result =>
-                {
-                    //Debug.LogError("Got Message Of IsArtifactActive");
-                }, null);
+                // ArtifactOfDoomUI.IsArtifactActive.Invoke(RunArtifactManager.instance.IsArtifactEnabled(Transmutation.artifactIndex), result =>
+                //     {
+                //         //Debug.LogError("Got Message Of IsArtifactActive");
+                //     }, null);
+                // ArtifactOfDoomUI.IsCalculationSacrifice.Invoke(ArtifactOfDoomConfig.useArtifactOfSacrificeCalculation.Value, result =>
+                // {
+                //     //Debug.LogError("Got Message Of IsArtifactActive");
+                // }, null);
             };
             On.RoR2.CharacterBody.OnInventoryChanged += (orig, self) =>
             {
@@ -161,10 +169,10 @@ namespace ArtifactOfDoom
                     if (tempNetworkUser != null)
                     {
                         //Debug.LogError("Network user == null");
-                        string tempString = counter[Playername.IndexOf(self)] + "," + calculatesEnemyCountToTrigger;
-                        ArtifactOfDoomUI.UpdateProgressBar.Invoke(tempString, result =>
-                        {
-                        }, tempNetworkUser);
+                        // string tempString = counter[Playername.IndexOf(self)] + "," + calculatesEnemyCountToTrigger;
+                        // ArtifactOfDoomUI.UpdateProgressBar.Invoke(tempString, result =>
+                        // {
+                        // }, tempNetworkUser);
                     }
                 }
                 catch (Exception)
@@ -233,9 +241,9 @@ namespace ArtifactOfDoom
                     NetworkUser tempNetworkUser = getNetworkUserOfDamageReport(damageReport, true);
                     string temp = counter[Playername.IndexOf(currentBody)] + "," + calculatesEnemyCountToTrigger;
                     //Debug.LogWarning("currentBody für rpc: " + currentBody.name);
-                    ArtifactOfDoomUI.UpdateProgressBar.Invoke(temp, result =>
-                           {
-                           }, tempNetworkUser);
+                    // ArtifactOfDoomUI.UpdateProgressBar.Invoke(temp, result =>
+                    //        {
+                    //        }, tempNetworkUser);
 
                 }
                 else
@@ -352,14 +360,14 @@ namespace ArtifactOfDoom
                     {
                         LockItemGainNetworkUser[tempNetworkUser] = true;
 
-                        ArtifactOfDoomUI.AddGainedItemsToPlayers.Invoke(temp, result =>
-                            {
-                                LockItemGainNetworkUser[tempNetworkUser] = false;
-                            }, tempNetworkUser);
-                        string tempString = counter[Playername.IndexOf(currentBody)] + "," + calculatesEnemyCountToTrigger;
-                        ArtifactOfDoomUI.UpdateProgressBar.Invoke(tempString, result =>
-                               {
-                               }, tempNetworkUser);
+                        // ArtifactOfDoomUI.AddGainedItemsToPlayers.Invoke(temp, result =>
+                        //     {
+                        //         LockItemGainNetworkUser[tempNetworkUser] = false;
+                        //     }, tempNetworkUser);
+                        // string tempString = counter[Playername.IndexOf(currentBody)] + "," + calculatesEnemyCountToTrigger;
+                        // ArtifactOfDoomUI.UpdateProgressBar.Invoke(tempString, result =>
+                        //        {
+                        //        }, tempNetworkUser);
                     }
 
                     counter[Playername.IndexOf(currentBody)] = 0;
@@ -445,7 +453,8 @@ namespace ArtifactOfDoom
                     //Debug.LogError("ChanceToTriggerLoose_Item"+ chanceToTrigger);
 
                     var rand = new System.Random();
-                    for (int i = 0; i < self.body.inventory.GetItemCount(ItemIndex.Clover) + 1; i++)
+
+                    for (int i = 0; i < self.body.inventory.GetItemCount(RoR2.RoR2Content.Items.Clover) + 1; i++)
                     {
                         int randomValue = rand.Next(1, 100);
 
@@ -497,7 +506,7 @@ namespace ArtifactOfDoom
                         }
                         lstItemIndex[itemToRemove]--;
 
-                        if (!ItemCatalog.lunarItemList.Contains(itemToRemove) && (ItemCatalog.GetItemDef(itemToRemove).tier != ItemTier.NoTier && itemToRemove != ItemIndex.CaptainDefenseMatrix))
+                        if (!ItemCatalog.lunarItemList.Contains(itemToRemove) && (ItemCatalog.GetItemDef(itemToRemove).tier != ItemTier.NoTier && itemToRemove != RoR2.RoR2Content.Items.CaptainDefenseMatrix.itemIndex))
                         {
 
                             self.body.inventory.RemoveItem(itemToRemove, 1);
@@ -547,15 +556,15 @@ namespace ArtifactOfDoom
                     if (LockNetworkUser[tempNetworkUser] == false)
                     {
                         LockNetworkUser[tempNetworkUser] = true;
-                        ArtifactOfDoomUI.AddLostItemsOfPlayers.Invoke(temp, result =>
-                        {
-                            LockNetworkUser[tempNetworkUser] = false;
-                        }, tempNetworkUser);
-                        int calculatesEnemyCountToTrigger = calculateEnemyCountToTrigger(self.body.inventory);
-                        string tempString = counter[Playername.IndexOf(self.body)] + "," + calculatesEnemyCountToTrigger;
-                        ArtifactOfDoomUI.UpdateProgressBar.Invoke(tempString, result =>
-                               {
-                               }, tempNetworkUser);
+                        // ArtifactOfDoomUI.AddLostItemsOfPlayers.Invoke(temp, result =>
+                        // {
+                        //     LockNetworkUser[tempNetworkUser] = false;
+                        // }, tempNetworkUser);
+                        // int calculatesEnemyCountToTrigger = calculateEnemyCountToTrigger(self.body.inventory);
+                        // string tempString = counter[Playername.IndexOf(self.body)] + "," + calculatesEnemyCountToTrigger;
+                        // ArtifactOfDoomUI.UpdateProgressBar.Invoke(tempString, result =>
+                        //        {
+                        //        }, tempNetworkUser);
                     }
                 }
             };
@@ -735,9 +744,10 @@ namespace ArtifactOfDoom
             }
         public ItemIndex GiveAndReturnRandomItem(Inventory inventory)
         {
-            var tier1 = ItemDropAPI.GetDefaultDropList(ItemTier.Tier1);
-            var tier2 = ItemDropAPI.GetDefaultDropList(ItemTier.Tier2);
-            var tier3 = ItemDropAPI.GetDefaultDropList(ItemTier.Tier3);
+            
+            var tier1 = ItemCatalog.tier1ItemList;
+            var tier2 = ItemCatalog.tier2ItemList;
+            var tier3 = ItemCatalog.tier3ItemList;
 
             WeightedSelection<List<ItemIndex>> weightedSelection = new WeightedSelection<List<ItemIndex>>();
             weightedSelection.AddChoice(tier1, 80f);

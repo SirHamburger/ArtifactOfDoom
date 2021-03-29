@@ -76,6 +76,9 @@ https://github.com/SirHamburger/ArtifactOfDoom
 You can also reach me in Discord (Sir Hamburger#8447)
 
 ## Patchnotes
+### Version 1.2.1
+Removed Tiler2 dependency
+
 ### Version 1.2.0
 * Language independency
 * Support for custom characters

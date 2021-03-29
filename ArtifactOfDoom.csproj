@@ -19,27 +19,27 @@
       <Private>false</Private>
     </Reference>
     <Reference Include="BepInEx">
-      <HintPath>/media/ssdgamedisk/SteamLibrary/steamapps/common/Risk of Rain 2/r2modman/BepInEx/core/BepInEx.dll</HintPath>
-      <Private>false</Private>
-    </Reference>
-    <Reference Include="MMHOOK_Assembly-CSharp">
-      <HintPath>/home/sirhamburger/.config/r2modmanPlus-local/RiskOfRain2/profiles/ArtifactOfDoomDepencenys/BepInEx/plugins/tristanmcpherson-R2API/R2API/MMHOOK_Assembly-CSharp.dll</HintPath>
-      <Private>false</Private>
-    </Reference>
-    <Reference Include="Mono.Cecil">
-      <HintPath>/media/ssdgamedisk/SteamLibrary/steamapps/common/Risk of Rain 2/r2modman/BepInEx/core/Mono.Cecil.dll</HintPath>
-      <Private>false</Private>
-    </Reference>
-    <Reference Include="MonoMod.Utils">
-      <HintPath>/media/ssdgamedisk/SteamLibrary/steamapps/common/Risk of Rain 2/r2modman/BepInEx/core/MonoMod.Utils.dll</HintPath>
+      <HintPath>/home/sirhamburger/.config/r2modmanPlus-local/RiskOfRain2/profiles/ArtifactOfDoomDepencenys/BepInEx/core/BepInEx.dll</HintPath>
       <Private>false</Private>
     </Reference>
     <Reference Include="R2API">
-      <HintPath>/home/sirhamburger/.config/r2modmanPlus-local/RiskOfRain2/profiles/ArtifactOfDoomDepencenys/BepInEx/plugins/tristanmcpherson-R2API/R2API/R2API.dll</HintPath>
+      <HintPath>/home/sirhamburger/.config/r2modmanPlus-local/RiskOfRain2/profiles/ArtifactOfDoomTest/BepInEx/plugins/tristanmcpherson-R2API/R2API/R2API.dll</HintPath>
       <Private>false</Private>
     </Reference>
-    <Reference Include="TILER2">
-      <HintPath>/home/sirhamburger/.config/r2modmanPlus-local/RiskOfRain2/profiles/ArtifactOfDoomDepencenys/BepInEx/plugins/ThinkInvis-TILER2/TILER2.dll</HintPath>
+    <Reference Include="MMHOOK_Assembly-CSharp">
+      <HintPath>/home/sirhamburger/.config/r2modmanPlus-local/RiskOfRain2/profiles/ArtifactOfDoomDepencenys/BepInEx/plugins/EnigmaDev-EnigmaticThunder/EnigmaticThunder/MMHOOK_Assembly-CSharp.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="Mono.Cecil">
+      <HintPath>/home/sirhamburger/.config/r2modmanPlus-local/RiskOfRain2/profiles/ArtifactOfDoomDepencenys/BepInEx/core/Mono.Cecil.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="MonoMod.Utils">
+      <HintPath>/home/sirhamburger/.config/r2modmanPlus-local/RiskOfRain2/profiles/ArtifactOfDoomDepencenys/BepInEx/core/MonoMod.Utils.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="EnigmaticThunder">
+      <HintPath>/home/sirhamburger/.config/r2modmanPlus-local/RiskOfRain2/profiles/ArtifactOfDoomDepencenys/BepInEx/plugins/EnigmaDev-EnigmaticThunder/EnigmaticThunder/EnigmaticThunder.dll</HintPath>
       <Private>false</Private>
     </Reference>
     <Reference Include="Unity.Postprocessing.Runtime">
