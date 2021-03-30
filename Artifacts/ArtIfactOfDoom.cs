@@ -57,12 +57,14 @@ namespace ArtifactOfDoom
                 //TODO: Wie tut der Provider in 
                 //var provider = new AssetBundleResourcesProvider("@ArtifactOfDoom", bundle);
                 //ResourcesAPI.AddProvider(provider);
+                Transmutation.smallIconSelectedSprite = bundle.LoadAsset<Sprite>("Assets/Import/artifactofdoom_icon/ArtifactDoomEnabled.png");
+                Transmutation.smallIconDeselectedSprite = bundle.LoadAsset<Sprite>("Assets/Import/artifactofdoom_icon/ArtifactDoomDisabled.png");
                 
                 
             }   
-                Transmutation.smallIconDeselectedSprite = EnigmaticThunder.Modules.Loadouts.CreateSkinIcon(Color.red, Color.black, Color.black, Color.black);
-                //Resources.Load<Sprite>("@ArtifactOfDoom:Assets/Import/artifactofdoom_icon/ArtifactDoomDisabled.png");
-                 Transmutation.smallIconSelectedSprite = EnigmaticThunder.Modules.Loadouts.CreateSkinIcon(Color.green, Color.black, Color.black, Color.black);
+            //    Transmutation.smallIconDeselectedSprite = EnigmaticThunder.Modules.Loadouts.CreateSkinIcon(Color.red, Color.black, Color.black, Color.black);
+            //    //Resources.Load<Sprite>("@ArtifactOfDoom:Assets/Import/artifactofdoom_icon/ArtifactDoomDisabled.png");
+            //     Transmutation.smallIconSelectedSprite = EnigmaticThunder.Modules.Loadouts.CreateSkinIcon(Color.green, Color.black, Color.black, Color.black);
                  //Resources.Load<Sprite>("@ArtifactOfDoom:Assets/Import/artifactofdoom_icon/ArtifactDoomEnabled.png");
             
             //TODO: Check if not needed
@@ -375,6 +377,8 @@ namespace ArtifactOfDoom
             };
             On.RoR2.HealthComponent.TakeDamage += (orig, self, damageinfo) =>
             {
+
+
                 //For adding possibility to dont loose items for some time: characterBody.AddTimedBuff(BuffIndex.Immune, duration);
                 orig(self, damageinfo);
 

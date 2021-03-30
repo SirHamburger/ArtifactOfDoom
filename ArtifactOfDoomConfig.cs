@@ -123,7 +123,8 @@ namespace ArtifactOfDoom
                 "The time in seconds where you will not lose items after you lost one on rainstorm"));
             timeAfterHitToNotLoseItemMonsoon = cfgFile.Bind(new ConfigDefinition("Gameplay Settings", "timeAfterHitToNotLooseItemMonsoon"), 0.05, new ConfigDescription(
                 "The time in seconds where you will not lose items after you lost one on monsoon"));
-
+            
+            // TODO: Add Config for Bandit
             CommandoBonusItems = cfgFile.Bind(new ConfigDefinition("Character specific settings", "CommandoBonusItems"), 1.0, new ConfigDescription(
                 "The count of items which you get if you kill enough enemies"));
             CommandoMultiplierForTimedBuff = cfgFile.Bind(new ConfigDefinition("Character specific settings", "commandoMultiplyerForTimedBuff"), 1.0, new ConfigDescription(
@@ -189,7 +190,7 @@ namespace ArtifactOfDoom
             //    else
             //        Logger.LogMessage("Other ADOOM" + x.itemCodeName.PadRight(longestName) + " / N/A");
             //}
-            var buff = new BuffDef();
+            BuffDef buff = ScriptableObject.CreateInstance<BuffDef>();
             buff.buffColor = Color.black;
             buff.name= "didLoseItem";
             buff.isDebuff = false;
