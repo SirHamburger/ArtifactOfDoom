@@ -22,10 +22,6 @@
       <HintPath>/home/sirhamburger/.config/r2modmanPlus-local/RiskOfRain2/profiles/ArtifactOfDoomDepencenys/BepInEx/core/BepInEx.dll</HintPath>
       <Private>false</Private>
     </Reference>
-    <Reference Include="R2API">
-      <HintPath>/home/sirhamburger/.config/r2modmanPlus-local/RiskOfRain2/profiles/ArtifactOfDoomTest/BepInEx/plugins/tristanmcpherson-R2API/R2API/R2API.dll</HintPath>
-      <Private>false</Private>
-    </Reference>
     <Reference Include="MMHOOK_Assembly-CSharp">
       <HintPath>/home/sirhamburger/.config/r2modmanPlus-local/RiskOfRain2/profiles/ArtifactOfDoomDepencenys/BepInEx/plugins/EnigmaDev-EnigmaticThunder/EnigmaticThunder/MMHOOK_Assembly-CSharp.dll</HintPath>
       <Private>false</Private>
@@ -83,10 +79,6 @@
         <Reference Include="UnityEngine.UIModule">
       <HintPath>/media/ssdgamedisk/SteamLibrary/steamapps/common/Risk of Rain 2/Risk of Rain 2_Data/Managed/UnityEngine.UIModule.dll</HintPath>
     </Reference>
-        <Reference Include="MiniRpcLib">
-      <HintPath>/home/sirhamburger/.config/r2modmanPlus-local/RiskOfRain2/profiles/ArtifactOfDoomDepencenys/BepInEx/plugins/wildbook-MiniRpcLib/MiniRpcLib.dll</HintPath>
-    </Reference>
-
   </ItemGroup>
 
 
