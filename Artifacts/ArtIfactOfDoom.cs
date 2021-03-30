@@ -15,8 +15,7 @@ using ArtifactOfDoomTinyJson;
 
 namespace ArtifactOfDoom
 {
-    [BepInPlugin("com.SirHamburger.MainArtifactOfDoom", "MainArtifactOfDoom", "1.2.2")]
-    public class ArtifactOfDoom : BaseUnityPlugin
+    public class ArtifactOfDoom
     {
     
 
@@ -43,10 +42,10 @@ namespace ArtifactOfDoom
         public static Dictionary<uint, Queue<ItemDef>> QueueLostItemSprite = new Dictionary<uint, Queue<ItemDef>>();
         public static Dictionary<uint, Queue<ItemDef>> QueueGainedItemSprite = new Dictionary<uint, Queue<ItemDef>>();
 
-        private static double timeForBuff = 0.0;
+        private static double timeForBuff = -1.0;
 
 
-        public void Awake()
+        public ArtifactOfDoom()
         {
             Transmutation.nameToken = "Artifact of Doom";
             Transmutation.descriptionToken = "You get items on enemy kills but lose items every time you take damage.";
@@ -54,34 +53,15 @@ namespace ArtifactOfDoom
             using (var stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("ArtifactOfDoom.artifactofdoom"))
             {
                 var bundle = AssetBundle.LoadFromStream(stream);
-                //TODO: Wie tut der Provider in 
-                //var provider = new AssetBundleResourcesProvider("@ArtifactOfDoom", bundle);
-                //ResourcesAPI.AddProvider(provider);
                 Transmutation.smallIconSelectedSprite = bundle.LoadAsset<Sprite>("Assets/Import/artifactofdoom_icon/ArtifactDoomEnabled.png");
                 Transmutation.smallIconDeselectedSprite = bundle.LoadAsset<Sprite>("Assets/Import/artifactofdoom_icon/ArtifactDoomDisabled.png");
                 
                 
             }   
-            //    Transmutation.smallIconDeselectedSprite = EnigmaticThunder.Modules.Loadouts.CreateSkinIcon(Color.red, Color.black, Color.black, Color.black);
-            //    //Resources.Load<Sprite>("@ArtifactOfDoom:Assets/Import/artifactofdoom_icon/ArtifactDoomDisabled.png");
-            //     Transmutation.smallIconSelectedSprite = EnigmaticThunder.Modules.Loadouts.CreateSkinIcon(Color.green, Color.black, Color.black, Color.black);
-                 //Resources.Load<Sprite>("@ArtifactOfDoom:Assets/Import/artifactofdoom_icon/ArtifactDoomEnabled.png");
-            
-            //TODO: Check if not needed
-            //ArtifactCatalog.getAdditionalEntries += (list) =>
-            //{
-            //list.Add(Transmutation);
-            //};
             EnigmaticThunder.Modules.Artifacts.RegisterArtifact(Transmutation);
 
             LoadBehavior();
             
-        }
-        
-
-        public ArtifactOfDoom()
-        {
-           
         }
         
         protected void LoadBehavior()
@@ -116,6 +96,7 @@ namespace ArtifactOfDoom
             {
                 orig(self);
                 //Debug.LogError("PreGAmeController");
+                //ArtifactOfDoomUI.ArtifactIsActive = RunArtifactManager.instance.IsArtifactEnabled(Transmutation);
                 //artifactIsActive = this.IsActiveAndEnabled();
             };
 
@@ -132,6 +113,21 @@ namespace ArtifactOfDoom
                         timeForBuff = ArtifactOfDoomConfig.timeAfterHitToNotLoseItemRainstorm.Value;
                     if (Run.instance.selectedDifficulty == DifficultyIndex.Hard)
                         timeForBuff = ArtifactOfDoomConfig.timeAfterHitToNotLoseItemMonsoon.Value;
+                    if(timeForBuff ==-1.0)
+                    {
+                        List<Difficulty> characters=ArtifactOfDoomConfig.timeAfterHitToNotLoseItemOtherDifficulty.Value.FromJson<List<Difficulty>>();
+                    foreach(var element in characters)
+                    {
+                        
+                        if(Run.instance.selectedDifficulty == (DifficultyIndex)element.DifficultyIndex)
+                        timeForBuff = element.time;
+                    }
+                    if(timeForBuff==-1.0)
+                    {
+                        Debug.LogWarning("Didn't find valid Configuration for Selected Difficulty. Falling back to 0.1 seconds for Buff. If you want a own definition fill out timeAfterHitToNotLoseItemOtherDifficulty in the Config. DifficultyIndex=" + Run.instance.selectedDifficulty);
+                        timeForBuff=0.1;
+                    }
+                    }
                     QueueLostItemSprite = new Dictionary<uint, Queue<ItemDef>>();
                     QueueGainedItemSprite = new Dictionary<uint, Queue<ItemDef>>();
                     Playername = new List<CharacterBody>();
@@ -143,14 +139,9 @@ namespace ArtifactOfDoom
             {
                 orig(self);
                 //Debug.LogError("-------------------here----------------------------------");
-                // ArtifactOfDoomUI.IsArtifactActive.Invoke(RunArtifactManager.instance.IsArtifactEnabled(Transmutation.artifactIndex), result =>
-                //     {
-                //         //Debug.LogError("Got Message Of IsArtifactActive");
-                //     }, null);
-                // ArtifactOfDoomUI.IsCalculationSacrifice.Invoke(ArtifactOfDoomConfig.useArtifactOfSacrificeCalculation.Value, result =>
-                // {
-                //     //Debug.LogError("Got Message Of IsArtifactActive");
-                // }, null);
+                NetworkClass.SpawnNetworkObject();
+                 Networking.InvokeIsArtifactActive(RunArtifactManager.instance.IsArtifactEnabled(Transmutation.artifactIndex));
+                 Networking.InvokeIsCalculationSacrifice(ArtifactOfDoomConfig.useArtifactOfSacrificeCalculation.Value);
             };
             On.RoR2.CharacterBody.OnInventoryChanged += (orig, self) =>
             {
@@ -171,10 +162,8 @@ namespace ArtifactOfDoom
                     if (tempNetworkUser != null)
                     {
                         //Debug.LogError("Network user == null");
-                        // string tempString = counter[Playername.IndexOf(self)] + "," + calculatesEnemyCountToTrigger;
-                        // ArtifactOfDoomUI.UpdateProgressBar.Invoke(tempString, result =>
-                        // {
-                        // }, tempNetworkUser);
+                         string tempString = counter[Playername.IndexOf(self)] + "," + calculatesEnemyCountToTrigger;
+                         Networking.InvokeUpdateProgressBar(tempNetworkUser,tempString);
                     }
                 }
                 catch (Exception)
@@ -243,9 +232,7 @@ namespace ArtifactOfDoom
                     NetworkUser tempNetworkUser = getNetworkUserOfDamageReport(damageReport, true);
                     string temp = counter[Playername.IndexOf(currentBody)] + "," + calculatesEnemyCountToTrigger;
                     //Debug.LogWarning("currentBody für rpc: " + currentBody.name);
-                    // ArtifactOfDoomUI.UpdateProgressBar.Invoke(temp, result =>
-                    //        {
-                    //        }, tempNetworkUser);
+                     Networking.InvokeUpdateProgressBar(tempNetworkUser,temp);
 
                 }
                 else
@@ -267,11 +254,6 @@ namespace ArtifactOfDoom
                             if (ArtifactOfDoomConfig.enableChatItemOutput.Value)
                             {
 
-                                //Chat.SendBroadcastChat(new Chat.SimpleChatMessage
-                                //{
-                                //    
-                                //    baseToken = damageReport.attackerOwnerMaster.GetBody().GetColoredUserName() + " got " + Language.GetString(ItemCatalog.GetItemDef(addedItem).pickupToken)
-                                //});
                                 var pickupDef = ItemCatalog.GetItemDef(addedItem);
                                 var pickupName = Language.GetString(pickupDef.nameToken);
                                 var playerColor = damageReport.attackerOwnerMaster.GetBody().GetColoredUserName();
@@ -282,7 +264,6 @@ namespace ArtifactOfDoom
                                     damageReport.attackerOwnerMaster.GetBody().GetColoredUserName() + $"<color=#{GrayColor}> gained</color> " +
                                     $"{pickupName ?? "???"} ({itemCount})</color> <color=#{GrayColor}></color>"
 
-                                    //baseToken = self.body.GetColoredUserName() + " lost " + Language.GetString(ItemCatalog.GetItemDef(itemToRemove).pickupToken)
                                 });
                             }
                             PlayerStatsComponent.FindBodyStatSheet(body).PushStatValue(statsGainItems, 1UL);
@@ -318,7 +299,6 @@ namespace ArtifactOfDoom
                                     body.GetColoredUserName() + $"<color=#{GrayColor}> gained</color> " +
                                     $"{pickupName ?? "???"} ({itemCount})</color> <color=#{GrayColor}></color>"
 
-                                    //baseToken = self.body.GetColoredUserName() + " lost " + Language.GetString(ItemCatalog.GetItemDef(itemToRemove).pickupToken)
                                 });
                             }
                             PlayerStatsComponent.FindBodyStatSheet(body).PushStatValue(statsGainItems, 1UL);
@@ -343,8 +323,6 @@ namespace ArtifactOfDoom
 
                     if (QueueGainedItemSprite[pos].Count > 10)
                         QueueGainedItemSprite[pos].Dequeue();
-
-
                     string temp = "";
                     foreach (var element in QueueGainedItemSprite[pos])
                     {
@@ -361,15 +339,13 @@ namespace ArtifactOfDoom
                     if (!LockItemGainNetworkUser[tempNetworkUser])
                     {
                         LockItemGainNetworkUser[tempNetworkUser] = true;
+                        Networking.InvokeAddGainedItemsToPlayers(tempNetworkUser,temp);
+                        LockItemGainNetworkUser[tempNetworkUser] = false;
 
-                        // ArtifactOfDoomUI.AddGainedItemsToPlayers.Invoke(temp, result =>
-                        //     {
-                        //         LockItemGainNetworkUser[tempNetworkUser] = false;
-                        //     }, tempNetworkUser);
-                        // string tempString = counter[Playername.IndexOf(currentBody)] + "," + calculatesEnemyCountToTrigger;
-                        // ArtifactOfDoomUI.UpdateProgressBar.Invoke(tempString, result =>
-                        //        {
-                        //        }, tempNetworkUser);
+                         Networking.InvokeAddGainedItemsToPlayers(tempNetworkUser,temp);
+                             LockItemGainNetworkUser[tempNetworkUser] = false;
+                         string tempString = counter[Playername.IndexOf(currentBody)] + "," + calculatesEnemyCountToTrigger;
+                         Networking.InvokeUpdateProgressBar(tempNetworkUser,tempString);
                     }
 
                     counter[Playername.IndexOf(currentBody)] = 0;
@@ -377,8 +353,6 @@ namespace ArtifactOfDoom
             };
             On.RoR2.HealthComponent.TakeDamage += (orig, self, damageinfo) =>
             {
-
-
                 //For adding possibility to dont loose items for some time: characterBody.AddTimedBuff(BuffIndex.Immune, duration);
                 orig(self, damageinfo);
 
@@ -467,6 +441,7 @@ namespace ArtifactOfDoom
                             return;
                         }
                     }
+
                     chanceToTrigger = 100.0;
 
                     if (totalItems > (ArtifactOfDoomConfig.maxItemsPerStage.Value * currentStage))
@@ -560,15 +535,11 @@ namespace ArtifactOfDoom
                     if (LockNetworkUser[tempNetworkUser] == false)
                     {
                         LockNetworkUser[tempNetworkUser] = true;
-                        // ArtifactOfDoomUI.AddLostItemsOfPlayers.Invoke(temp, result =>
-                        // {
-                        //     LockNetworkUser[tempNetworkUser] = false;
-                        // }, tempNetworkUser);
-                        // int calculatesEnemyCountToTrigger = calculateEnemyCountToTrigger(self.body.inventory);
-                        // string tempString = counter[Playername.IndexOf(self.body)] + "," + calculatesEnemyCountToTrigger;
-                        // ArtifactOfDoomUI.UpdateProgressBar.Invoke(tempString, result =>
-                        //        {
-                        //        }, tempNetworkUser);
+                         Networking.InvokeAddLostItemsOfPlayers(tempNetworkUser,temp);
+                         LockNetworkUser[tempNetworkUser] = false;
+                         int calculatesEnemyCountToTrigger = calculateEnemyCountToTrigger(self.body.inventory);
+                         string tempString = counter[Playername.IndexOf(self.body)] + "," + calculatesEnemyCountToTrigger;
+                         Networking.InvokeUpdateProgressBar(tempNetworkUser,tempString);
                     }
                 }
             };
@@ -673,8 +644,11 @@ namespace ArtifactOfDoom
                     if (debug) { Debug.LogWarning($"Character baseNameToken = {baseNameToken} returning: Acrid"); }
                     return ArtifactOfDoomConfig.AcridBonusItems.Value;
                 case "CAPTAIN_BODY_NAME":
-                    if (debug) { Debug.LogWarning($"Character baseNameToken = {baseNameToken} returning: Acrid"); }
+                    if (debug) { Debug.LogWarning($"Character baseNameToken = {baseNameToken} returning: Captain"); }
                     return ArtifactOfDoomConfig.CaptainBonusItems.Value;
+                case "BANDIT2_BODY_NAME":
+                    if (debug) { Debug.LogWarning($"Character baseNameToken = {baseNameToken} returning: Bandit"); }
+                    return ArtifactOfDoomConfig.BanditBonusItems.Value;
                 default:
                     string CustomChars = ArtifactOfDoomConfig.CustomChars.Value;
 
@@ -723,8 +697,11 @@ namespace ArtifactOfDoom
                     if (debug) { Debug.LogWarning($"Character baseNameToken = {baseNameToken} returning: Acrid"); }
                     return ArtifactOfDoomConfig.AcridMultiplierForTimedBuff.Value;
                 case "CAPTAIN_BODY_NAME":
-                    if (debug) { Debug.LogWarning($"Character baseNameToken = {baseNameToken} returning: Acrid"); }
+                    if (debug) { Debug.LogWarning($"Character baseNameToken = {baseNameToken} returning: Captain"); }
                     return ArtifactOfDoomConfig.CaptainMultiplierForTimedBuff.Value;
+                case "BANDIT2_BODY_NAME":
+                    if (debug) { Debug.LogWarning($"Character baseNameToken = {baseNameToken} returning: Bandit"); }
+                    return ArtifactOfDoomConfig.BanditMultiplierForTimedBuff.Value;
                 default:
                     string CustomChars = ArtifactOfDoomConfig.CustomChars.Value;
 
@@ -745,6 +722,11 @@ namespace ArtifactOfDoom
                 public string Name { get; set; }
                 public float MultiplierForTimedBuff { get; set; }
                 public float BonusItems { get; set; }
+            }
+        public class Difficulty
+            {
+                public int DifficultyIndex  { get; set; }
+                public float time { get; set; }
             }
         public ItemIndex GiveAndReturnRandomItem(Inventory inventory)
         {

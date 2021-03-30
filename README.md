@@ -76,6 +76,17 @@ https://github.com/SirHamburger/ArtifactOfDoom
 You can also reach me in Discord (Sir Hamburger#8447)
 
 ## Patchnotes
+### Version 2.0.0
+* Rewrite of Networking
+* No longer many Bepinex Modules
+* Support of other difficultys
+
+### Version 1.2.3
+Added icons
+
+### Version 1.2.2
+Added temporary fix for Anniversary Update
+
 ### Version 1.2.1
 Removed Tiler2 dependency
 

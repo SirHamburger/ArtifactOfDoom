@@ -3,73 +3,80 @@ using UnityEngine;
 using BepInEx;
 using EnigmaticThunder;
 using RoR2;
+using ArtifactOfDoom;
+using UnityEngine.UI;
+using System;
+using System.Collections.Generic;
 
 
-[BepInPlugin("com.networktest","ifISeethisInTechSupportIwillBerateYou","0.0.1")]
 //Commandhelper is only needed for this example.
 //PrefabAPI is needed for the InstantiateClone Method contained within.
-class MyPluginClass : BaseUnityPlugin
+public class NetworkClass
 {
     //Static references so we do not need to do tricky things with passing references.
     internal static GameObject CentralNetworkObject;
     private static GameObject _centralNetworkObjectSpawned;
 
-    public void Awake()
+    public NetworkClass()
     {
         //We create an empty gameobject to hold all our networked components. The name of this GameObject is largely irrelevant.
         var tmpGo = new GameObject("tmpGo");
         //Add the networkidentity so that Unity knows which Object it's going to be networking all about.
         tmpGo.AddComponent<NetworkIdentity>();
         //Thirdly, we use InstantiateClone from the PrefabAPI to make sure we have full control over our GameObject.
-        CentralNetworkObject= EnigmaticThunder.Modules.Prefabs.InstantiateClone(tmpGo,"Blob",true);
+        CentralNetworkObject = EnigmaticThunder.Modules.Prefabs.InstantiateClone(tmpGo, "Blob", true);
         // Delete the now useless temporary GameObject
         GameObject.Destroy(tmpGo);
         //Finally, we add a specific component that we want networked. In this example, we will only be adding one, but you can add as many components here as you like. Make sure these components inherit from NetworkBehaviour.
-        CentralNetworkObject.AddComponent<MyNetworkComponent>();
-
+        CentralNetworkObject.AddComponent<Networking>();
+        Debug.LogWarning("Networking in Awake");
         //In this specific example, we use a console command. You can look at https://github.com/risk-of-thunder/R2Wiki/wiki/Console-Commands for more information on that.
     }
-
-    // ExecuteOnServer as a concommand flag makes sure it's always exectuted on the... you guessed it, server.
-    private static void CCNetworkLog(ConCommandArgs args)
+    public static void SpawnNetworkObject()
     {
-        //Although here it's not relevant, you can ensure you are the server by checking if the NetworkServer is active.
-        if (NetworkServer.active)
+        if (!_centralNetworkObjectSpawned)
         {
-            //Before we can Invoke our NetworkMessage, we need to make sure our centralized networkobject is spawned.
-            // For doing that, we Instantiate the CentralNetworkObject, we obviously check if we don't already have one that is already instantiated and activated in the current scene.
-            // Note : Make sure you Instantiate the gameobject, and not spawn it directly, it would get deleted otherwise on scene change, even with DontDestroyOnLoad.
-            if (!_centralNetworkObjectSpawned)
-            {
-	            _centralNetworkObjectSpawned = 
-		            Object.Instantiate(CentralNetworkObject);
-	            NetworkServer.Spawn(_centralNetworkObjectSpawned);
-            }
-            //This readOnlyInstancesList is great for going over all players in general, 
-            // so it might be worth commiting to memory.
-            foreach (NetworkUser user in NetworkUser.readOnlyInstancesList)
-            {
-                //Args.userArgs is a list of all words in the command arguments.
-                MyNetworkComponent.Invoke(user,string.Join(" ", args.userArgs));
-                //MyNetworkComponent._instance.Invoke(user, string.Join(" ", args.userArgs));
-            }
+            _centralNetworkObjectSpawned =
+                UnityEngine.Object.Instantiate(CentralNetworkObject);
+            NetworkServer.Spawn(_centralNetworkObjectSpawned);
         }
     }
 }
 
 //Important to note that these NetworkBehaviour classes must not be nested for UNetWeaver to find them.
-internal class MyNetworkComponent : NetworkBehaviour
+internal class Networking : NetworkBehaviour
 {
-	// We only ever have one instance of the networked behaviour here.
-	private static MyNetworkComponent _instance;
-	
-	private void Awake()
-	{
-		_instance = this;
-	}
-    public static void Invoke(NetworkUser user, string msg)
+    // We only ever have one instance of the networked behaviour here.
+    private static Networking _instance;
+
+    private void Awake()
     {
-        _instance.TargetLog(user.connectionToClient, msg);
+        _instance = this;
+    }
+    [Server]
+    public static void InvokeAddGainedItemsToPlayers(NetworkUser user, string msg)
+    {
+        _instance.TargetAddGainedItemsToPlayers(user, msg);
+    }
+    [Server]
+    public static void InvokeAddLostItemsOfPlayers(NetworkUser user, string msg)
+    {
+        _instance.TargetAddLostItemsOfPlayers(user, msg);
+    }
+    [Server]
+    public static void InvokeUpdateProgressBar(NetworkUser user, string msg)
+    {
+        _instance.TargetUpdateProgressBar(user, msg);
+    }
+    [Server]
+    public static void InvokeIsArtifactActive(bool msg)
+    {
+        _instance.TargetIsArtifactActive(msg);
+    }
+    [Server]
+    public static void InvokeIsCalculationSacrifice(bool msg)
+    {
+        _instance.TargetIsCalculationSacrifice(msg);
     }
 
     // While we can't find the entirety of the Unity Script API in here, we can provide links to them.
@@ -78,6 +85,96 @@ internal class MyNetworkComponent : NetworkBehaviour
     //Note that the doc explictly says "These functions [-> Functions with the TargetRPC attribute] must begin with the prefix "Target" and cannot be static." 
     private void TargetLog(NetworkConnection target, string msg)
     {
-        Debug.Log(msg);
+
     }
+    [TargetRpc]
+    private void TargetAddGainedItemsToPlayers(NetworkUser user, string QueueGainedItemSpriteToString)
+    {
+
+        if (!ArtifactOfDoomConfig.disableSideBars.Value)
+        {
+            string[] QueueGainedItemSprite = QueueGainedItemSpriteToString.Split(' ');
+            int i = 0;
+            foreach (var element in QueueGainedItemSprite)
+            {
+                if (element != "")
+                {
+                    if (ArtifactOfDoomUI.listGainedImages[i].GetComponent<Image>() == null)
+                        ArtifactOfDoomUI.listGainedImages[i].AddComponent<Image>();
+                    ArtifactOfDoomUI.listGainedImages[i].GetComponent<Image>().sprite = ItemCatalog.GetItemDef(ItemCatalog.FindItemIndex(element)).pickupIconSprite;
+                    i++;
+                }
+            }
+        }
+    }
+    [TargetRpc]
+    private void TargetAddLostItemsOfPlayers(NetworkUser user, string QueueLostItemSpriteToString)
+    {
+        if (!ArtifactOfDoomConfig.disableSideBars.Value)
+        {
+            string[] QueueLostItemSprite = QueueLostItemSpriteToString.Split(' ');
+
+            int i = 0;
+            foreach (var element in QueueLostItemSprite)
+            {
+                if (element != "")
+                {
+
+                    if (ArtifactOfDoomUI.listLostImages[i].GetComponent<Image>() == null)
+                        ArtifactOfDoomUI.listLostImages[i].AddComponent<Image>();
+                    ArtifactOfDoomUI.listLostImages[i].GetComponent<Image>().sprite = ItemCatalog.GetItemDef(ItemCatalog.FindItemIndex(element)).pickupIconSprite;
+
+                    i++;
+                }
+
+            }
+        }
+
+    }
+    [TargetRpc]
+    private void TargetUpdateProgressBar(NetworkUser user, string killedNeededEnemies)
+    {
+
+        if (!ArtifactOfDoomConfig.disableItemProgressBar.Value && !ArtifactOfDoomUI.calculationSacrifice)
+        {
+            string[] stringkilledNeededEnemies = killedNeededEnemies.Split(',');
+            if (stringkilledNeededEnemies == null)
+                Debug.LogError("stringkilledneededEnemies=null");
+
+            int enemiesKilled = Convert.ToInt32(stringkilledNeededEnemies[0]);
+            int enemiesNeeded = Convert.ToInt32(stringkilledNeededEnemies[1]) + 2;
+
+
+            double progress = (double)enemiesKilled / ((double)enemiesNeeded);
+
+            if ((0.35f + (float)(progress * 0.3)) > 0.65f)
+            {
+
+                if (ArtifactOfDoomUI.itemGainBar.GetComponent<RectTransform>().anchorMax == null)
+                    Debug.LogError("itemGainBar.GetComponent<RectTransform>().anchorMax==null");
+
+                ArtifactOfDoomUI.itemGainBar.GetComponent<RectTransform>().anchorMax = new Vector2(0.65f, 0.06f);
+            }
+            else
+            {
+
+                ArtifactOfDoomUI.itemGainBar.GetComponent<RectTransform>().anchorMin = new Vector2(0.35f, 0.05f);
+
+                ArtifactOfDoomUI.itemGainBar.GetComponent<RectTransform>().anchorMax = new Vector2(0.35f + (float)(progress * 0.3), 0.06f);
+            }
+        }
+    }
+    [Client]
+    private void TargetIsArtifactActive(bool isActive)
+    {
+
+        ArtifactOfDoomUI.ArtifactIsActive = isActive;
+    }
+    [Client]
+    private void TargetIsCalculationSacrifice(bool isActive)
+    {
+        //Debug.LogError("Set CalculationSacrifice to " + isActive);
+        ArtifactOfDoomUI.calculationSacrifice = isActive;
+    }
+
 }

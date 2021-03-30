@@ -14,9 +14,10 @@ namespace ArtifactOfDoom
     //[BepInDependency(R2API.R2API.PluginGUID, R2API.R2API.PluginVersion)]
     //[R2APISubmoduleDependency(nameof(BuffAPI))]
     //[R2APISubmoduleDependency(nameof(ItemAPI), nameof(LanguageAPI), nameof(ResourcesAPI), nameof(PlayerAPI), nameof(PrefabAPI))]
+
     public class ArtifactOfDoomConfig : BaseUnityPlugin
     {
-        public const string ModVer = "1.2.2";
+        public const string ModVer = "2.0.0";
         public const string ModName = "ArtifactOfDoom";
         public const string ModGuid = "com.SirHamburger.ArtifactOfDoom";
 
@@ -44,6 +45,7 @@ namespace ArtifactOfDoom
         public static ConfigEntry<double> timeAfterHitToNotLoseItemMonsoon;
         public static ConfigEntry<double> timeAfterHitToNotLoseItemDrizzly;
         public static ConfigEntry<double> timeAfterHitToNotLoseItemRainstorm;
+        public static ConfigEntry<string> timeAfterHitToNotLoseItemOtherDifficulty;
         public static ConfigEntry<double> CommandoBonusItems;
         public static ConfigEntry<double> CommandoMultiplierForTimedBuff;
         public static ConfigEntry<double> HuntressBonusItems;
@@ -64,6 +66,8 @@ namespace ArtifactOfDoom
         public static ConfigEntry<double> AcridMultiplierForTimedBuff;
         public static ConfigEntry<double> CaptainBonusItems;
         public static ConfigEntry<double> CaptainMultiplierForTimedBuff;
+        public static ConfigEntry<double> BanditBonusItems;
+        public static ConfigEntry<double> BanditMultiplierForTimedBuff;
         public static ConfigEntry<double> CustomSurvivorBonusItems;
         public static ConfigEntry<double> CustomSurvivorMultiplierForTimedBuff;
         public static ConfigEntry<double> exponentTriggerItems;
@@ -80,6 +84,10 @@ namespace ArtifactOfDoom
 
 
             cfgFile = new ConfigFile(Path.Combine(Paths.ConfigPath, ModGuid + ".cfg"), true);
+
+            NetworkClass networkClass = new NetworkClass();
+            ArtifactOfDoomUI artifactOfDoomUI = new ArtifactOfDoomUI();
+            ArtifactOfDoom artifactOfDoom = new ArtifactOfDoom();
 
             //masterItemList = ItemBoilerplate.InitAll("ArtifactOfDoom");
             //foreach (ItemBoilerplate x in masterItemList)
@@ -123,6 +131,8 @@ namespace ArtifactOfDoom
                 "The time in seconds where you will not lose items after you lost one on rainstorm"));
             timeAfterHitToNotLoseItemMonsoon = cfgFile.Bind(new ConfigDefinition("Gameplay Settings", "timeAfterHitToNotLooseItemMonsoon"), 0.05, new ConfigDescription(
                 "The time in seconds where you will not lose items after you lost one on monsoon"));
+            timeAfterHitToNotLoseItemOtherDifficulty = cfgFile.Bind(new ConfigDefinition("Gameplay Settings", "timeAfterHitToNotLooseOtherDifficulty"), "[{\"DifficultyIndex\": \"DIFFICULTYINDEX\", \"time\": 1.0}]", new ConfigDescription(
+                "The time in seconds where you will not lose items after you lost one on monsoon"));
             
             // TODO: Add Config for Bandit
             CommandoBonusItems = cfgFile.Bind(new ConfigDefinition("Character specific settings", "CommandoBonusItems"), 1.0, new ConfigDescription(
@@ -163,7 +173,11 @@ namespace ArtifactOfDoom
                 "The Multiplier for that specific character for the length of timeAfterHitToNotLooseItems"));
             CaptainBonusItems = cfgFile.Bind(new ConfigDefinition("Character specific settings", "CaptainBonusItems"), 1.0, new ConfigDescription(
                 "The count of items which you get if you kill enough enemies"));
-            CaptainMultiplierForTimedBuff = cfgFile.Bind(new ConfigDefinition("Character specific settings", "CaptainMultiplierForTimedBuff"), 1.0, new ConfigDescription(
+            CaptainMultiplierForTimedBuff = cfgFile.Bind(new ConfigDefinition("Character specific settings", "BanditMultiplierForTimedBuff"), 1.0, new ConfigDescription(
+                "The Multiplier for that specific character for the length of timeAfterHitToNotLooseItems"));
+            BanditBonusItems = cfgFile.Bind(new ConfigDefinition("Character specific settings", "BanditBonusItems"), 1.0, new ConfigDescription(
+                "The count of items which you get if you kill enough enemies"));
+            BanditMultiplierForTimedBuff = cfgFile.Bind(new ConfigDefinition("Character specific settings", "BanditMultiplierForTimedBuff"), 1.0, new ConfigDescription(
                 "The Multiplier for that specific character for the length of timeAfterHitToNotLooseItems"));
             CustomSurvivorBonusItems = cfgFile.Bind(new ConfigDefinition("Character specific settings", "CustomSurvivorBonusItems"), 1.0, new ConfigDescription(
                 "The count of items which you get if you kill enough enemies"));
