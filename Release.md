@@ -26,7 +26,7 @@ With the artifact active, players have a chance to gain items after defeating mo
 There are three new UI-Elements added. There are two sidebars which show the last ten gained/lost items and a progress bar which fills till you get an item.
 ***In the Sidebars are only the items shown which you obtained/lost by the mod.*** The UI resets every stage.
 In the following image you can see these elements:
-![]( UI.png )
+![](https://raw.githubusercontent.com/SirHamburger/ArtifactOfDoom/master/UI.png)
 __If you don't like some or all of the added components you can disable them in the settings. Additionally you can turn on a chat output in exchange.__
 
 ## When do i get an item
@@ -76,6 +76,9 @@ https://github.com/SirHamburger/ArtifactOfDoom
 You can also reach me in Discord (Sir Hamburger#8447)
 
 ## Patchnotes
+### Version 2.0.1
+Readme was wrong
+
 ### Version 2.0.0
 * Rewrite of Networking
 * No longer many Bepinex Modules

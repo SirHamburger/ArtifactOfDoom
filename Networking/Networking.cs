@@ -29,7 +29,6 @@ public class NetworkClass
         GameObject.Destroy(tmpGo);
         //Finally, we add a specific component that we want networked. In this example, we will only be adding one, but you can add as many components here as you like. Make sure these components inherit from NetworkBehaviour.
         CentralNetworkObject.AddComponent<Networking>();
-        Debug.LogWarning("Networking in Awake");
         //In this specific example, we use a console command. You can look at https://github.com/risk-of-thunder/R2Wiki/wiki/Console-Commands for more information on that.
     }
     public static void SpawnNetworkObject()

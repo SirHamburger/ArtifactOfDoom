@@ -17,7 +17,7 @@ namespace ArtifactOfDoom
 
     public class ArtifactOfDoomConfig : BaseUnityPlugin
     {
-        public const string ModVer = "2.0.0";
+        public const string ModVer = "2.0.1";
         public const string ModName = "ArtifactOfDoom";
         public const string ModGuid = "com.SirHamburger.ArtifactOfDoom";
 

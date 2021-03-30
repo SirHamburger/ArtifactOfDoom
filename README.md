@@ -76,6 +76,9 @@ https://github.com/SirHamburger/ArtifactOfDoom
 You can also reach me in Discord (Sir Hamburger#8447)
 
 ## Patchnotes
+### Version 2.0.1
+Readme was wrong
+
 ### Version 2.0.0
 * Rewrite of Networking
 * No longer many Bepinex Modules
