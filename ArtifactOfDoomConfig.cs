@@ -17,7 +17,7 @@ namespace ArtifactOfDoom
 
     public class ArtifactOfDoomConfig : BaseUnityPlugin
     {
-        public const string ModVer = "2.0.1";
+        public const string ModVer = "2.0.2";
         public const string ModName = "ArtifactOfDoom";
         public const string ModGuid = "com.SirHamburger.ArtifactOfDoom";
 
@@ -134,7 +134,7 @@ namespace ArtifactOfDoom
             timeAfterHitToNotLoseItemOtherDifficulty = cfgFile.Bind(new ConfigDefinition("Gameplay Settings", "timeAfterHitToNotLooseOtherDifficulty"), "[{\"DifficultyIndex\": \"DIFFICULTYINDEX\", \"time\": 1.0}]", new ConfigDescription(
                 "The time in seconds where you will not lose items after you lost one on monsoon"));
             
-            // TODO: Add Config for Bandit
+            
             CommandoBonusItems = cfgFile.Bind(new ConfigDefinition("Character specific settings", "CommandoBonusItems"), 1.0, new ConfigDescription(
                 "The count of items which you get if you kill enough enemies"));
             CommandoMultiplierForTimedBuff = cfgFile.Bind(new ConfigDefinition("Character specific settings", "commandoMultiplyerForTimedBuff"), 1.0, new ConfigDescription(
@@ -189,7 +189,6 @@ namespace ArtifactOfDoom
 
 
 
-            int longestName = 0;
             //foreach (ItemBoilerplate x in masterItemList)
             //{
             //    x.SetupAttributes("ARTDOOM", "ADOOM");

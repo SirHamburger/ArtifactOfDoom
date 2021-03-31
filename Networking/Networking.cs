@@ -55,17 +55,17 @@ internal class Networking : NetworkBehaviour
     [Server]
     public static void InvokeAddGainedItemsToPlayers(NetworkUser user, string msg)
     {
-        _instance.TargetAddGainedItemsToPlayers(user, msg);
+        _instance.TargetAddGainedItemsToPlayers(user.connectionToClient, msg);
     }
     [Server]
     public static void InvokeAddLostItemsOfPlayers(NetworkUser user, string msg)
     {
-        _instance.TargetAddLostItemsOfPlayers(user, msg);
+        _instance.TargetAddLostItemsOfPlayers(user.connectionToClient, msg);
     }
     [Server]
     public static void InvokeUpdateProgressBar(NetworkUser user, string msg)
     {
-        _instance.TargetUpdateProgressBar(user, msg);
+        _instance.TargetUpdateProgressBar(user.connectionToClient, msg);
     }
     [Server]
     public static void InvokeIsArtifactActive(bool msg)
@@ -81,13 +81,7 @@ internal class Networking : NetworkBehaviour
     // While we can't find the entirety of the Unity Script API in here, we can provide links to them.
     // This attribute is explained here: https://docs.unity3d.com/2017.3/Documentation/ScriptReference/Networking.TargetRpcAttribute.html
     [TargetRpc]
-    //Note that the doc explictly says "These functions [-> Functions with the TargetRPC attribute] must begin with the prefix "Target" and cannot be static." 
-    private void TargetLog(NetworkConnection target, string msg)
-    {
-
-    }
-    [TargetRpc]
-    private void TargetAddGainedItemsToPlayers(NetworkUser user, string QueueGainedItemSpriteToString)
+    private void TargetAddGainedItemsToPlayers(NetworkConnection user, string QueueGainedItemSpriteToString)
     {
 
         if (!ArtifactOfDoomConfig.disableSideBars.Value)
@@ -107,7 +101,7 @@ internal class Networking : NetworkBehaviour
         }
     }
     [TargetRpc]
-    private void TargetAddLostItemsOfPlayers(NetworkUser user, string QueueLostItemSpriteToString)
+    private void TargetAddLostItemsOfPlayers(NetworkConnection user, string QueueLostItemSpriteToString)
     {
         if (!ArtifactOfDoomConfig.disableSideBars.Value)
         {
@@ -131,7 +125,7 @@ internal class Networking : NetworkBehaviour
 
     }
     [TargetRpc]
-    private void TargetUpdateProgressBar(NetworkUser user, string killedNeededEnemies)
+    private void TargetUpdateProgressBar(NetworkConnection user, string killedNeededEnemies)
     {
 
         if (!ArtifactOfDoomConfig.disableItemProgressBar.Value && !ArtifactOfDoomUI.calculationSacrifice)

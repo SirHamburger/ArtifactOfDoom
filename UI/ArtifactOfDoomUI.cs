@@ -4,7 +4,6 @@ using RoR2.UI;
 using System;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.Networking;
 using UnityEngine.UI;
 
 
@@ -117,7 +116,6 @@ namespace ArtifactOfDoom
                         ModExpBarGroup.GetComponent<RectTransform>().anchorMax = new Vector2(baseSize, (float)(0.2+ baseSizeY + ((float)i * baseSizeYPlusMargin)));
                         ModExpBarGroup.GetComponent<RectTransform>().sizeDelta = Vector2.zero;
                         ModExpBarGroup.GetComponent<RectTransform>().anchoredPosition = Vector2.zero;
-                        ModExpBarGroup.AddComponent<NetworkIdentity>().serverOnly = false;
                         listGainedImages.Add(ModExpBarGroup);
 
 
@@ -130,7 +128,6 @@ namespace ArtifactOfDoom
                         ModExpBarGroup.GetComponent<RectTransform>().anchorMax = new Vector2(1.00f, (float)(0.2+baseSizeY + ((float)i * baseSizeYPlusMargin)));
                         ModExpBarGroup.GetComponent<RectTransform>().sizeDelta = Vector2.zero;
                         ModExpBarGroup.GetComponent<RectTransform>().anchoredPosition = Vector2.zero;
-                        ModExpBarGroup.AddComponent<NetworkIdentity>().serverOnly = false;
 
                         listLostImages.Add(ModExpBarGroup);
                     }
@@ -144,7 +141,6 @@ namespace ArtifactOfDoom
                         ModExpBarGroup.GetComponent<RectTransform>().anchorMax = new Vector2(0.35f, 0.06f);
                         ModExpBarGroup.GetComponent<RectTransform>().sizeDelta = Vector2.zero;
                         ModExpBarGroup.GetComponent<RectTransform>().anchoredPosition = Vector2.zero;
-                        ModExpBarGroup.AddComponent<NetworkIdentity>().serverOnly = false;
 
                         itemGainBar = ModExpBarGroup;
                         itemGainBar.AddComponent<Image>();
@@ -159,7 +155,6 @@ namespace ArtifactOfDoom
                         ModExpBarGroup.GetComponent<RectTransform>().anchorMax = new Vector2(0.65f, 0.06f);
                         ModExpBarGroup.GetComponent<RectTransform>().sizeDelta = Vector2.zero;
                         ModExpBarGroup.GetComponent<RectTransform>().anchoredPosition = Vector2.zero;
-                        ModExpBarGroup.AddComponent<NetworkIdentity>().serverOnly = false;
                         itemGainFrame = ModExpBarGroup;
                         itemGainFrame.AddComponent<Image>();
                         itemGainFrame.GetComponent<Image>().color = new Color(255, 0, 0, 0.1f);
