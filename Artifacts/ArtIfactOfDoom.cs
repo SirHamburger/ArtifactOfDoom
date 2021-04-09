@@ -12,12 +12,12 @@ using System.Collections.Generic;
 //using TILER2;
 using UnityEngine;
 using ArtifactOfDoomTinyJson;
-
+using UnityEngine.Networking;
 namespace ArtifactOfDoom
 {
     public class ArtifactOfDoom
     {
-    
+
 
         ArtifactDef Transmutation = ScriptableObject.CreateInstance<ArtifactDef>();
 
@@ -33,7 +33,7 @@ namespace ArtifactOfDoom
 
         private static StatDef statsLostItems;
         private static StatDef statsGainItems;
-        
+
 
 
         //public static Dictionary<CharacterBody, Queue<Sprite>>  PlayerItems = new Dictionary<CharacterBody, Queue<Sprite>>();
@@ -49,21 +49,21 @@ namespace ArtifactOfDoom
         {
             Transmutation.nameToken = "Artifact of Doom";
             Transmutation.descriptionToken = "You get items on enemy kills but lose items every time you take damage.";
-            
+
             using (var stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("ArtifactOfDoom.artifactofdoom"))
             {
                 var bundle = AssetBundle.LoadFromStream(stream);
                 Transmutation.smallIconSelectedSprite = bundle.LoadAsset<Sprite>("Assets/Import/artifactofdoom_icon/ArtifactDoomEnabled.png");
                 Transmutation.smallIconDeselectedSprite = bundle.LoadAsset<Sprite>("Assets/Import/artifactofdoom_icon/ArtifactDoomDisabled.png");
-                
-                
-            }   
+
+
+            }
             EnigmaticThunder.Modules.Artifacts.RegisterArtifact(Transmutation);
 
             LoadBehavior();
-            
         }
-        
+
+
         protected void LoadBehavior()
         {
 
@@ -76,7 +76,6 @@ namespace ArtifactOfDoom
 
             statsLostItems = StatDef.Register("Lostitems", StatRecordType.Sum, StatDataType.ULong, 0, null);
             statsGainItems = StatDef.Register("Gainitems", StatRecordType.Sum, StatDataType.ULong, 0, null);
-
 
 
             On.RoR2.UI.GameEndReportPanelController.Awake += (orig, self) =>
@@ -96,13 +95,16 @@ namespace ArtifactOfDoom
             {
                 orig(self);
                 //Debug.LogError("PreGAmeController");
-                //ArtifactOfDoomUI.ArtifactIsActive = RunArtifactManager.instance.IsArtifactEnabled(Transmutation);
+                //Debug.LogWarning("IsArtifactActive: "+ RunArtifactManager.instance.IsArtifactEnabled(Transmutation.artifactIndex));
                 //artifactIsActive = this.IsActiveAndEnabled();
             };
 
             On.RoR2.SceneDirector.PopulateScene += (orig, self) =>
                 {
+                    Debug.LogError("PopulateScene");
+
                     orig(self);
+
                     currentStage = Run.instance.stageClearCount + 1;
                     //                Debug.LogError("PopulateScene");
 
@@ -113,20 +115,20 @@ namespace ArtifactOfDoom
                         timeForBuff = ArtifactOfDoomConfig.timeAfterHitToNotLoseItemRainstorm.Value;
                     if (Run.instance.selectedDifficulty == DifficultyIndex.Hard)
                         timeForBuff = ArtifactOfDoomConfig.timeAfterHitToNotLoseItemMonsoon.Value;
-                    if(timeForBuff ==-1.0)
+                    if (timeForBuff == -1.0)
                     {
-                        List<Difficulty> characters=ArtifactOfDoomConfig.timeAfterHitToNotLoseItemOtherDifficulty.Value.FromJson<List<Difficulty>>();
-                    foreach(var element in characters)
-                    {
-                        
-                        if(Run.instance.selectedDifficulty == (DifficultyIndex)element.DifficultyIndex)
-                        timeForBuff = element.time;
-                    }
-                    if(timeForBuff==-1.0)
-                    {
-                        Debug.LogWarning("Didn't find valid Configuration for Selected Difficulty. Falling back to 0.1 seconds for Buff. If you want a own definition fill out timeAfterHitToNotLoseItemOtherDifficulty in the Config. DifficultyIndex=" + Run.instance.selectedDifficulty);
-                        timeForBuff=0.1;
-                    }
+                        List<Difficulty> characters = ArtifactOfDoomConfig.timeAfterHitToNotLoseItemOtherDifficulty.Value.FromJson<List<Difficulty>>();
+                        foreach (var element in characters)
+                        {
+
+                            if (Run.instance.selectedDifficulty == (DifficultyIndex)element.DifficultyIndex)
+                                timeForBuff = element.time;
+                        }
+                        if (timeForBuff == -1.0)
+                        {
+                            Debug.LogWarning("Didn't find valid Configuration for Selected Difficulty. Falling back to 0.1 seconds for Buff. If you want a own definition fill out timeAfterHitToNotLoseItemOtherDifficulty in the Config. DifficultyIndex=" + Run.instance.selectedDifficulty);
+                            timeForBuff = 0.1;
+                        }
                     }
                     QueueLostItemSprite = new Dictionary<uint, Queue<ItemDef>>();
                     QueueGainedItemSprite = new Dictionary<uint, Queue<ItemDef>>();
@@ -134,41 +136,68 @@ namespace ArtifactOfDoom
                     counter = new List<int>();
                     LockNetworkUser.Clear();
                 };
+            On.RoR2.Run.Awake += (orig, self) =>
+              {
+                  orig(self);
+                //TODO: hier muss geändert werden!!
+                Debug.LogWarning("NetworkClass.SpawnNetworkObject();");
 
+                //NetworkClass.SpawnNetworkObject();
+
+            };
             On.RoR2.Run.Start += (orig, self) =>
             {
                 orig(self);
-                //Debug.LogError("-------------------here----------------------------------");
-                NetworkClass.SpawnNetworkObject();
-                 Networking.InvokeIsArtifactActive(RunArtifactManager.instance.IsArtifactEnabled(Transmutation.artifactIndex));
-                 Networking.InvokeIsCalculationSacrifice(ArtifactOfDoomConfig.useArtifactOfSacrificeCalculation.Value);
+                Debug.LogError("-------------------here----------------------------------");
+                foreach (var element in RoR2.NetworkUser.readOnlyLocalPlayersList)
+                {
+                    //CCNetworkLog
+                    //TODO: hier muss geändert werden!!
+
+                    //Networking.IsArtifactActive(element,true);
+                    //Networking.IsCalculationSacrifice(element,ArtifactOfDoomConfig.useArtifactOfSacrificeCalculation.Value);
+                }
+                //ArtifactOfDoomUI.IsArtifactActive.Invoke(RunArtifactManager.instance.IsArtifactEnabled(Transmutation.artifactIndex), result =>
+                //    {
+                //        //Debug.LogError("Got Message Of IsArtifactActive");
+                //    }, null);
+                //ArtifactOfDoomUI.IsCalculationSacrifice.Invoke(ArtifactOfDoomConfig.useArtifactOfSacrificeCalculation.Value, result =>
+                //{
+                //    //Debug.LogError("Got Message Of IsArtifactActive");
+                //}, null);
+
             };
             On.RoR2.CharacterBody.OnInventoryChanged += (orig, self) =>
             {
                 orig(self);
-                try
+
+
+                if (!RunArtifactManager.instance.IsArtifactEnabled(Transmutation.artifactIndex))
+                    return;
+                if (!self.isPlayerControlled)
+                    return;
+
+                NetworkUser tempNetworkUser = getNetworkUserOfCharacterBody(self);
+                int calculatesEnemyCountToTrigger = calculateEnemyCountToTrigger(self.inventory);
+
+                if (!Playername.Contains(self))
                 {
-                    if (!RunArtifactManager.instance.IsArtifactEnabled(Transmutation.artifactIndex))
-                        return;
-                    if (!self.isPlayerControlled)
-                        return;
-                    NetworkUser tempNetworkUser = getNetworkUserOfCharacterBody(self);
-                    int calculatesEnemyCountToTrigger = calculateEnemyCountToTrigger(self.inventory);
-                    if (!Playername.Contains(self))
-                    {
-                        Playername.Add(self);
-                        counter.Add(0);
-                    }
-                    if (tempNetworkUser != null)
-                    {
-                        //Debug.LogError("Network user == null");
-                         string tempString = counter[Playername.IndexOf(self)] + "," + calculatesEnemyCountToTrigger;
-                         Networking.InvokeUpdateProgressBar(tempNetworkUser,tempString);
-                    }
+
+                    Playername.Add(self);
+                    counter.Add(0);
                 }
-                catch (Exception)
+                if (tempNetworkUser != null)
                 {
-                    Debug.LogError("Error while inventory changed");
+
+                    //Debug.LogError("Network user == null");
+                    string tempString = counter[Playername.IndexOf(self)] + "," + calculatesEnemyCountToTrigger;
+                    //TODO: hier muss geändert werden!!
+                     if (NetworkServer.active)
+                    {
+                        Networking.ServerEnsureNetworking();
+                        Networking._instance.TargetUpdateProgressBar(tempNetworkUser.connectionToClient, tempString);
+                    }
+                    //.UpdateProgressBar(tempNetworkUser,tempString);
                 }
 
             };
@@ -231,8 +260,11 @@ namespace ArtifactOfDoom
 
                     NetworkUser tempNetworkUser = getNetworkUserOfDamageReport(damageReport, true);
                     string temp = counter[Playername.IndexOf(currentBody)] + "," + calculatesEnemyCountToTrigger;
-                    //Debug.LogWarning("currentBody für rpc: " + currentBody.name);
-                     Networking.InvokeUpdateProgressBar(tempNetworkUser,temp);
+                    Debug.LogWarning("tempNetworkUser: " + tempNetworkUser);
+                    Debug.LogWarning("temp: " + temp);
+                    //TODO: hier muss geändert werden!!
+
+                    //NetworkClass.UpdateProgressBar(tempNetworkUser,temp);
 
                 }
                 else
@@ -339,13 +371,22 @@ namespace ArtifactOfDoom
                     if (!LockItemGainNetworkUser[tempNetworkUser])
                     {
                         LockItemGainNetworkUser[tempNetworkUser] = true;
-                        Networking.InvokeAddGainedItemsToPlayers(tempNetworkUser,temp);
+                        //TODO: hier muss geändert werden!!
+
+                        //Networking.AddGainedItemsToPlayers(tempNetworkUser,temp);
                         LockItemGainNetworkUser[tempNetworkUser] = false;
 
-                         Networking.InvokeAddGainedItemsToPlayers(tempNetworkUser,temp);
-                             LockItemGainNetworkUser[tempNetworkUser] = false;
-                         string tempString = counter[Playername.IndexOf(currentBody)] + "," + calculatesEnemyCountToTrigger;
-                         Networking.InvokeUpdateProgressBar(tempNetworkUser,tempString);
+                        //TODO: hier muss geändert werden!!
+                        //Networking.AddGainedItemsToPlayers(tempNetworkUser,temp);
+                        LockItemGainNetworkUser[tempNetworkUser] = false;
+                        string tempString = counter[Playername.IndexOf(currentBody)] + "," + calculatesEnemyCountToTrigger;
+                        //TODO: hier muss geändert werden!!
+                        if (NetworkServer.active)
+                    {
+                        Networking.ServerEnsureNetworking();
+                        Networking._instance.TargetUpdateProgressBar(tempNetworkUser.connectionToClient, tempString);
+                    }
+                        //NetworkClass.UpdateProgressBar(tempNetworkUser,tempString);
                     }
 
                     counter[Playername.IndexOf(currentBody)] = 0;
@@ -535,11 +576,18 @@ namespace ArtifactOfDoom
                     if (LockNetworkUser[tempNetworkUser] == false)
                     {
                         LockNetworkUser[tempNetworkUser] = true;
-                         Networking.InvokeAddLostItemsOfPlayers(tempNetworkUser,temp);
-                         LockNetworkUser[tempNetworkUser] = false;
-                         int calculatesEnemyCountToTrigger = calculateEnemyCountToTrigger(self.body.inventory);
-                         string tempString = counter[Playername.IndexOf(self.body)] + "," + calculatesEnemyCountToTrigger;
-                         Networking.InvokeUpdateProgressBar(tempNetworkUser,tempString);
+                        //TODO: hier muss geändert werden!!
+                        //Networking.AddLostItemsOfPlayers(tempNetworkUser,temp);
+                        LockNetworkUser[tempNetworkUser] = false;
+                        int calculatesEnemyCountToTrigger = calculateEnemyCountToTrigger(self.body.inventory);
+                        string tempString = counter[Playername.IndexOf(self.body)] + "," + calculatesEnemyCountToTrigger;
+                        //TODO: hier muss geändert werden!!
+if (NetworkServer.active)
+                    {
+                        Networking.ServerEnsureNetworking();
+                        Networking._instance.TargetUpdateProgressBar(tempNetworkUser.connectionToClient, tempString);
+                    }
+                        //NetworkClass.UpdateProgressBar(tempNetworkUser,tempString);
                     }
                 }
             };
@@ -653,11 +701,11 @@ namespace ArtifactOfDoom
                     string CustomChars = ArtifactOfDoomConfig.CustomChars.Value;
 
                     //Character characters = TinyJson.JSONParser.FromJson<Character>(CustomChars);
-                    List<Character> characters=CustomChars.FromJson<List<Character>>();
-                    foreach(var element in characters)
+                    List<Character> characters = CustomChars.FromJson<List<Character>>();
+                    foreach (var element in characters)
                     {
-                        if(baseNameToken == element.Name)
-                        return element.BonusItems;
+                        if (baseNameToken == element.Name)
+                            return element.BonusItems;
                     }
                     Debug.LogWarning("did not find a valid configuation setting for Character " + baseNameToken + " you can add one in the settings");
                     if (debug) { Debug.LogWarning($"Character baseNameToken = {baseNameToken} returning: Acrid"); }
@@ -706,11 +754,11 @@ namespace ArtifactOfDoom
                     string CustomChars = ArtifactOfDoomConfig.CustomChars.Value;
 
                     //Character characters = TinyJson.JSONParser.FromJson<Character>(CustomChars);
-                    List<Character> characters=CustomChars.FromJson<List<Character>>();
-                    foreach(var element in characters)
+                    List<Character> characters = CustomChars.FromJson<List<Character>>();
+                    foreach (var element in characters)
                     {
-                        if(baseNameToken == element.Name)
-                        return element.MultiplierForTimedBuff;
+                        if (baseNameToken == element.Name)
+                            return element.MultiplierForTimedBuff;
                     }
                     Debug.LogWarning("did not find a valid configuation setting for Character " + baseNameToken + " you can add one in the settings");
                     if (debug) { Debug.LogWarning($"Character baseNameToken = {baseNameToken} returning: Acrid"); }
@@ -718,19 +766,19 @@ namespace ArtifactOfDoom
             }
         }
         public class Character
-            {
-                public string Name { get; set; }
-                public float MultiplierForTimedBuff { get; set; }
-                public float BonusItems { get; set; }
-            }
+        {
+            public string Name { get; set; }
+            public float MultiplierForTimedBuff { get; set; }
+            public float BonusItems { get; set; }
+        }
         public class Difficulty
-            {
-                public int DifficultyIndex  { get; set; }
-                public float time { get; set; }
-            }
+        {
+            public int DifficultyIndex { get; set; }
+            public float time { get; set; }
+        }
         public ItemIndex GiveAndReturnRandomItem(Inventory inventory)
         {
-            
+
             var tier1 = ItemCatalog.tier1ItemList;
             var tier2 = ItemCatalog.tier2ItemList;
             var tier3 = ItemCatalog.tier3ItemList;

@@ -79,6 +79,9 @@
         <Reference Include="UnityEngine.UIModule">
       <HintPath>/home/sirhamburger/Git/ArtifactOfDoom/libs/UnityEngine.UIModule.dll</HintPath>
     </Reference>
+    <Reference Include="MiniRpcLib">
+      <HintPath>/home/sirhamburger/Git/ArtifactOfDoom/libs/MiniRpcLib.dll</HintPath>
+    </Reference>
   </ItemGroup>
 
 

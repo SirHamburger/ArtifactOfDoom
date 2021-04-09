@@ -84,10 +84,13 @@ namespace ArtifactOfDoom
 
 
             cfgFile = new ConfigFile(Path.Combine(Paths.ConfigPath, ModGuid + ".cfg"), true);
+                    //TODO: hier muss geändert werden!!
 
-            NetworkClass networkClass = new NetworkClass();
+            //NetworkClass networkClass = new NetworkClass();
             ArtifactOfDoomUI artifactOfDoomUI = new ArtifactOfDoomUI();
             ArtifactOfDoom artifactOfDoom = new ArtifactOfDoom();
+            NetworkClass network = new NetworkClass();
+
 
             //masterItemList = ItemBoilerplate.InitAll("ArtifactOfDoom");
             //foreach (ItemBoilerplate x in masterItemList)
