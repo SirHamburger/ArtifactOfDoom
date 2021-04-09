@@ -101,8 +101,6 @@ namespace ArtifactOfDoom
 
             On.RoR2.SceneDirector.PopulateScene += (orig, self) =>
                 {
-                    Debug.LogError("PopulateScene");
-
                     orig(self);
 
                     currentStage = Run.instance.stageClearCount + 1;
@@ -139,16 +137,15 @@ namespace ArtifactOfDoom
             On.RoR2.Run.Awake += (orig, self) =>
               {
                   orig(self);
-                //TODO: hier muss geändert werden!!
-                Debug.LogWarning("NetworkClass.SpawnNetworkObject();");
+                  //Debug.LogWarning("NetworkClass.SpawnNetworkObject();");
 
-                //NetworkClass.SpawnNetworkObject();
-
-            };
+              };
             On.RoR2.Run.Start += (orig, self) =>
             {
                 orig(self);
-                Debug.LogError("-------------------here----------------------------------");
+                ArtifactOfDoomUI.ArtifactIsActive = RunArtifactManager.instance.IsArtifactEnabled(Transmutation.artifactIndex);
+                //Debug.LogWarning("Run Start Artifact is active: " + ArtifactOfDoomUI.ArtifactIsActive);
+
                 foreach (var element in RoR2.NetworkUser.readOnlyLocalPlayersList)
                 {
                     //CCNetworkLog
@@ -189,15 +186,12 @@ namespace ArtifactOfDoom
                 if (tempNetworkUser != null)
                 {
 
-                    //Debug.LogError("Network user == null");
                     string tempString = counter[Playername.IndexOf(self)] + "," + calculatesEnemyCountToTrigger;
-                    //TODO: hier muss geändert werden!!
-                     if (NetworkServer.active)
+                    if (NetworkServer.active)
                     {
                         Networking.ServerEnsureNetworking();
                         Networking._instance.TargetUpdateProgressBar(tempNetworkUser.connectionToClient, tempString);
                     }
-                    //.UpdateProgressBar(tempNetworkUser,tempString);
                 }
 
             };
@@ -260,11 +254,13 @@ namespace ArtifactOfDoom
 
                     NetworkUser tempNetworkUser = getNetworkUserOfDamageReport(damageReport, true);
                     string temp = counter[Playername.IndexOf(currentBody)] + "," + calculatesEnemyCountToTrigger;
-                    Debug.LogWarning("tempNetworkUser: " + tempNetworkUser);
-                    Debug.LogWarning("temp: " + temp);
-                    //TODO: hier muss geändert werden!!
-
-                    //NetworkClass.UpdateProgressBar(tempNetworkUser,temp);
+                    //Debug.LogWarning("tempNetworkUser: " + tempNetworkUser);
+                    //Debug.LogWarning("temp: " + temp);
+                    if (NetworkServer.active)
+                    {
+                        Networking.ServerEnsureNetworking();
+                        Networking._instance.TargetUpdateProgressBar(tempNetworkUser.connectionToClient, temp);
+                    }
 
                 }
                 else
@@ -370,23 +366,17 @@ namespace ArtifactOfDoom
 
                     if (!LockItemGainNetworkUser[tempNetworkUser])
                     {
-                        LockItemGainNetworkUser[tempNetworkUser] = true;
-                        //TODO: hier muss geändert werden!!
 
-                        //Networking.AddGainedItemsToPlayers(tempNetworkUser,temp);
                         LockItemGainNetworkUser[tempNetworkUser] = false;
 
-                        //TODO: hier muss geändert werden!!
-                        //Networking.AddGainedItemsToPlayers(tempNetworkUser,temp);
                         LockItemGainNetworkUser[tempNetworkUser] = false;
                         string tempString = counter[Playername.IndexOf(currentBody)] + "," + calculatesEnemyCountToTrigger;
-                        //TODO: hier muss geändert werden!!
                         if (NetworkServer.active)
-                    {
-                        Networking.ServerEnsureNetworking();
-                        Networking._instance.TargetUpdateProgressBar(tempNetworkUser.connectionToClient, tempString);
-                    }
-                        //NetworkClass.UpdateProgressBar(tempNetworkUser,tempString);
+                        {
+                            Networking._instance.TargetAddGainedItemsToPlayers(tempNetworkUser.connectionToClient, temp);
+                            Networking.ServerEnsureNetworking();
+                            Networking._instance.TargetUpdateProgressBar(tempNetworkUser.connectionToClient, tempString);
+                        }
                     }
 
                     counter[Playername.IndexOf(currentBody)] = 0;
@@ -575,19 +565,15 @@ namespace ArtifactOfDoom
                         LockNetworkUser.Add(tempNetworkUser, false);
                     if (LockNetworkUser[tempNetworkUser] == false)
                     {
-                        LockNetworkUser[tempNetworkUser] = true;
-                        //TODO: hier muss geändert werden!!
-                        //Networking.AddLostItemsOfPlayers(tempNetworkUser,temp);
                         LockNetworkUser[tempNetworkUser] = false;
                         int calculatesEnemyCountToTrigger = calculateEnemyCountToTrigger(self.body.inventory);
                         string tempString = counter[Playername.IndexOf(self.body)] + "," + calculatesEnemyCountToTrigger;
-                        //TODO: hier muss geändert werden!!
-if (NetworkServer.active)
-                    {
-                        Networking.ServerEnsureNetworking();
-                        Networking._instance.TargetUpdateProgressBar(tempNetworkUser.connectionToClient, tempString);
-                    }
-                        //NetworkClass.UpdateProgressBar(tempNetworkUser,tempString);
+                        if (NetworkServer.active)
+                        {
+                            Networking._instance.TargetAddLostItemsOfPlayers(tempNetworkUser.connectionToClient,temp);
+                            Networking.ServerEnsureNetworking();
+                            Networking._instance.TargetUpdateProgressBar(tempNetworkUser.connectionToClient, tempString);
+                        }
                     }
                 }
             };

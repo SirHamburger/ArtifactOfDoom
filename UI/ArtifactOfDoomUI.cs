@@ -20,7 +20,7 @@ namespace ArtifactOfDoom
     {
         public GameObject ModCanvas = null;
         //TODO: Change!
-        public static bool ArtifactIsActive = true;
+        public static bool ArtifactIsActive = false;
         public static bool calculationSacrifice = false;
         public ArtifactOfDoomUI()
         {
@@ -73,7 +73,9 @@ namespace ArtifactOfDoom
         public void HUDAwake(On.RoR2.UI.HUD.orig_Awake orig, RoR2.UI.HUD self)
         {
             orig(self);
-            Debug.LogWarning("HUDAwake: "+ArtifactIsActive);
+                            Networking.ServerEnsureNetworking();
+                Networking._instance.RpcIsArtifactActive(ArtifactOfDoomConfig.useArtifactOfSacrificeCalculation.Value);
+            //Debug.LogWarning("HUDAwake: "+ArtifactIsActive);
             if (!ArtifactIsActive)
             {
                 Debug.LogError("artifact is not activ!");
