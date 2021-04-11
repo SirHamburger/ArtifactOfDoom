@@ -5,9 +5,11 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
-using MiniRpcLib;
+using UnityEngine.Networking;
 
 
+using BepInEx.Logging;
+using BepInEx;
 #region TODO:
 /*
 
@@ -19,9 +21,9 @@ namespace ArtifactOfDoom
     public class ArtifactOfDoomUI
     {
         public GameObject ModCanvas = null;
-        //TODO: Change!
-        public static bool ArtifactIsActive = false;
-        public static bool calculationSacrifice = false;
+        //TODO: Change
+        //public static bool ArtifactIsActive = false;
+        //public static bool calculationSacrifice = false;
         public ArtifactOfDoomUI()
         {
             //On.RoR2.UI.HealthBar.Awake += ExpBarAwakeAddon;
@@ -70,13 +72,17 @@ namespace ArtifactOfDoom
         public static GameObject itemGainFrame;
 
         #endregion
+        
         public void HUDAwake(On.RoR2.UI.HUD.orig_Awake orig, RoR2.UI.HUD self)
         {
             orig(self);
-                            Networking.ServerEnsureNetworking();
-                Networking._instance.RpcIsArtifactActive(ArtifactOfDoomConfig.useArtifactOfSacrificeCalculation.Value);
-            //Debug.LogWarning("HUDAwake: "+ArtifactIsActive);
-            if (!ArtifactIsActive)
+            Debug.LogError("BeforeEnsureNetworking");
+            NetworkClass.EnsureNetworking();
+            Debug.LogError("HUDAwake");
+            Networking._instance.IsArtifactEnabled = RunArtifactManager.instance.IsArtifactEnabled(ArtifactOfDoom.Transmutation.artifactIndex);
+            Networking._instance.IsCalculationSacrifice = ArtifactOfDoomConfig.useArtifactOfSacrificeCalculation.Value;
+            Debug.LogError("After Setting");
+            if (!Networking._instance.IsArtifactEnabled)
             {
                 Debug.LogError("artifact is not activ!");
                 return;
@@ -138,7 +144,7 @@ namespace ArtifactOfDoom
                         listLostImages.Add(ModExpBarGroup);
                     }
 
-                    if (!ArtifactOfDoomConfig.disableItemProgressBar.Value && !calculationSacrifice)
+                    if (!ArtifactOfDoomConfig.disableItemProgressBar.Value && !Networking._instance.IsCalculationSacrifice)
                     {
                         ModExpBarGroup = new GameObject("ItemGainBar");
                         ModExpBarGroup.transform.SetParent(ModCanvas.transform);

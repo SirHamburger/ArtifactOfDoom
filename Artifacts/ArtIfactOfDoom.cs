@@ -1,7 +1,7 @@
 ﻿
 //using R2API;
 //using R2API.Utils;
-using EnigmaticThunder;
+//using EnigmaticThunder;
 using BepInEx;
 using BepInEx.Logging;
 using System.Reflection;
@@ -19,7 +19,7 @@ namespace ArtifactOfDoom
     {
 
 
-        ArtifactDef Transmutation = ScriptableObject.CreateInstance<ArtifactDef>();
+        public static ArtifactDef Transmutation = ScriptableObject.CreateInstance<ArtifactDef>();
 
         private const string GrayColor = "7e91af";
         private const string ErrorColor = "ff0000";
@@ -44,7 +44,6 @@ namespace ArtifactOfDoom
 
         private static double timeForBuff = -1.0;
 
-
         public ArtifactOfDoom()
         {
             Transmutation.nameToken = "Artifact of Doom";
@@ -58,10 +57,9 @@ namespace ArtifactOfDoom
 
 
             }
-            EnigmaticThunder.Modules.Artifacts.RegisterArtifact(Transmutation);
-
             LoadBehavior();
         }
+                  
 
 
         protected void LoadBehavior()
@@ -77,11 +75,10 @@ namespace ArtifactOfDoom
             statsLostItems = StatDef.Register("Lostitems", StatRecordType.Sum, StatDataType.ULong, 0, null);
             statsGainItems = StatDef.Register("Gainitems", StatRecordType.Sum, StatDataType.ULong, 0, null);
 
-
             On.RoR2.UI.GameEndReportPanelController.Awake += (orig, self) =>
                 {
                     orig(self);
-                    if (!RunArtifactManager.instance.IsArtifactEnabled(Transmutation.artifactIndex))
+                    if (!Networking._instance.IsArtifactEnabled)
                     {
                         return;
                     }
@@ -94,9 +91,7 @@ namespace ArtifactOfDoom
             On.RoR2.PreGameController.StartRun += (orig, self) =>
             {
                 orig(self);
-                //Debug.LogError("PreGAmeController");
-                //Debug.LogWarning("IsArtifactActive: "+ RunArtifactManager.instance.IsArtifactEnabled(Transmutation.artifactIndex));
-                //artifactIsActive = this.IsActiveAndEnabled();
+                
             };
 
             On.RoR2.SceneDirector.PopulateScene += (orig, self) =>
@@ -104,7 +99,6 @@ namespace ArtifactOfDoom
                     orig(self);
 
                     currentStage = Run.instance.stageClearCount + 1;
-                    //                Debug.LogError("PopulateScene");
 
 
                     if (Run.instance.selectedDifficulty == DifficultyIndex.Easy)
@@ -143,25 +137,6 @@ namespace ArtifactOfDoom
             On.RoR2.Run.Start += (orig, self) =>
             {
                 orig(self);
-                ArtifactOfDoomUI.ArtifactIsActive = RunArtifactManager.instance.IsArtifactEnabled(Transmutation.artifactIndex);
-                //Debug.LogWarning("Run Start Artifact is active: " + ArtifactOfDoomUI.ArtifactIsActive);
-
-                foreach (var element in RoR2.NetworkUser.readOnlyLocalPlayersList)
-                {
-                    //CCNetworkLog
-                    //TODO: hier muss geändert werden!!
-
-                    //Networking.IsArtifactActive(element,true);
-                    //Networking.IsCalculationSacrifice(element,ArtifactOfDoomConfig.useArtifactOfSacrificeCalculation.Value);
-                }
-                //ArtifactOfDoomUI.IsArtifactActive.Invoke(RunArtifactManager.instance.IsArtifactEnabled(Transmutation.artifactIndex), result =>
-                //    {
-                //        //Debug.LogError("Got Message Of IsArtifactActive");
-                //    }, null);
-                //ArtifactOfDoomUI.IsCalculationSacrifice.Invoke(ArtifactOfDoomConfig.useArtifactOfSacrificeCalculation.Value, result =>
-                //{
-                //    //Debug.LogError("Got Message Of IsArtifactActive");
-                //}, null);
 
             };
             On.RoR2.CharacterBody.OnInventoryChanged += (orig, self) =>
@@ -169,7 +144,7 @@ namespace ArtifactOfDoom
                 orig(self);
 
 
-                if (!RunArtifactManager.instance.IsArtifactEnabled(Transmutation.artifactIndex))
+                if (!Networking._instance.IsArtifactEnabled)
                     return;
                 if (!self.isPlayerControlled)
                     return;
@@ -200,8 +175,10 @@ namespace ArtifactOfDoom
                 //try
                 //{
                 orig(self, damageReport);
+                Networking._instance.IsArtifactEnabled = RunArtifactManager.instance.IsArtifactEnabled(ArtifactOfDoom.Transmutation.artifactIndex);
+                Networking._instance.IsCalculationSacrifice = ArtifactOfDoomConfig.useArtifactOfSacrificeCalculation.Value;
 
-                if (!RunArtifactManager.instance.IsArtifactEnabled(Transmutation.artifactIndex))
+                if (!Networking._instance.IsArtifactEnabled)
                 {
                     return;
                 }
@@ -386,8 +363,14 @@ namespace ArtifactOfDoom
             {
                 //For adding possibility to dont loose items for some time: characterBody.AddTimedBuff(BuffIndex.Immune, duration);
                 orig(self, damageinfo);
+                //BuffIndex buff = new BuffIndex();
+                //Debug.LogError("buffindex " +buff );
+//
+                //BuffCatalog.FindBuffIndex("ArtifactOfDoomDidLoseItem");
+                //                Debug.LogError("buffindex " +buff );
 
-                if (!RunArtifactManager.instance.IsArtifactEnabled(Transmutation.artifactIndex))
+
+                if (!Networking._instance.IsArtifactEnabled)
                 {
                     return;
                 }
@@ -430,8 +413,7 @@ namespace ArtifactOfDoom
                     return;
 
                 }
-
-                if (self.body.HasBuff(ArtifactOfDoomConfig.buffIndexDidLoseItem))
+                if (self.body.HasBuff(ArtifactOfDoomConfig.ArtifactOfDoomBuff))
                 {
                     if (debug) Debug.LogWarning("you did lose an item not long ago so you don't lose one now");
                     return;
@@ -546,7 +528,7 @@ namespace ArtifactOfDoom
                                 QueueLostItemSprite[pos].Dequeue();
 
                             double buffLengthMultiplier = getCharacterSpezificBuffLengthMultiplier(self.body.baseNameToken);
-                            self.body.AddTimedBuff(ArtifactOfDoomConfig.buffIndexDidLoseItem, (float)(timeForBuff * (float)buffLengthMultiplier));
+                            self.body.AddTimedBuff(ArtifactOfDoomConfig.ArtifactOfDoomBuff, (float)(timeForBuff * (float)buffLengthMultiplier));
                         }
 
                         chanceToTrigger -= 100;
@@ -570,7 +552,7 @@ namespace ArtifactOfDoom
                         string tempString = counter[Playername.IndexOf(self.body)] + "," + calculatesEnemyCountToTrigger;
                         if (NetworkServer.active)
                         {
-                            Networking._instance.TargetAddLostItemsOfPlayers(tempNetworkUser.connectionToClient,temp);
+                            Networking._instance.TargetAddLostItemsOfPlayers(tempNetworkUser.connectionToClient, temp);
                             Networking.ServerEnsureNetworking();
                             Networking._instance.TargetUpdateProgressBar(tempNetworkUser.connectionToClient, tempString);
                         }

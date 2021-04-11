@@ -1,19 +1,19 @@
 ﻿using BepInEx;
 using BepInEx.Configuration;
-using EnigmaticThunder;
+//using EnigmaticThunder;
 using RoR2;
-using System.Reflection;
-//using TILER2;
 using UnityEngine;
-//using static TILER2.MiscUtil;
 using Path = System.IO.Path;
+using System.Collections.Generic;
+using R2API;
+using R2API.Utils;
 
 namespace ArtifactOfDoom
 {
     [BepInPlugin(ModGuid, ModName, ModVer)]
     //[BepInDependency(R2API.R2API.PluginGUID, R2API.R2API.PluginVersion)]
     //[R2APISubmoduleDependency(nameof(BuffAPI))]
-    //[R2APISubmoduleDependency(nameof(ItemAPI), nameof(LanguageAPI), nameof(ResourcesAPI), nameof(PlayerAPI), nameof(PrefabAPI))]
+    [R2APISubmoduleDependency(nameof(PrefabAPI), nameof(BuffAPI))]
 
     public class ArtifactOfDoomConfig : BaseUnityPlugin
     {
@@ -72,7 +72,7 @@ namespace ArtifactOfDoom
         public static ConfigEntry<double> CustomSurvivorMultiplierForTimedBuff;
         public static ConfigEntry<double> exponentTriggerItems;
 
-        public static BuffIndex buffIndexDidLoseItem;
+        //public static BuffIndex buffIndexDidLoseItem;
 
         public static ConfigEntry<double> sizeOfSideBars;
         public static ConfigEntry<bool> disableSideBars;
@@ -84,19 +84,9 @@ namespace ArtifactOfDoom
 
 
             cfgFile = new ConfigFile(Path.Combine(Paths.ConfigPath, ModGuid + ".cfg"), true);
-                    //TODO: hier muss geändert werden!!
-
-            //NetworkClass networkClass = new NetworkClass();
             ArtifactOfDoomUI artifactOfDoomUI = new ArtifactOfDoomUI();
             ArtifactOfDoom artifactOfDoom = new ArtifactOfDoom();
             NetworkClass network = new NetworkClass();
-
-
-            //masterItemList = ItemBoilerplate.InitAll("ArtifactOfDoom");
-            //foreach (ItemBoilerplate x in masterItemList)
-            //{
-            //    x.SetupConfig(cfgFile);
-            //}
 
             averageItemsPerStage = cfgFile.Bind(new ConfigDefinition("Gameplay Settings", "averageItemsPerStage"), 3, new ConfigDescription(
                 "Base chance in percent that enemys steal items from you ((totalItems - currentStage * averageItemsPerStage) ^ exponentTriggerItems; \nIf that value is lower you'll need to kill more enemies to get an item"));
@@ -136,8 +126,8 @@ namespace ArtifactOfDoom
                 "The time in seconds where you will not lose items after you lost one on monsoon"));
             timeAfterHitToNotLoseItemOtherDifficulty = cfgFile.Bind(new ConfigDefinition("Gameplay Settings", "timeAfterHitToNotLooseOtherDifficulty"), "[{\"DifficultyIndex\": \"DIFFICULTYINDEX\", \"time\": 1.0}]", new ConfigDescription(
                 "The time in seconds where you will not lose items after you lost one on monsoon"));
-            
-            
+
+
             CommandoBonusItems = cfgFile.Bind(new ConfigDefinition("Character specific settings", "CommandoBonusItems"), 1.0, new ConfigDescription(
                 "The count of items which you get if you kill enough enemies"));
             CommandoMultiplierForTimedBuff = cfgFile.Bind(new ConfigDefinition("Character specific settings", "commandoMultiplyerForTimedBuff"), 1.0, new ConfigDescription(
@@ -186,36 +176,41 @@ namespace ArtifactOfDoom
                 "The count of items which you get if you kill enough enemies"));
             CustomSurvivorMultiplierForTimedBuff = cfgFile.Bind(new ConfigDefinition("Character specific settings", "CustomSurvivorMultiplierForTimedBuff"), 1.0, new ConfigDescription(
                 "The Multiplier for that specific character for the length of timeAfterHitToNotLoseItems"));
-            CustomChars= cfgFile.Bind(new ConfigDefinition("Character specific settings", "CustomCharacters"), "[{\"Name\": \"CUSTOM_CHAR_BODY_NAME1\", \"MultiplierForTimedBuff\": 1.0, \"BonusItems\": 1.0},{\"Name\": \"CUSTOM_CHAR_BODY_NAME2\", \"MultiplierForTimedBuff\": 2.0, \"BonusItems\": 2.0}]", new ConfigDescription(
+            CustomChars = cfgFile.Bind(new ConfigDefinition("Character specific settings", "CustomCharacters"), "[{\"Name\": \"CUSTOM_CHAR_BODY_NAME1\", \"MultiplierForTimedBuff\": 1.0, \"BonusItems\": 1.0},{\"Name\": \"CUSTOM_CHAR_BODY_NAME2\", \"MultiplierForTimedBuff\": 2.0, \"BonusItems\": 2.0}]", new ConfigDescription(
                 "The Multiplier for that specific character for the length of timeAfterHitToNotLoseItems"));
+
+
+
+
+
+
+
+
+
+
+            On.RoR2.ContentManager.SetContentPacks += ContentManager_SetContentPacks;
+        }
+
+        public static BuffDef ArtifactOfDoomBuff = ScriptableObject.CreateInstance<BuffDef>();
+        //public static BuffDef ArtifactOfDoomBuff;
+        public static void ContentManager_SetContentPacks(On.RoR2.ContentManager.orig_SetContentPacks orig, List<ContentPack> newContentPacks)
+        {
             
+                ArtifactOfDoomBuff.name = "ArtifactOfDoomDidLoseItem";
+                ArtifactOfDoomBuff.buffColor = Color.black;
+                ArtifactOfDoomBuff.canStack = false;
+                ArtifactOfDoomBuff.isDebuff=false;
+            
+            ContentPack pack = new ContentPack
+            {
+                artifactDefs = new List<ArtifactDef> { ArtifactOfDoom.Transmutation }.ToArray(),
+            };
+            BuffAPI.Add(new CustomBuff(ArtifactOfDoomBuff));
+            newContentPacks.Add(pack);
+            orig(newContentPacks);
 
-
-
-            //foreach (ItemBoilerplate x in masterItemList)
-            //{
-            //    x.SetupAttributes("ARTDOOM", "ADOOM");
-            //    if (x.itemCodeName.Length > longestName) longestName = x.itemCodeName.Length;
-            //}
-//
-            //Logger.LogMessage("Index dump follows (pairs of name / index):");
-            //foreach (ItemBoilerplate x in masterItemList)
-            //{
-            //    if (x is Artifact afct)
-            //        Logger.LogMessage(" Artifact ADOOM" + x.itemCodeName.PadRight(longestName) + " / " + ((int)afct.regIndex).ToString());
-            //    else
-            //        Logger.LogMessage("Other ADOOM" + x.itemCodeName.PadRight(longestName) + " / N/A");
-            //}
-            BuffDef buff = ScriptableObject.CreateInstance<BuffDef>();
-            buff.buffColor = Color.black;
-            buff.name= "didLoseItem";
-            buff.isDebuff = false;
-            buff.canStack = false;
-
-            EnigmaticThunder.Modules.Buffs.RegisterBuff(buff);
-            //var didLoseItem = new R2API.CustomBuff("didLoseItem", "", Color.black, false, false);
-            //buffIndexDidLoseItem = BuffAPI.Add(buff);
-
+             //var didLoseItem = new R2API.CustomBuff("ArtifactOfDoomDidLoseItem","",Color.black,false,false);
+             //ArtifactOfDoomBuff = BuffAPI.Add(didLoseItem);
         }
     }
 }

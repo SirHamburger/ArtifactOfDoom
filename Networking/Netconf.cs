@@ -3,10 +3,16 @@ using RoR2;
 using System;
 using UnityEngine.Networking;
 using System.Collections.Generic;
-using BepInEx.Logging;
-using BepInEx;
 using ArtifactOfDoom;
+using UnityEngine;
+using Unity;
 using UnityEngine.UI;
+
+using System.Runtime.CompilerServices;
+using System.Security.Cryptography;
+using System.Text;
+
+using R2API;
 
 
 /// <summary>
@@ -21,10 +27,14 @@ public class NetworkClass
     }
     public void SetupConfig()
     {
-        var netOrchPrefabPrefab = new GameObject("TILER2NetworkClassOrchestratorPrefabPrefab");
-        netOrchPrefabPrefab.AddComponent<NetworkIdentity>();
-        NetworkClass.CentralNetworkObject = EnigmaticThunder.Modules.Prefabs.InstantiateClone(netOrchPrefabPrefab, "TILER2NetworkClassOrchestratorPrefab", true);
-        //NetworkClass.netOrchPrefab = netOrchPrefabPrefab.InstantiateClone("TILER2NetworkClassOrchestratorPrefab");
+        var artifactOfDoomNetworkingPrefab = new GameObject("ArtifactOfDoomNetworkingPrefab");
+        artifactOfDoomNetworkingPrefab.AddComponent<NetworkIdentity>();
+
+        //   prefabs = new List<GameObject>();
+        //    prefabs.Add()
+        //Resources.Load<GameObject>("ArtifactOfDoomNetworkingPrefab")
+        NetworkClass.CentralNetworkObject = artifactOfDoomNetworkingPrefab.InstantiateClone("ArtifactOfDoomNetworking", true);
+
 
         NetworkClass.CentralNetworkObject.AddComponent<Networking>();
 
@@ -50,7 +60,10 @@ public class NetworkClass
 public class Networking : NetworkBehaviour
 {
     public static Networking _instance;
-
+    [SyncVar]
+    public bool IsArtifactEnabled = false;
+    [SyncVar]
+    public bool IsCalculationSacrifice = false;
     private void Awake()
     {
         _instance = this;
@@ -72,7 +85,7 @@ public class Networking : NetworkBehaviour
 
         if (killedNeededEnemies == null)
             Debug.LogError("killedNeededEnemies == null");
-        if (!ArtifactOfDoomConfig.disableItemProgressBar.Value && !ArtifactOfDoomUI.calculationSacrifice)
+        if (!ArtifactOfDoomConfig.disableItemProgressBar.Value && !Networking._instance.IsCalculationSacrifice)
         {
             string[] stringkilledNeededEnemies = killedNeededEnemies.Split(',');
             if (stringkilledNeededEnemies == null)
@@ -101,14 +114,14 @@ public class Networking : NetworkBehaviour
             }
         }
     }
-    [ClientRpc]
-    public void RpcIsArtifactActive(bool isActive)
-    {
-                NetworkClass.EnsureNetworking();
-
-        //Debug.LogWarning("TargetIsArtifactActive: " + isActive);
-        ArtifactOfDoomUI.ArtifactIsActive = isActive;
-    }
+    //[ClientRpc]
+    //public void RpcIsArtifactActive(bool isActive)
+    //{
+    //            NetworkClass.EnsureNetworking();
+    //
+    //    //Debug.LogWarning("TargetIsArtifactActive: " + isActive);
+    //    ArtifactOfDoomUI.ArtifactIsActive = isActive;
+    //}
     [TargetRpc]
     public void TargetAddGainedItemsToPlayers(NetworkConnection target, string QueueGainedItemSpriteToString)
     {
@@ -155,5 +168,4 @@ public class Networking : NetworkBehaviour
         }
 
     }
-
 }

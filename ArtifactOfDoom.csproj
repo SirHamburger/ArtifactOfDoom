@@ -19,7 +19,7 @@
       <Private>false</Private>
     </Reference>
     <Reference Include="BepInEx">
-      <HintPath>/home/sirhamburger/Git/ArtifactOfDoom/libs//BepInEx.dll</HintPath>
+      <HintPath>/home/sirhamburger/Git/ArtifactOfDoom/libs/BepInEx.dll</HintPath>
       <Private>false</Private>
     </Reference>
     <Reference Include="MMHOOK_Assembly-CSharp">
@@ -27,15 +27,15 @@
       <Private>false</Private>
     </Reference>
     <Reference Include="Mono.Cecil">
-      <HintPath>/home/sirhamburger/Git/ArtifactOfDoom/libs//Mono.Cecil.dll</HintPath>
+      <HintPath>/home/sirhamburger/Git/ArtifactOfDoom/libs/Mono.Cecil.dll</HintPath>
       <Private>false</Private>
     </Reference>
     <Reference Include="MonoMod.Utils">
-      <HintPath>/home/sirhamburger/Git/ArtifactOfDoom/libs//MonoMod.Utils.dll</HintPath>
+      <HintPath>/home/sirhamburger/Git/ArtifactOfDoom/libs/MonoMod.Utils.dll</HintPath>
       <Private>false</Private>
     </Reference>
-    <Reference Include="EnigmaticThunder">
-      <HintPath>/home/sirhamburger/Git/ArtifactOfDoom/libs/EnigmaticThunder.dll</HintPath>
+    <Reference Include="R2API">
+      <HintPath>/home/sirhamburger/Git/ArtifactOfDoom/libs/R2API.dll</HintPath>
       <Private>false</Private>
     </Reference>
     <Reference Include="Unity.Postprocessing.Runtime">
@@ -78,9 +78,6 @@
     </Reference>
         <Reference Include="UnityEngine.UIModule">
       <HintPath>/home/sirhamburger/Git/ArtifactOfDoom/libs/UnityEngine.UIModule.dll</HintPath>
-    </Reference>
-    <Reference Include="MiniRpcLib">
-      <HintPath>/home/sirhamburger/Git/ArtifactOfDoom/libs/MiniRpcLib.dll</HintPath>
     </Reference>
   </ItemGroup>
 
