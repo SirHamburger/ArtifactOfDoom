@@ -76,6 +76,13 @@ https://github.com/SirHamburger/ArtifactOfDoom
 You can also reach me in Discord (Sir Hamburger#8447)
 
 ## Patchnotes
+### Version 2.0.4
+Reupload since I uploaded a wrong manifest
+
+### Version 2.0.3
+* Hopefully final fix for multiplayer
+* Fix for new version
+
 ### Version 2.0.2
 Fix for multiplayer
 

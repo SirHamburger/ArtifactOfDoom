@@ -13,11 +13,11 @@ namespace ArtifactOfDoom
     [BepInPlugin(ModGuid, ModName, ModVer)]
     //[BepInDependency(R2API.R2API.PluginGUID, R2API.R2API.PluginVersion)]
     //[R2APISubmoduleDependency(nameof(BuffAPI))]
-    [R2APISubmoduleDependency(nameof(PrefabAPI), nameof(BuffAPI))]
+    [R2APISubmoduleDependency(nameof(PrefabAPI), nameof(BuffAPI),nameof(ArtifactAPI))]
 
     public class ArtifactOfDoomConfig : BaseUnityPlugin
     {
-        public const string ModVer = "2.0.2";
+        public const string ModVer = "2.0.4";
         public const string ModName = "ArtifactOfDoom";
         public const string ModGuid = "com.SirHamburger.ArtifactOfDoom";
 
@@ -181,32 +181,35 @@ namespace ArtifactOfDoom
 
 
 
-
-
-
-
-
-
-
-            On.RoR2.ContentManager.SetContentPacks += ContentManager_SetContentPacks;
-        }
-
-        public static BuffDef ArtifactOfDoomBuff = ScriptableObject.CreateInstance<BuffDef>();
-        //public static BuffDef ArtifactOfDoomBuff;
-        public static void ContentManager_SetContentPacks(On.RoR2.ContentManager.orig_SetContentPacks orig, List<ContentPack> newContentPacks)
-        {
-            
                 ArtifactOfDoomBuff.name = "ArtifactOfDoomDidLoseItem";
                 ArtifactOfDoomBuff.buffColor = Color.black;
                 ArtifactOfDoomBuff.canStack = false;
                 ArtifactOfDoomBuff.isDebuff=false;
-            
-            ContentPack pack = new ContentPack
-            {
-                artifactDefs = new List<ArtifactDef> { ArtifactOfDoom.Transmutation }.ToArray(),
-            };
+            ArtifactAPI.Add(ArtifactOfDoom.Transmutation);
+
             BuffAPI.Add(new CustomBuff(ArtifactOfDoomBuff));
-            newContentPacks.Add(pack);
+
+
+
+
+
+
+            On.RoR2.ContentManagement.ContentManager.SetContentPacks+=ContentManager_SetContentPacks;
+            //On.RoR2.ContentManager.SetContentPacks += ContentManager_SetContentPacks;
+        }
+
+        public static BuffDef ArtifactOfDoomBuff = ScriptableObject.CreateInstance<BuffDef>();
+        //public static BuffDef ArtifactOfDoomBuff;
+        public static void ContentManager_SetContentPacks(On.RoR2.ContentManagement.ContentManager.orig_SetContentPacks orig, List<RoR2.ContentManagement.ReadOnlyContentPack> newContentPacks)
+        {
+            
+
+                //RoR2.ContentManagement.NamedAssetCollection test = new RoR2.ContentManagement.NamedAssetCollection();
+            //RoR2.ContentManagement.ContentPack pack = new RoR2.ContentManagement.ContentPack
+            //{
+            //    artifactDefs = new List<ArtifactDef> { ArtifactOfDoom.Transmutation },
+            //};
+            //newContentPacks.Add(pack);
             orig(newContentPacks);
 
              //var didLoseItem = new R2API.CustomBuff("ArtifactOfDoomDidLoseItem","",Color.black,false,false);

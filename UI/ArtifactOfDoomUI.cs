@@ -76,15 +76,11 @@ namespace ArtifactOfDoom
         public void HUDAwake(On.RoR2.UI.HUD.orig_Awake orig, RoR2.UI.HUD self)
         {
             orig(self);
-            Debug.LogError("BeforeEnsureNetworking");
             NetworkClass.EnsureNetworking();
-            Debug.LogError("HUDAwake");
             Networking._instance.IsArtifactEnabled = RunArtifactManager.instance.IsArtifactEnabled(ArtifactOfDoom.Transmutation.artifactIndex);
             Networking._instance.IsCalculationSacrifice = ArtifactOfDoomConfig.useArtifactOfSacrificeCalculation.Value;
-            Debug.LogError("After Setting");
             if (!Networking._instance.IsArtifactEnabled)
             {
-                Debug.LogError("artifact is not activ!");
                 return;
 
             }
