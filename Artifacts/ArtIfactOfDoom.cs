@@ -13,6 +13,8 @@ using System.Collections.Generic;
 using UnityEngine;
 using ArtifactOfDoomTinyJson;
 using UnityEngine.Networking;
+using UnityEngine;
+using RoR2.Artifacts;
 namespace ArtifactOfDoom
 {
     public class ArtifactOfDoom
@@ -54,8 +56,7 @@ namespace ArtifactOfDoom
                 var bundle = AssetBundle.LoadFromStream(stream);
                 Transmutation.smallIconSelectedSprite = bundle.LoadAsset<Sprite>("Assets/Import/artifactofdoom_icon/ArtifactDoomEnabled.png");
                 Transmutation.smallIconDeselectedSprite = bundle.LoadAsset<Sprite>("Assets/Import/artifactofdoom_icon/ArtifactDoomDisabled.png");
-
-
+                R2API.ContentAddition.AddArtifactDef(Transmutation);
             }
             LoadBehavior();
         }
@@ -142,6 +143,9 @@ namespace ArtifactOfDoom
             On.RoR2.CharacterBody.OnInventoryChanged += (orig, self) =>
             {
                 orig(self);
+                if(Networking._instance==null)
+                    return;
+                
 
 
                 if (!Networking._instance.IsArtifactEnabled)

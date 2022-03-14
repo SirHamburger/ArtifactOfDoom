@@ -37,12 +37,11 @@ public class NetworkClass
 
 
         NetworkClass.CentralNetworkObject.AddComponent<Networking>();
-
-        On.RoR2.Networking.GameNetworkManager.OnServerAddPlayerInternal += (orig, self, conn, pcid, extraMsg) =>
-        {
-            orig(self, conn, pcid, extraMsg);
-            NetworkClass.EnsureNetworking();
-        };
+        //On.RoR2.Networking.GameNetworkManager.OnServerAddPlayerInternal += (orig, self, conn, pcid, extraMsg) =>
+        //{
+        //    orig(self, conn, pcid, extraMsg);
+        //    NetworkClass.EnsureNetworking();
+        //};
     }
 
     internal static GameObject CentralNetworkObject;

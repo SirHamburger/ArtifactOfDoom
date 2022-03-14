@@ -58,10 +58,7 @@
       <HintPath>/home/sirhamburger/Git/ArtifactOfDoom/libs/UnityEngine.CoreModule.dll</HintPath>
       <Private>false</Private>
     </Reference>
-    <Reference Include="UnityEngine.Networking">
-      <HintPath>/home/sirhamburger/Git/ArtifactOfDoom/libs/UnityEngine.Networking.dll</HintPath>
-      <Private>false</Private>
-    </Reference>
+
     <Reference Include="UnityEngine.ParticleSystemModule">
       <HintPath>/home/sirhamburger/Git/ArtifactOfDoom/libs/UnityEngine.ParticleSystemModule.dll</HintPath>
       <Private>false</Private>
@@ -76,8 +73,14 @@
         <Reference Include="UnityEngine.UIElementsModule">
       <HintPath>/home/sirhamburger/Git/ArtifactOfDoom/libs/UnityEngine.UIElementsModule.dll</HintPath>
     </Reference>
+    <Reference Include="RoR2">
+      <HintPath>/home/sirhamburger/Git/ArtifactOfDoom/libs/UnityEngine.RoR2.dll</HintPath>
+    </Reference>
         <Reference Include="UnityEngine.UIModule">
       <HintPath>/home/sirhamburger/Git/ArtifactOfDoom/libs/UnityEngine.UIModule.dll</HintPath>
+    </Reference>
+    <Reference Include="com.unity.multiplayer-hlapi.Runtime">
+      <HintPath>/home/sirhamburger/Git/ArtifactOfDoom/libs/com.unity.multiplayer-hlapi.Runtime.dll</HintPath>
     </Reference>
   </ItemGroup>
 

@@ -29,14 +29,6 @@ namespace ArtifactOfDoom
             //On.RoR2.UI.HealthBar.Awake += ExpBarAwakeAddon;
             On.RoR2.UI.HUD.Awake += HUDAwake;
 
-            try
-            {
-               // SetUpMiniRPC();
-            }
-            catch (Exception)
-            {
-                Debug.LogError($"[SirHamburger] Error in SetUpMiniRPC");
-            }
             On.RoR2.Inventory.RemoveItem_ItemIndex_int+= (orig, self, itemindex1, ItemIndex2) =>
             {
                 orig(self, itemindex1, ItemIndex2);
@@ -79,6 +71,7 @@ namespace ArtifactOfDoom
             NetworkClass.EnsureNetworking();
             Networking._instance.IsArtifactEnabled = RunArtifactManager.instance.IsArtifactEnabled(ArtifactOfDoom.Transmutation.artifactIndex);
             Networking._instance.IsCalculationSacrifice = ArtifactOfDoomConfig.useArtifactOfSacrificeCalculation.Value;
+            Debug.LogError("Networking._instance.IsArtifactEnabled == " + Networking._instance.IsArtifactEnabled);
             if (!Networking._instance.IsArtifactEnabled)
             {
                 return;

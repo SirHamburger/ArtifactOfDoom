@@ -17,6 +17,8 @@ cp "/media/ssdgamedisk/SteamLibrary/steamapps/common/Risk of Rain 2/Risk of Rain
 cp "/media/ssdgamedisk/SteamLibrary/steamapps/common/Risk of Rain 2/Risk of Rain 2_Data/Managed/UnityEngine.InputModule.dll" ./libs
 cp "/media/ssdgamedisk/SteamLibrary/steamapps/common/Risk of Rain 2/Risk of Rain 2_Data/Managed/UnityEngine.UIElementsModule.dll" ./libs
 cp "/media/ssdgamedisk/SteamLibrary/steamapps/common/Risk of Rain 2/Risk of Rain 2_Data/Managed/UnityEngine.UIModule.dll" ./libs
+cp "/media/ssdgamedisk/SteamLibrary/steamapps/common/Risk of Rain 2/Risk of Rain 2_Data/Managed/RoR2.dll" ./libs
+cp "/media/ssdgamedisk/SteamLibrary/steamapps/common/Risk of Rain 2/Risk of Rain 2_Data/Managed/com.unity.multiplayer-hlapi.Runtime.dll" ./libs
 
 rm ./Release/ArtifactOfDoomThunderstore/*
 rm ./Release/ArtifactOfDoomR2Modman/*
@@ -27,7 +29,8 @@ cp "/home/sirhamburger/Git/ArtifactOfDoom/bin/Debug/netstandard2.0/ArtifactOfDoo
 cp "/home/sirhamburger/Git/ArtifactOfDoom/bin/Debug/netstandard2.0/ArtifactOfDoom.dll" "./Release/ArtifactOfDoomR2Modman"
 cp "/home/sirhamburger/Git/ArtifactOfDoom/bin/Debug/netstandard2.0/ArtifactOfDoom.dll" "./Release/ArtifactOfDoomThunderstore"
 
-wine ./NetworkWeaver/Unity.UNetWeaver.exe "/home/sirhamburger/Git/ArtifactOfDoom/libs/UnityEngine.CoreModule.dll" "/home/sirhamburger/Git/ArtifactOfDoom/libs/UnityEngine.Networking.dll" "/home/sirhamburger/Git/ArtifactOfDoom/libs/Patched/"  "/home/sirhamburger/Git/ArtifactOfDoom/Release/ArtifactOfDoom.dll" "/home/sirhamburger/Git/ArtifactOfDoom/libs"
+# wine ./NetworkWeaver/Unity.UNetWeaver.exe "/home/sirhamburger/Git/ArtifactOfDoom/libs/UnityEngine.CoreModule.dll" "/home/sirhamburger/Git/ArtifactOfDoom/libs/UnityEngine.Networking.dll" "/home/sirhamburger/Git/ArtifactOfDoom/libs/Patched/"  "/home/sirhamburger/Git/ArtifactOfDoom/Release/ArtifactOfDoom.dll" "/home/sirhamburger/Git/ArtifactOfDoom/libs"
+wine ./NetworkWeaver/Unity.UNetWeaver.exe "/home/sirhamburger/Git/ArtifactOfDoom/libs/UnityEngine.CoreModule.dll" "/home/sirhamburger/Git/ArtifactOfDoom/libs/com.unity.multiplayer-hlapi.Runtime.dll" "/home/sirhamburger/Git/ArtifactOfDoom/libs/Patched/"  "/home/sirhamburger/Git/ArtifactOfDoom/Release/ArtifactOfDoom.dll" "/home/sirhamburger/Git/ArtifactOfDoom/libs"
 
 cp /home/sirhamburger/Git/ArtifactOfDoom/libs/Patched/ArtifactOfDoom.dll ./Release/ArtifactOfDoomR2Modman
 cp /home/sirhamburger/Git/ArtifactOfDoom/libs/Patched/ArtifactOfDoom.dll ./Release/ArtifactOfDoomThunderstore

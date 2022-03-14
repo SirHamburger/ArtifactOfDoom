@@ -7,13 +7,13 @@ using Path = System.IO.Path;
 using System.Collections.Generic;
 using R2API;
 using R2API.Utils;
+using RoR2.Artifacts;
 
 namespace ArtifactOfDoom
 {
     [BepInPlugin(ModGuid, ModName, ModVer)]
-    //[BepInDependency(R2API.R2API.PluginGUID, R2API.R2API.PluginVersion)]
-    //[R2APISubmoduleDependency(nameof(BuffAPI))]
-    [R2APISubmoduleDependency(nameof(PrefabAPI), nameof(BuffAPI),nameof(ArtifactAPI))]
+
+    [R2APISubmoduleDependency(nameof(PrefabAPI), nameof(ArtifactCodeAPI))]
 
     public class ArtifactOfDoomConfig : BaseUnityPlugin
     {
@@ -77,6 +77,9 @@ namespace ArtifactOfDoom
         public static ConfigEntry<double> sizeOfSideBars;
         public static ConfigEntry<bool> disableSideBars;
         public static ConfigEntry<bool> enableChatItemOutput;
+
+
+		public static List<ArtifactDef> artifactDefs = new List<ArtifactDef>();
 
         private void Awake()
         {
@@ -185,35 +188,16 @@ namespace ArtifactOfDoom
                 ArtifactOfDoomBuff.buffColor = Color.black;
                 ArtifactOfDoomBuff.canStack = false;
                 ArtifactOfDoomBuff.isDebuff=false;
-            ArtifactAPI.Add(ArtifactOfDoom.Transmutation);
 
-            BuffAPI.Add(new CustomBuff(ArtifactOfDoomBuff));
-
-
-
-
-
-
-            On.RoR2.ContentManagement.ContentManager.SetContentPacks+=ContentManager_SetContentPacks;
-            //On.RoR2.ContentManager.SetContentPacks += ContentManager_SetContentPacks;
-        }
-
-        public static BuffDef ArtifactOfDoomBuff = ScriptableObject.CreateInstance<BuffDef>();
-        //public static BuffDef ArtifactOfDoomBuff;
-        public static void ContentManager_SetContentPacks(On.RoR2.ContentManagement.ContentManager.orig_SetContentPacks orig, List<RoR2.ContentManagement.ReadOnlyContentPack> newContentPacks)
-        {
+        
             
 
-                //RoR2.ContentManagement.NamedAssetCollection test = new RoR2.ContentManagement.NamedAssetCollection();
-            //RoR2.ContentManagement.ContentPack pack = new RoR2.ContentManagement.ContentPack
-            //{
-            //    artifactDefs = new List<ArtifactDef> { ArtifactOfDoom.Transmutation },
-            //};
-            //newContentPacks.Add(pack);
-            orig(newContentPacks);
+            //BuffAPI.Add(new CustomBuff(ArtifactOfDoomBuff));
 
-             //var didLoseItem = new R2API.CustomBuff("ArtifactOfDoomDidLoseItem","",Color.black,false,false);
-             //ArtifactOfDoomBuff = BuffAPI.Add(didLoseItem);
         }
+
+
+        public static BuffDef ArtifactOfDoomBuff = ScriptableObject.CreateInstance<BuffDef>();
+
     }
 }
