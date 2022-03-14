@@ -618,10 +618,17 @@ namespace ArtifactOfDoom
             var totalItems = getTotalItemCountOfPlayer(inventory);
             var calculatedValue = totalItems - currentStage * ArtifactOfDoomConfig.averageItemsPerStage.Value;
             int calculatesEnemyCountToTrigger = 0;
-            if (calculatedValue >= 0)
-                calculatesEnemyCountToTrigger = (int)Math.Pow(calculatedValue, ArtifactOfDoomConfig.exponentTriggerItems.Value);
-            else
-                calculatesEnemyCountToTrigger = (int)Math.Pow(totalItems, ArtifactOfDoomConfig.exponentailFactorIfYouAreUnderAverageItemsPerStage.Value);
+
+            calculatesEnemyCountToTrigger = (int)((0.5+0.5*Mathf.Atan((float)0.4*totalItems-5*(1+currentStage)/2)/2)*40-3);
+
+            
+            
+            
+
+            //if (calculatedValue >= 0)
+            //    calculatesEnemyCountToTrigger = (int)Math.Pow(calculatedValue, ArtifactOfDoomConfig.exponentTriggerItems.Value);
+            //else
+            //    calculatesEnemyCountToTrigger = (int)Math.Pow(totalItems, ArtifactOfDoomConfig.exponentailFactorIfYouAreUnderAverageItemsPerStage.Value);
             //calculatesEnemyCountToTrigger =1;
 
             if (calculatesEnemyCountToTrigger < 1)
@@ -629,6 +636,7 @@ namespace ArtifactOfDoom
 
             if (RunArtifactManager.instance.IsArtifactEnabled(RoR2Content.Artifacts.swarmsArtifactDef) && ArtifactOfDoomConfig.artifactOfSwarmNerf.Value)
                 calculatesEnemyCountToTrigger *= 2;
+
             return calculatesEnemyCountToTrigger;
         }
 
@@ -669,6 +677,12 @@ namespace ArtifactOfDoom
                 case "BANDIT2_BODY_NAME":
                     if (debug) { Debug.LogWarning($"Character baseNameToken = {baseNameToken} returning: Bandit"); }
                     return ArtifactOfDoomConfig.BanditBonusItems.Value;
+                case "RAILGUNNER_BODY_NAME":
+                if (debug) { Debug.LogWarning($"Character baseNameToken = {baseNameToken} returning: Railgunner"); }
+                    return ArtifactOfDoomConfig.RailgunnerBonusItems.Value;
+                case "VOIDSURVIVOR_BODY_NAME":
+                if (debug) { Debug.LogWarning($"Character baseNameToken = {baseNameToken} returning: VoidSurvivor"); }
+                    return ArtifactOfDoomConfig.VoidSurvivorBonusItems.Value;
                 default:
                     string CustomChars = ArtifactOfDoomConfig.CustomChars.Value;
 
@@ -722,6 +736,12 @@ namespace ArtifactOfDoom
                 case "BANDIT2_BODY_NAME":
                     if (debug) { Debug.LogWarning($"Character baseNameToken = {baseNameToken} returning: Bandit"); }
                     return ArtifactOfDoomConfig.BanditMultiplierForTimedBuff.Value;
+                case "RAILGUNNER_BODY_NAME":
+                    if (debug) { Debug.LogWarning($"Character baseNameToken = {baseNameToken} returning: Railgunner"); }
+                    return ArtifactOfDoomConfig.RailgunnerMultiplierForTimedBuff.Value;
+                case "VOIDSURVIVOR_BODY_NAME":
+                    if (debug) { Debug.LogWarning($"Character baseNameToken = {baseNameToken} returning: VoidSurvivor"); }
+                    return ArtifactOfDoomConfig.VoidSurvivorMultiplierForTimedBuff.Value;
                 default:
                     string CustomChars = ArtifactOfDoomConfig.CustomChars.Value;
 

@@ -17,9 +17,11 @@ namespace ArtifactOfDoom
 
     public class ArtifactOfDoomConfig : BaseUnityPlugin
     {
-        public const string ModVer = "2.0.4";
+        public const string ModVer = "2.0.5";
         public const string ModName = "ArtifactOfDoom";
         public const string ModGuid = "com.SirHamburger.ArtifactOfDoom";
+        public static BuffDef ArtifactOfDoomBuff = ScriptableObject.CreateInstance<BuffDef>();
+
 
         public static GameObject GameObjectReference;
 
@@ -28,6 +30,7 @@ namespace ArtifactOfDoom
         //internal static FilingDictionary<ItemBoilerplate> masterItemList = new FilingDictionary<ItemBoilerplate>();
 
         internal static BepInEx.Logging.ManualLogSource _logger;
+        
 
         public static ConfigEntry<int> averageItemsPerStage;
         public static ConfigEntry<int> minItemsPerStage;
@@ -68,9 +71,12 @@ namespace ArtifactOfDoom
         public static ConfigEntry<double> CaptainMultiplierForTimedBuff;
         public static ConfigEntry<double> BanditBonusItems;
         public static ConfigEntry<double> BanditMultiplierForTimedBuff;
+        public static ConfigEntry<double> RailgunnerBonusItems;
+        public static ConfigEntry<double> RailgunnerMultiplierForTimedBuff;
+        public static ConfigEntry<double> VoidSurvivorBonusItems;
+        public static ConfigEntry<double> VoidSurvivorMultiplierForTimedBuff;
         public static ConfigEntry<double> CustomSurvivorBonusItems;
         public static ConfigEntry<double> CustomSurvivorMultiplierForTimedBuff;
-        public static ConfigEntry<double> exponentTriggerItems;
 
         //public static BuffIndex buffIndexDidLoseItem;
 
@@ -90,11 +96,9 @@ namespace ArtifactOfDoom
             ArtifactOfDoomUI artifactOfDoomUI = new ArtifactOfDoomUI();
             ArtifactOfDoom artifactOfDoom = new ArtifactOfDoom();
             NetworkClass network = new NetworkClass();
-
             averageItemsPerStage = cfgFile.Bind(new ConfigDefinition("Gameplay Settings", "averageItemsPerStage"), 3, new ConfigDescription(
                 "Base chance in percent that enemys steal items from you ((totalItems - currentStage * averageItemsPerStage) ^ exponentTriggerItems; \nIf that value is lower you'll need to kill more enemies to get an item"));
-            exponentTriggerItems = cfgFile.Bind(new ConfigDefinition("Gameplay Settings", "exponentTriggerItems"), 2.0, new ConfigDescription(
-                "The exponent for calculation when you'll get an item. If it's 1 you have a linear increase. Default is 2"));
+
 
             minItemsPerStage = cfgFile.Bind(new ConfigDefinition("Gameplay Settings", "minItemsPerStage"), 2, new ConfigDescription(
                 "The expected minimum item count per stage. If you have less Items than that you'll have a decreased chance that you lose items"));
@@ -175,6 +179,14 @@ namespace ArtifactOfDoom
                 "The count of items which you get if you kill enough enemies"));
             BanditMultiplierForTimedBuff = cfgFile.Bind(new ConfigDefinition("Character specific settings", "BanditMultiplierForTimedBuff"), 1.0, new ConfigDescription(
                 "The Multiplier for that specific character for the length of timeAfterHitToNotLooseItems"));
+            RailgunnerBonusItems = cfgFile.Bind(new ConfigDefinition("Character specific settings", "RailgunnerBonusItems"), 2.0, new ConfigDescription(
+                "The count of items which you get if you kill enough enemies"));
+            RailgunnerMultiplierForTimedBuff = cfgFile.Bind(new ConfigDefinition("Character specific settings", "RailgunnerMultiplierForTimedBuff"), 1.0, new ConfigDescription(
+                "The Multiplier for that specific character for the length of timeAfterHitToNotLooseItems"));
+            VoidSurvivorBonusItems = cfgFile.Bind(new ConfigDefinition("Character specific settings", "VoidSurvivorBonusItems"), 2.0, new ConfigDescription(
+                "The count of items which you get if you kill enough enemies"));
+            VoidSurvivorMultiplierForTimedBuff = cfgFile.Bind(new ConfigDefinition("Character specific settings", "VoidSurvivorMultiplierForTimedBuff"), 1.0, new ConfigDescription(
+                "The Multiplier for that specific character for the length of timeAfterHitToNotLooseItems"));
             CustomSurvivorBonusItems = cfgFile.Bind(new ConfigDefinition("Character specific settings", "CustomSurvivorBonusItems"), 1.0, new ConfigDescription(
                 "The count of items which you get if you kill enough enemies"));
             CustomSurvivorMultiplierForTimedBuff = cfgFile.Bind(new ConfigDefinition("Character specific settings", "CustomSurvivorMultiplierForTimedBuff"), 1.0, new ConfigDescription(
@@ -183,21 +195,14 @@ namespace ArtifactOfDoom
                 "The Multiplier for that specific character for the length of timeAfterHitToNotLoseItems"));
 
 
-
                 ArtifactOfDoomBuff.name = "ArtifactOfDoomDidLoseItem";
                 ArtifactOfDoomBuff.buffColor = Color.black;
                 ArtifactOfDoomBuff.canStack = false;
                 ArtifactOfDoomBuff.isDebuff=false;
-
-        
-            
-
-            //BuffAPI.Add(new CustomBuff(ArtifactOfDoomBuff));
-
+                R2API.ContentAddition.AddBuffDef(ArtifactOfDoomBuff);
         }
 
 
-        public static BuffDef ArtifactOfDoomBuff = ScriptableObject.CreateInstance<BuffDef>();
 
     }
 }

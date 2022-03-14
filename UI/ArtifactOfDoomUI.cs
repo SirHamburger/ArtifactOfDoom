@@ -71,7 +71,6 @@ namespace ArtifactOfDoom
             NetworkClass.EnsureNetworking();
             Networking._instance.IsArtifactEnabled = RunArtifactManager.instance.IsArtifactEnabled(ArtifactOfDoom.Transmutation.artifactIndex);
             Networking._instance.IsCalculationSacrifice = ArtifactOfDoomConfig.useArtifactOfSacrificeCalculation.Value;
-            Debug.LogError("Networking._instance.IsArtifactEnabled == " + Networking._instance.IsArtifactEnabled);
             if (!Networking._instance.IsArtifactEnabled)
             {
                 return;
