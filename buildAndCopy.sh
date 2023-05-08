@@ -38,6 +38,8 @@ cp /home/sirhamburger/Git/ArtifactOfDoom/libs/Patched/ArtifactOfDoom.dll ./Relea
 
 
 sed 's/!\[\]( UI.png )/!\[\](https:\/\/raw.githubusercontent.com\/SirHamburger\/ArtifactOfDoom\/master\/UI.png)/g' README.md > ./Release/ArtifactOfDoomThunderstore/README.md
+
+sed 's/!\[\]( curveItemGet.png )/!\[\](https:\/\/raw.githubusercontent.com\/SirHamburger\/ArtifactOfDoom\/master\/curveItemGet.png)/g' README.md > ./Release/ArtifactOfDoomThunderstore/README.md
 cp "./README.md" "./Release/ArtifactOfDoomR2Modman/"
 cp "./Release/icon.png" "./Release/ArtifactOfDoomR2Modman/"
 cp "./Release/icon.png" "./Release/ArtifactOfDoomThunderstore/"

@@ -4,7 +4,7 @@ A mod for Risk of Rain 2.
 
 Adds an artifact to the game which destroys items of your inventory if you take damage but gives you items if you kill enemies.
 
-##Credits
+## Credits
 ### Design
 Special thanks for designing the icons belongs to:
 Oroshibu
@@ -15,9 +15,6 @@ https://github.com/ThinkInvis/RoR2-TinkersSatchel
 
 For the UI i took parts of Crashaholics UIModifier mod:
 https://github.com/Crashaholic/RoR2UIMod
-
-And the Multiplayer UI support is based on the Example of MiniRPC:
-https://github.com/wildbook/R2Mods/tree/develop/MiniRpcLib
 
 ## What does this mod do
 
@@ -32,10 +29,14 @@ __If you don't like some or all of the added components you can disable them in 
 ## When do i get an item
 There are two possible gamemodes. 
 ### Default mode
-The calculation for the required kills is:
-```(totalItems - currentStage * averageItemsPerStage) ^ exponentTriggerItems```
-`totalItems` is the current item count of each character. `CurrentStage` is the number of stages completed and `exponentTriggerItems` and `averageItemsPerStage` can be changed in the config file.
-For example you've 20 items and are on stage 5. The configured averageItems are 3 (default). That means you've to kill (20-5*3)^2=25 enemies to get one item.
+It is specified when to get an item by the following formula:
+(0.5+0.5*arctan(0.4*totalItems-ArtifactOfDoomConfig.averageItemsPerStage*(1+currentStage)/2)/2)*40-3)
+
+The curve is the following:
+![]( curveItemGet.png )
+
+by setting the value for averageItemsPerStage in the settings you can specify how many kills you need for one item.
+
 
 Everytime you get hit you'll lose an item. The only exception is if you've less items then the configured minItemsPerStage.
 If that is the case you have a chance that you will not use an item.  
@@ -76,6 +77,10 @@ https://github.com/SirHamburger/ArtifactOfDoom
 You can also reach me in Discord (Sir Hamburger#8447)
 
 ## Patchnotes
+### Version 2.0.5
+- Fix for new version
+- Change calculation of gained items
+
 ### Version 2.0.4
 Reupload since I uploaded a wrong manifest
 
