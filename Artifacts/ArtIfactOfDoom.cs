@@ -616,10 +616,9 @@ namespace ArtifactOfDoom
         private int calculateEnemyCountToTrigger(Inventory inventory)
         {
             var totalItems = getTotalItemCountOfPlayer(inventory);
-            var calculatedValue = totalItems - currentStage * ArtifactOfDoomConfig.averageItemsPerStage.Value;
             int calculatesEnemyCountToTrigger = 0;
 
-            calculatesEnemyCountToTrigger = (int)((0.5+0.5*Mathf.Atan((float)0.4*totalItems-5*(1+currentStage)/2)/2)*40-3);
+            calculatesEnemyCountToTrigger = (int)((0.5+0.5*Mathf.Atan((float)0.4*totalItems-ArtifactOfDoomConfig.averageItemsPerStage.Value*(1+currentStage)/2)/2)*40-3);
 
             
             

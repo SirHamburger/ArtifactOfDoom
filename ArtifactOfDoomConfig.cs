@@ -96,8 +96,8 @@ namespace ArtifactOfDoom
             ArtifactOfDoomUI artifactOfDoomUI = new ArtifactOfDoomUI();
             ArtifactOfDoom artifactOfDoom = new ArtifactOfDoom();
             NetworkClass network = new NetworkClass();
-            averageItemsPerStage = cfgFile.Bind(new ConfigDefinition("Gameplay Settings", "averageItemsPerStage"), 3, new ConfigDescription(
-                "Base chance in percent that enemys steal items from you ((totalItems - currentStage * averageItemsPerStage) ^ exponentTriggerItems; \nIf that value is lower you'll need to kill more enemies to get an item"));
+            averageItemsPerStage = cfgFile.Bind(new ConfigDefinition("Gameplay Settings", "averageItemsPerStage"), 5, new ConfigDescription(
+                "Excpected items per stage. If below you may get more items if aboth you'll need more kills to get an item"));
 
 
             minItemsPerStage = cfgFile.Bind(new ConfigDefinition("Gameplay Settings", "minItemsPerStage"), 2, new ConfigDescription(
