@@ -135,6 +135,8 @@ public class Networking : NetworkBehaviour
             {
                 if (element != "")
                 {
+                    if(ArtifactOfDoomUI.listGainedImages.Count<=i)
+                        return;
                     if (ArtifactOfDoomUI.listGainedImages[i].GetComponent<Image>() == null)
                         ArtifactOfDoomUI.listGainedImages[i].AddComponent<Image>();
                     ArtifactOfDoomUI.listGainedImages[i].GetComponent<Image>().sprite = ItemCatalog.GetItemDef(ItemCatalog.FindItemIndex(element)).pickupIconSprite;
