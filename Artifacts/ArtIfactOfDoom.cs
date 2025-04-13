@@ -1,27 +1,22 @@
 ﻿
-//using R2API;
-//using R2API.Utils;
-//using EnigmaticThunder;
-using BepInEx;
 using BepInEx.Logging;
 using System.Reflection;
 using RoR2;
 using RoR2.Stats;
 using System;
 using System.Collections.Generic;
-//using TILER2;
+
 using UnityEngine;
 using ArtifactOfDoomTinyJson;
 using UnityEngine.Networking;
-using UnityEngine;
-using RoR2.Artifacts;
+
 namespace ArtifactOfDoom
 {
     public class ArtifactOfDoom
     {
 
 
-        public static ArtifactDef Transmutation = ScriptableObject.CreateInstance<ArtifactDef>();
+        public static ArtifactDef artifactOfDoomDefinition = ScriptableObject.CreateInstance<ArtifactDef>();
 
         private const string GrayColor = "7e91af";
         private const string ErrorColor = "ff0000";
@@ -48,19 +43,20 @@ namespace ArtifactOfDoom
 
         public ArtifactOfDoom()
         {
-            Transmutation.nameToken = "Artifact of Doom";
-            Transmutation.descriptionToken = "You get items on enemy kills but lose items every time you take damage.";
+            artifactOfDoomDefinition.nameToken = "Artifact of Doom";
+            artifactOfDoomDefinition.descriptionToken = "You get items on enemy kills but lose items every time you take damage.";
 
             using (var stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("ArtifactOfDoom.artifactofdoom"))
             {
                 var bundle = AssetBundle.LoadFromStream(stream);
-                Transmutation.smallIconSelectedSprite = bundle.LoadAsset<Sprite>("Assets/Import/artifactofdoom_icon/ArtifactDoomEnabled.png");
-                Transmutation.smallIconDeselectedSprite = bundle.LoadAsset<Sprite>("Assets/Import/artifactofdoom_icon/ArtifactDoomDisabled.png");
-                R2API.ContentAddition.AddArtifactDef(Transmutation);
+                artifactOfDoomDefinition.smallIconSelectedSprite = bundle.LoadAsset<Sprite>("Assets/Import/artifactofdoom_icon/ArtifactDoomEnabled.png");
+                artifactOfDoomDefinition.smallIconDeselectedSprite = bundle.LoadAsset<Sprite>("Assets/Import/artifactofdoom_icon/ArtifactDoomDisabled.png");
+
+                R2API.ContentAddition.AddArtifactDef(artifactOfDoomDefinition);
             }
             LoadBehavior();
         }
-                  
+
 
 
         protected void LoadBehavior()
@@ -89,11 +85,6 @@ namespace ArtifactOfDoom
                     information[information.Length - 1] = "Gainitems";
                     self.statsToDisplay = information;
                 };
-            On.RoR2.PreGameController.StartRun += (orig, self) =>
-            {
-                orig(self);
-                
-            };
 
             On.RoR2.SceneDirector.PopulateScene += (orig, self) =>
                 {
@@ -129,29 +120,17 @@ namespace ArtifactOfDoom
                     counter = new List<int>();
                     LockNetworkUser.Clear();
                 };
-            On.RoR2.Run.Awake += (orig, self) =>
-              {
-                  orig(self);
-                  //Debug.LogWarning("NetworkClass.SpawnNetworkObject();");
-
-              };
-            On.RoR2.Run.Start += (orig, self) =>
-            {
-                orig(self);
-
-            };
             On.RoR2.CharacterBody.OnInventoryChanged += (orig, self) =>
             {
                 orig(self);
-                if(Networking._instance==null)
+                if (Networking._instance == null ||
+                    !Networking._instance.IsArtifactEnabled ||
+                    !self.isPlayerControlled
+                )
+                {
                     return;
-                
+                }
 
-
-                if (!Networking._instance.IsArtifactEnabled)
-                    return;
-                if (!self.isPlayerControlled)
-                    return;
 
                 NetworkUser tempNetworkUser = getNetworkUserOfCharacterBody(self);
                 int calculatesEnemyCountToTrigger = calculateEnemyCountToTrigger(self.inventory);
@@ -176,26 +155,21 @@ namespace ArtifactOfDoom
             };
             On.RoR2.GlobalEventManager.OnCharacterDeath += (orig, self, damageReport) =>
             {
-                //try
-                //{
                 orig(self, damageReport);
-                Networking._instance.IsArtifactEnabled = RunArtifactManager.instance.IsArtifactEnabled(ArtifactOfDoom.Transmutation.artifactIndex);
+                Networking._instance.IsArtifactEnabled = RunArtifactManager.instance.IsArtifactEnabled(ArtifactOfDoom.artifactOfDoomDefinition.artifactIndex);
                 Networking._instance.IsCalculationSacrifice = ArtifactOfDoomConfig.useArtifactOfSacrificeCalculation.Value;
 
-                if (!Networking._instance.IsArtifactEnabled)
+                if (!Networking._instance.IsArtifactEnabled ||
+                    Run.instance.isGameOverServer ||
+                    damageReport.victimBody.isPlayerControlled ||
+                    damageReport.attackerBody == null ||
+                    damageReport.attackerBody.inventory == null ||
+                    damageReport.victimBody.inventory == null
+                )
                 {
                     return;
                 }
-                if (Run.instance.isGameOverServer)
-                    return;
-                if (damageReport.victimBody.isPlayerControlled)
-                    return;
-                if (damageReport.attackerBody == null)
-                    return;
-                if (damageReport.attackerBody.inventory == null)
-                    return;
-                if (damageReport.victimBody.inventory == null)
-                    return;
+
 
                 if (damageReport.attackerOwnerMaster != null)
                 {
@@ -228,15 +202,14 @@ namespace ArtifactOfDoom
                 uint pos = 0;
 
                 int calculatesEnemyCountToTrigger = calculateEnemyCountToTrigger(currentBody.inventory);
-                bool enemyTrigger = getEnemyDropRate(damageReport);
+                bool enemyTrigger = doesEnemyTrigger(damageReport);
                 if (counter[Playername.IndexOf(currentBody)] <= calculatesEnemyCountToTrigger && !ArtifactOfDoomConfig.useArtifactOfSacrificeCalculation.Value)
                 {
                     counter[Playername.IndexOf(currentBody)]++;
 
                     NetworkUser tempNetworkUser = getNetworkUserOfDamageReport(damageReport, true);
                     string temp = counter[Playername.IndexOf(currentBody)] + "," + calculatesEnemyCountToTrigger;
-                    //Debug.LogWarning("tempNetworkUser: " + tempNetworkUser);
-                    //Debug.LogWarning("temp: " + temp);
+
                     if (NetworkServer.active)
                     {
                         Networking.ServerEnsureNetworking();
@@ -367,59 +340,17 @@ namespace ArtifactOfDoom
             {
                 //For adding possibility to dont loose items for some time: characterBody.AddTimedBuff(BuffIndex.Immune, duration);
                 orig(self, damageinfo);
-                //BuffIndex buff = new BuffIndex();
-                //Debug.LogError("buffindex " +buff );
-//
-                //BuffCatalog.FindBuffIndex("ArtifactOfDoomDidLoseItem");
-                //                Debug.LogError("buffindex " +buff );
 
-
-                if (!Networking._instance.IsArtifactEnabled)
+                if (!Networking._instance.IsArtifactEnabled ||
+                    damageinfo.rejected ||
+                    self.body == null ||
+                    self.body.inventory == null ||
+                    Run.instance.isGameOverServer ||
+                    damageinfo == null ||
+                    damageinfo.attacker == null ||
+                    self.body.HasBuff(ArtifactOfDoomConfig.ArtifactOfDoomBuff)
+                )
                 {
-                    return;
-                }
-
-                if (damageinfo.rejected)
-                {
-                    //Debug.Log("Teddie?");
-                    return;
-                }
-
-                if (debug) Debug.LogWarning("Line 336");
-
-                if (self.body == null)
-                {
-                    if (debug) Debug.LogWarning("self.body == null)");
-                    return;
-                }
-
-                if (self.body.inventory == null)
-                {
-                    if (debug) Debug.LogWarning("self.body.inventory == null)");
-                    return;
-                }
-
-                if (Run.instance.isGameOverServer)
-                {
-                    if (debug) Debug.LogWarning("RoR2.Run.instance.isGameOverServer)");
-                    return;
-                }
-
-                if (damageinfo == null)
-                {
-                    if (debug) Debug.LogWarning("damageinfo == null)");
-                    return;
-                }
-
-                if (damageinfo.attacker == null)
-                {
-                    if (debug) Debug.LogWarning("damageinfo.attacker.name==null)");
-                    return;
-
-                }
-                if (self.body.HasBuff(ArtifactOfDoomConfig.ArtifactOfDoomBuff))
-                {
-                    if (debug) Debug.LogWarning("you did lose an item not long ago so you don't lose one now");
                     return;
                 }
 
@@ -618,11 +549,11 @@ namespace ArtifactOfDoom
             var totalItems = getTotalItemCountOfPlayer(inventory);
             int calculatesEnemyCountToTrigger = 0;
 
-            calculatesEnemyCountToTrigger = (int)((0.5+0.5*Mathf.Atan((float)0.4*totalItems-ArtifactOfDoomConfig.averageItemsPerStage.Value*(1+currentStage)/2)/2)*40-3);
+            calculatesEnemyCountToTrigger = (int)((0.5 + 0.5 * Mathf.Atan((float)0.4 * totalItems - ArtifactOfDoomConfig.averageItemsPerStage.Value * (1 + currentStage) / 2) / 2) * 40 - 3);
 
-            
-            
-            
+
+
+
 
             //if (calculatedValue >= 0)
             //    calculatesEnemyCountToTrigger = (int)Math.Pow(calculatedValue, ArtifactOfDoomConfig.exponentTriggerItems.Value);
@@ -677,10 +608,10 @@ namespace ArtifactOfDoom
                     if (debug) { Debug.LogWarning($"Character baseNameToken = {baseNameToken} returning: Bandit"); }
                     return ArtifactOfDoomConfig.BanditBonusItems.Value;
                 case "RAILGUNNER_BODY_NAME":
-                if (debug) { Debug.LogWarning($"Character baseNameToken = {baseNameToken} returning: Railgunner"); }
+                    if (debug) { Debug.LogWarning($"Character baseNameToken = {baseNameToken} returning: Railgunner"); }
                     return ArtifactOfDoomConfig.RailgunnerBonusItems.Value;
                 case "VOIDSURVIVOR_BODY_NAME":
-                if (debug) { Debug.LogWarning($"Character baseNameToken = {baseNameToken} returning: VoidSurvivor"); }
+                    if (debug) { Debug.LogWarning($"Character baseNameToken = {baseNameToken} returning: VoidSurvivor"); }
                     return ArtifactOfDoomConfig.VoidSurvivorBonusItems.Value;
                 default:
                     string CustomChars = ArtifactOfDoomConfig.CustomChars.Value;
@@ -797,29 +728,19 @@ namespace ArtifactOfDoom
             counter = new List<int>();
         }
 
-        private bool getEnemyDropRate(DamageReport damageReport)
+        private bool doesEnemyTrigger(DamageReport damageReport)
         {
-            if (!ArtifactOfDoomConfig.useArtifactOfSacrificeCalculation.Value)
-                return false;
-            if (!damageReport.victimMaster)
+            if (!ArtifactOfDoomConfig.useArtifactOfSacrificeCalculation.Value ||
+            !damageReport.victimMaster ||
+            (damageReport.attackerTeamIndex == damageReport.victimTeamIndex
+            && damageReport.victimMaster.minionOwnership.ownerMaster))
             {
                 return false;
             }
-            if (damageReport.attackerTeamIndex == damageReport.victimTeamIndex && damageReport.victimMaster.minionOwnership.ownerMaster)
-            {
-                return false;
-            }
+
             float expAdjustedDropChancePercent = Util.GetExpAdjustedDropChancePercent(5f * (float)ArtifactOfDoomConfig.multiplayerForArtifactOfSacrificeDropRate.Value, damageReport.victim.gameObject);
-            //Debug.LogFormat("Drop chance from {0}: {1}", new object[]
-            //{
-            //	damageReport.victimBody,
-            //	expAdjustedDropChancePercent
-            //});
-            if (Util.CheckRoll(expAdjustedDropChancePercent, 0f, null))
-            {
-                return true;
-            }
-            return false;
+
+            return Util.CheckRoll(expAdjustedDropChancePercent, 0f, null);
         }
     }
 }

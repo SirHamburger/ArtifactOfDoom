@@ -4,13 +4,7 @@ using System;
 using UnityEngine.Networking;
 using System.Collections.Generic;
 using ArtifactOfDoom;
-using UnityEngine;
-using Unity;
 using UnityEngine.UI;
-
-using System.Runtime.CompilerServices;
-using System.Security.Cryptography;
-using System.Text;
 
 using R2API;
 
@@ -30,18 +24,10 @@ public class NetworkClass
         var artifactOfDoomNetworkingPrefab = new GameObject("ArtifactOfDoomNetworkingPrefab");
         artifactOfDoomNetworkingPrefab.AddComponent<NetworkIdentity>();
 
-        //   prefabs = new List<GameObject>();
-        //    prefabs.Add()
-        //Resources.Load<GameObject>("ArtifactOfDoomNetworkingPrefab")
         NetworkClass.CentralNetworkObject = artifactOfDoomNetworkingPrefab.InstantiateClone("ArtifactOfDoomNetworking", true);
 
-
         NetworkClass.CentralNetworkObject.AddComponent<Networking>();
-        //On.RoR2.Networking.GameNetworkManager.OnServerAddPlayerInternal += (orig, self, conn, pcid, extraMsg) =>
-        //{
-        //    orig(self, conn, pcid, extraMsg);
-        //    NetworkClass.EnsureNetworking();
-        //};
+
     }
 
     internal static GameObject CentralNetworkObject;
@@ -113,14 +99,7 @@ public class Networking : NetworkBehaviour
             }
         }
     }
-    //[ClientRpc]
-    //public void RpcIsArtifactActive(bool isActive)
-    //{
-    //            NetworkClass.EnsureNetworking();
-    //
-    //    //Debug.LogWarning("TargetIsArtifactActive: " + isActive);
-    //    ArtifactOfDoomUI.ArtifactIsActive = isActive;
-    //}
+
     [TargetRpc]
     public void TargetAddGainedItemsToPlayers(NetworkConnection target, string QueueGainedItemSpriteToString)
     {

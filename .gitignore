@@ -17,7 +17,12 @@
 [Ll]ibs/
 [Dd]ebug/
 [Dd]ebugPublic/
-[Rr]elease/
+
+[Rr]elease/ArtifactOfDoomR2Modman
+[Rr]elease/README.md
+[Rr]elease/ArtifactOfDoom.dll
+[Rr]elease/ArtifactOfDoomThunderstore
+
 [Rr]eleases/
 x64/
 x86/

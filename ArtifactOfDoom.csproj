@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netstandard2.0</TargetFramework>
+    <TargetFramework>netstandard2.1</TargetFramework>
   </PropertyGroup>
 
   <ItemGroup>
@@ -26,30 +26,20 @@
       <HintPath>/home/sirhamburger/Git/ArtifactOfDoom/libs/MMHOOK_Assembly-CSharp.dll</HintPath>
       <Private>false</Private>
     </Reference>
-    <Reference Include="Mono.Cecil">
-      <HintPath>/home/sirhamburger/Git/ArtifactOfDoom/libs/Mono.Cecil.dll</HintPath>
+
+
+
+    <Reference Include="Prefab">
+      <HintPath>/home/sirhamburger/Git/ArtifactOfDoom/libs/R2API.Prefab.dll</HintPath>
       <Private>false</Private>
     </Reference>
-    <Reference Include="MonoMod.Utils">
-      <HintPath>/home/sirhamburger/Git/ArtifactOfDoom/libs/MonoMod.Utils.dll</HintPath>
+    <Reference Include="ContentManagement">
+      <HintPath>/home/sirhamburger/Git/ArtifactOfDoom/libs/R2API.ContentManagement.dll</HintPath>
       <Private>false</Private>
     </Reference>
-    <Reference Include="R2API">
-      <HintPath>/home/sirhamburger/Git/ArtifactOfDoom/libs/R2API.dll</HintPath>
-      <Private>false</Private>
-    </Reference>
-    <Reference Include="Unity.Postprocessing.Runtime">
-      <HintPath>/home/sirhamburger/Git/ArtifactOfDoom/libs/Unity.Postprocessing.Runtime.dll</HintPath>
-      <Private>false</Private>
-    </Reference>
-    <Reference Include="Unity.TextMeshPro">
-      <HintPath>/home/sirhamburger/Git/ArtifactOfDoom/libs/Unity.TextMeshPro.dll</HintPath>
-      <Private>false</Private>
-    </Reference>
-    <Reference Include="UnityEngine">
-      <HintPath>/home/sirhamburger/Git/ArtifactOfDoom/libs/UnityEngine.dll</HintPath>
-      <Private>false</Private>
-    </Reference>
+
+
+
     <Reference Include="UnityEngine.AssetBundleModule">
       <HintPath>/home/sirhamburger/Git/ArtifactOfDoom/libs/UnityEngine.AssetBundleModule.dll</HintPath>
       <Private>false</Private>
@@ -59,20 +49,16 @@
       <Private>false</Private>
     </Reference>
 
-    <Reference Include="UnityEngine.ParticleSystemModule">
-      <HintPath>/home/sirhamburger/Git/ArtifactOfDoom/libs/UnityEngine.ParticleSystemModule.dll</HintPath>
-      <Private>false</Private>
-    </Reference>
+
     <Reference Include="UnityEngine.UI">
       <HintPath>/home/sirhamburger/Git/ArtifactOfDoom/libs/UnityEngine.UI.dll</HintPath>
       <Private>false</Private>
     </Reference>
-        <Reference Include="UnityEngine.InputModule">
-      <HintPath>/home/sirhamburger/Git/ArtifactOfDoom/libs/UnityEngine.InputModule.dll</HintPath>
+    <Reference Include="UnityEngine">
+      <HintPath>/home/sirhamburger/Git/ArtifactOfDoom/libs/UnityEngine.dll</HintPath>
+      <Private>false</Private>
     </Reference>
-        <Reference Include="UnityEngine.UIElementsModule">
-      <HintPath>/home/sirhamburger/Git/ArtifactOfDoom/libs/UnityEngine.UIElementsModule.dll</HintPath>
-    </Reference>
+
     <Reference Include="RoR2">
       <HintPath>/home/sirhamburger/Git/ArtifactOfDoom/libs/UnityEngine.RoR2.dll</HintPath>
     </Reference>

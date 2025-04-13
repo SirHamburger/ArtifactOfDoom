@@ -1,23 +1,18 @@
 ﻿using BepInEx;
 using BepInEx.Configuration;
-//using EnigmaticThunder;
 using RoR2;
 using UnityEngine;
 using Path = System.IO.Path;
 using System.Collections.Generic;
-using R2API;
-using R2API.Utils;
-using RoR2.Artifacts;
+
 
 namespace ArtifactOfDoom
 {
     [BepInPlugin(ModGuid, ModName, ModVer)]
 
-    [R2APISubmoduleDependency(nameof(PrefabAPI), nameof(ArtifactCodeAPI))]
-
     public class ArtifactOfDoomConfig : BaseUnityPlugin
     {
-        public const string ModVer = "2.0.5";
+        public const string ModVer = "2.0.6";
         public const string ModName = "ArtifactOfDoom";
         public const string ModGuid = "com.SirHamburger.ArtifactOfDoom";
         public static BuffDef ArtifactOfDoomBuff = ScriptableObject.CreateInstance<BuffDef>();
@@ -27,7 +22,6 @@ namespace ArtifactOfDoom
 
         private static ConfigFile cfgFile;
 
-        //internal static FilingDictionary<ItemBoilerplate> masterItemList = new FilingDictionary<ItemBoilerplate>();
 
         internal static BepInEx.Logging.ManualLogSource _logger;
         

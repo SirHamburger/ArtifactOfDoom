@@ -1,0 +1,11 @@
+{
+  "name": "ArtifactOfDoom",
+  "version_number": "2.0.7",
+  "website_url": "https://github.com/SirHamburger/ArtifactOfDoom",
+  "description": "Adds an artifact to the game which destroys items of your inventory if you take damage but gives you items if you kill enemies.",
+  "Dependencies": [
+    "bbepis-BepInExPack-5.4.2117",
+    "RiskofThunder-R2API_ContentManagement-1.0.8",
+    "RiskofThunder-R2API_Prefab-1.0.4"
+  ]
+}
