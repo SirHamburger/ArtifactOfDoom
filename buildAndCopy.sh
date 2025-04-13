@@ -42,21 +42,23 @@ cp "${buildTarget}/ArtifactOfDoom.dll" "./Release/ArtifactOfDoomThunderstore"
 # wine ./NetworkWeaver/Unity.UNetWeaver.exe "${currentDir}libs/UnityEngine.CoreModule.dll" "${currentDir}libs/UnityEngine.Networking.dll" "${buildTarget}"  "${currentDir}Release/ArtifactOfDoom.dll" "${currentDir}libs"
 wine ./NetworkWeaver/Unity.UNetWeaver.exe "${currentDir}libs/UnityEngine.CoreModule.dll" "${currentDir}libs/com.unity.multiplayer-hlapi.Runtime.dll" "${buildTarget}"  "${currentDir}Release/ArtifactOfDoom.dll" "${currentDir}libs"
 
-cp ${buildTarget}ArtifactOfDoom.dll ./Release/ArtifactOfDoomR2Modman
-cp ${buildTarget}ArtifactOfDoom.dll ./Release/ArtifactOfDoomThunderstore
-
 
 rm -r Release/ArtifactOfDoomR2Modman
 rm -r Release/ArtifactOfDoomThunderstore
-
 mkdir Release/ArtifactOfDoomR2Modman
 mkdir Release/ArtifactOfDoomThunderstore
 
-sed 's/!\[\]( UI.png )/!\[\](https:\/\/raw.githubusercontent.com\/SirHamburger\/ArtifactOfDoom\/master\/UI.png)/g' README.md > ./Release/ArtifactOfDoomThunderstore/README.md
 
-sed 's/!\[\]( curveItemGet.png )/!\[\](https:\/\/raw.githubusercontent.com\/SirHamburger\/ArtifactOfDoom\/master\/curveItemGet.png)/g' README.md > ./Release/ArtifactOfDoomThunderstore/README.md
+cp ${buildTarget}ArtifactOfDoom.dll ./Release/ArtifactOfDoomR2Modman
+cp ${buildTarget}ArtifactOfDoom.dll ./Release/ArtifactOfDoomThunderstore
+
+cp "./README.md" "./Release/ArtifactOfDoomThunderstore/README.md"
+sed -i 's/!\[\]( UI.png )/!\[\](https:\/\/raw.githubusercontent.com\/SirHamburger\/ArtifactOfDoom\/master\/UI.png)/g' ./Release/ArtifactOfDoomThunderstore/README.md
+sed -i 's/!\[\]( curveItemGet.png )/!\[\](https:\/\/raw.githubusercontent.com\/SirHamburger\/ArtifactOfDoom\/master\/curveItemGet.png)/g' ./Release/ArtifactOfDoomThunderstore/README.md
+
 cp "./README.md" "./Release/ArtifactOfDoomR2Modman/"
 cp "./CHANGELOG.md" "./Release/ArtifactOfDoomR2Modman/"
+cp "./CHANGELOG.md" "./Release/ArtifactOfDoomThunderstore/"
 cp "./Release/icon.png" "./Release/ArtifactOfDoomR2Modman/"
 cp "./Release/icon.png" "./Release/ArtifactOfDoomThunderstore/"
 cp "./Release/manifest.json" "./Release/ArtifactOfDoomThunderstore/"
